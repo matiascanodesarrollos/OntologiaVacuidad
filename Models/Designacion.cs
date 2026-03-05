@@ -34,8 +34,6 @@ public class Designacion
 
     public static Designacion Designar(Nombre nombre, Apariencia apariencia, string sustantivo = null, double fase = 0, double frecuencia = 1)
     {
-        nombre.Efecto.Esencia.Frecuencia++;
-
         var nuevaDesignacion = Crear(nombre.Naturaleza.Texto, 
             sustantivo ?? nombre.Texto,
             nombre.Texto,
