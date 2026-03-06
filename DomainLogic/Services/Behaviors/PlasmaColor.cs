@@ -140,9 +140,9 @@ namespace DomainLogic.Services.Behaviors
 
             return new RgbColor
             {
-                R = (byte)Math.Round(r * 255),
-                G = (byte)Math.Round(g * 255),
-                B = (byte)Math.Round(b * 255)
+                R = (byte)Math.Round(Math.Clamp(r, 0, 1) * 255),
+                G = (byte)Math.Round(Math.Clamp(g, 0, 1) * 255),
+                B = (byte)Math.Round(Math.Clamp(b, 0, 1) * 255)
             };
         }
 

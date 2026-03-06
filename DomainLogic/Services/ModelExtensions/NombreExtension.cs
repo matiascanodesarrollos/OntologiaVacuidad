@@ -7,10 +7,6 @@ using Microsoft.Extensions.Logging;
 
 public static class NombreExtension
 {
-    // Contexto espacial por nombre (temporal durante vibración)
-    private static readonly ConcurrentDictionary<Guid, double> _nombrePositions = 
-        new ConcurrentDictionary<Guid, double>();
-
     /// <summary>
     /// Simula vibración natural del nombre usando el comportamiento especificado
     /// Por defecto utiliza PlasmaBehavior

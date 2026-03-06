@@ -20,7 +20,7 @@ namespace DomainLogic.Services.Ondas
             
             // Posiciones fijas
             var vacios = new HashSet<int> { 0, 1, 2, 3, 4, 5, 32, 59, 60, 61, 62, 63 };
-            var pilotosIndices = new HashSet<int> { 11, 25, 39, 53 };
+            var pilotosIndices = new List<int> { 11, 25, 39, 53 };
             
             // Obtener datos y agrupar por naturaleza (Causa.Texto)
             var datos = designacion.Nombre.BuscarSignificado();
@@ -34,7 +34,7 @@ namespace DomainLogic.Services.Ondas
             var posicionesOrdenadas = new List<int>();
             
             // Construir lista de posiciones desde el centro hacia afuera
-            for (int dist = 1; dist <= 20; dist++)
+            for (int dist = 1; dist <= 24; dist++)
             {
                 // Izquierda del centro
                 if (centerPos - dist >= 0 && !vacios.Contains(centerPos - dist) && !pilotosIndices.Contains(centerPos - dist))
