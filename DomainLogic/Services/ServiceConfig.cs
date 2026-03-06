@@ -4,6 +4,6 @@ namespace DomainLogic.Services
     {
         public static readonly object LogLock = new object();
         public int MaxDelaySeconds { get; set; } = 2;
-        public int MinDelaySeconds { get; set; } = 6;
+        public int MinDelaySeconds { get; set; } = 0;
     }
 }

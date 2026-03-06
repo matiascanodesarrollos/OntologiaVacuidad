@@ -11,9 +11,9 @@ public class Apariencia
             $"Naturaleza: {Causa.Naturaleza.Texto}",
             $"Causa: {Causa.Texto}",
             $"Efecto: {Esencia.Verbo}",
-            $"Amplitud: {Amplitud:F2}",
             $"Frecuencia: {Esencia.Frecuencia:F2}",
-            $"Fase: {Causa.Naturaleza.Fase:F2}"
+            $"Fase: {Causa.Naturaleza.Fase:F2}",
+            $"Amplitud: {Amplitud:F2}",
         };
     }
 
