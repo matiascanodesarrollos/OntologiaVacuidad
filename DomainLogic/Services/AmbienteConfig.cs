@@ -11,23 +11,31 @@ namespace DomainLogic.Services
         public static Designacion CrearAmbiente(ILogger logger)
         {
             logger.LogInformation("═══ Configurando ambiente ═══\n");
-            var espacio = Designacion.Crear("Vasto", "Espacio", "Estar", 0, 100000);
-            var tiempo = Designacion.Crear("Puro", "Tiempo", "Ser", 2 * Math.PI, 0);
-            var espacioTiempo = Designacion.Designar(espacio.Nombre, tiempo.Apariencia, "EspacioTiempo", 0, 100000);            
-            var tierraSolida = Designacion.Designar(espacioTiempo.Nombre, espacioTiempo.Apariencia, "Tierra", Math.PI/2, 1000);
-            var aguaFuida = Designacion.Designar(tierraSolida.Nombre, tierraSolida.Apariencia, "Agua", Math.PI/2, 400);
-            var aireDisperso = Designacion.Designar(aguaFuida.Nombre, aguaFuida.Apariencia, "Aire", Math.PI, 600);
-            var fuegoCaliente = Designacion.Designar(aireDisperso.Nombre, aireDisperso.Apariencia, "Fuego", 3 * Math.PI / 2, 200);
-            var tierraPura = Designacion.Designar(fuegoCaliente.Nombre, fuegoCaliente.Apariencia, "TierraPura", 0, 1000);
-            var aguaPura = Designacion.Designar(tierraPura.Nombre, tierraPura.Apariencia, "AguaPura", Math.PI / 2, 400);
-            var aireComprimido = Designacion.Designar(aguaPura.Nombre, aguaPura.Apariencia, "AireComprimido", Math.PI, 600);
-            var fuegoEstelar = Designacion.Designar(aireComprimido.Nombre, aireComprimido.Apariencia, "FuegoEstelar", 3 * Math.PI / 2, 200);
-            var yo = Designacion.Designar(fuegoEstelar.Nombre, fuegoEstelar.Apariencia, "Yo", Math.PI, 10000);
+            var frecuenciaBase = 100000.0; //Frecuencia base para el espacio, se asume que es la más alta para que las demás interactuen con ella.  
+            var frecuenciaExtrema = frecuenciaBase * 2;
+            var frecuenciaAlta = frecuenciaBase/100;
+            var frecuenciaMediaAlta = frecuenciaBase/1000;
+            var frecuenciaMediaBaja = frecuenciaBase/5000;
+            var frecuenciaBaja = frecuenciaBase/10000;
+
+            var espacio = Designacion.Imaginar("Vacío", "Espacio", "Estar", 0, frecuenciaBase);
+            var tiempo = Designacion.Imaginar("Puro", "Tiempo", "Ser", 2 * Math.PI, 0);   
+            var tierraPura = Designacion.Designar(espacio.Nombre, tiempo.Apariencia, "TierraPura", frecuenciaAlta, 0);
+            var aguaPura = Designacion.Designar(tierraPura.Nombre, tierraPura.Apariencia, "AguaPura", frecuenciaBase);
+            var airePuro = Designacion.Designar(aguaPura.Nombre, aguaPura.Apariencia, "AirePuro", frecuenciaMediaBaja);
+            var fuegoPuro = Designacion.Designar(airePuro.Nombre, airePuro.Apariencia, "FuegoPuro", frecuenciaBaja);
+
+            var aguaFuida = Designacion.Designar(aguaPura.Nombre, fuegoPuro.Apariencia, "Agua", frecuenciaAlta, 3 * Math.PI / 2);
+            var tierraSolida = Designacion.Designar(tierraPura.Nombre, aguaFuida.Apariencia, "Tierra", frecuenciaMediaBaja);            
+            var aireDisperso = Designacion.Designar(aguaPura.Nombre, tierraSolida.Apariencia, "Aire", frecuenciaMediaAlta);
+            var fuegoCaliente = Designacion.Designar(fuegoPuro.Nombre, aireDisperso.Apariencia, "Fuego", frecuenciaBaja, 0);
+
+            var yo = Designacion.Designar(fuegoCaliente.Nombre, fuegoCaliente.Apariencia, "Yo", frecuenciaExtrema, Math.PI);
             logger.LogInformation(yo.ToString());
             logger.LogInformation("═══ Ambiente configurado ═══\n");
-            PilotosOfdmFrame = new List<Designacion> { tierraSolida, aguaFuida, aireDisperso, fuegoEstelar };
-            SubPilotosOfdmFrame = new List<Designacion> { tierraPura, aguaPura, aireComprimido, fuegoEstelar };
-            return fuegoEstelar;
+            PilotosOfdmFrame = new List<Designacion> { tierraPura, aguaPura, airePuro, fuegoPuro };
+            SubPilotosOfdmFrame = new List<Designacion> { aguaFuida, tierraSolida, aireDisperso, fuegoCaliente };
+            return fuegoPuro;
         }
     }
 }

@@ -5,8 +5,8 @@ public class Nombre
 {
     public Guid Id { get; }
     public Palabra Naturaleza { get; }
-    public Designacion Causa { get; set; }
-    public Apariencia Efecto { get; set;}
+    public Designacion Causa { get; internal set; }
+    public Apariencia Efecto { get; internal set;}
     public string Texto { get; }
 
     internal Nombre(string sustantivo, Palabra naturaleza, Apariencia efecto)
@@ -24,7 +24,6 @@ public class Nombre
         while (actual.Efecto.Esencia.Frecuencia != 0)
         {
             actual.Efecto.Amplitud++;
-            actual.Efecto.Esencia.Frecuencia++;
             resultado.Add(actual.Efecto);
             actual = actual.Causa.Nombre;
         }

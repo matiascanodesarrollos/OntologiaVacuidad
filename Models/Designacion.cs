@@ -1,12 +1,13 @@
 using System;
 using System.Text;
+
 public class Designacion
 {
     public Guid Id { get; }    
     public string Verbo { get; }
     public Nombre Nombre { get; private set; }
     public Apariencia Apariencia { get; private set; }    
-    public double Frecuencia { get; set; }
+    public double Frecuencia { get; internal set; }
 
     private Designacion(Nombre nombre, Apariencia apariencia, string verbo, double frecuencia)
     {
@@ -17,7 +18,12 @@ public class Designacion
         Frecuencia = frecuencia;
     }
 
-    public static Designacion Crear(string adjetivo, string nombre, string verbo, double fase, double frecuencia)
+    public static Designacion Imaginar(
+        string adjetivo, 
+        string nombre, 
+        string verbo, 
+        double fase, 
+        double frecuencia)
     {
         var designacion = new Designacion(null, null, verbo, frecuencia);
         var nuevoNombre = new Nombre(nombre, new Palabra(adjetivo, fase), null);
@@ -32,13 +38,28 @@ public class Designacion
         return designacion;
     }
 
-    public static Designacion Designar(Nombre nombre, Apariencia apariencia, string sustantivo = null, double fase = 0, double frecuencia = 1)
+    public static Designacion Designar(
+        Nombre significado, 
+        Apariencia apariencia, 
+        string sustantivo, 
+        double? frecuencia = null, //Designar buscando crear un nuevo significado, por ejemplo cuando un arquitecto diseña una casa.
+        double? fase = null //Designar conociendo la vacuidad, se controla por completo como interactua la nueva designación con la base y por lo tanto su apariencia.
+    )
     {
-        var nuevaDesignacion = Crear(nombre.Naturaleza.Texto, 
-            sustantivo ?? nombre.Texto,
-            nombre.Texto,
-            fase,
-            frecuencia);
+        var frecuenciaDesignacion = !frecuencia.HasValue 
+            ? significado.Causa.Frecuencia + 1 //Se asume una frecuencia cercana para que las ondas interactuen.
+            : significado.Causa.Frecuencia + frecuencia.Value; //Se controlla durante el diseño como interactua con la onda original.
+
+        var faseDesignacion = !fase.HasValue 
+            ? significado.Naturaleza.Fase + Math.PI / 2 //Se asume desfase de 90º para evitar interferencia y permitir que interactuen.
+            : significado.Naturaleza.Fase + fase.Value; //Admite cualquier tipo de interacción.
+        faseDesignacion %= 2 * Math.PI;
+        
+        var nuevaDesignacion = Imaginar(significado.Naturaleza.Texto, 
+            sustantivo,
+            $"Parecer {sustantivo}/{significado.Causa.Verbo}",
+            faseDesignacion,
+            frecuenciaDesignacion);
         nuevaDesignacion.Nombre.Causa = apariencia.Esencia;
         nuevaDesignacion.Nombre.Efecto = nuevaDesignacion.Apariencia;
 
