@@ -5,15 +5,15 @@ public class Apariencia
     public Guid Id { get; }
     public Designacion Esencia { get; }
     public Nombre Causa { get; }
-    public double Amplitud { get; set; }
+    public double Amplitud { get; internal set; }
     public IEnumerable<string> EnteDesignado {  get => new List<string>
         {
             $"Naturaleza: {Causa.Naturaleza.Texto}",
-            $"Causa: {Causa.Texto}",
-            $"Efecto: {Esencia.Verbo}",
+            $"Causa: {Causa.Texto}",            
             $"Frecuencia: {Esencia.Frecuencia:F2}",
-            $"Fase: {Causa.Naturaleza.Fase:F2}",
+            $"Fase: {Causa.Naturaleza.Fase * (180 / Math.PI):F2}°",
             $"Amplitud: {Amplitud:F2}",
+            $"Efecto: {Esencia.Verbo}",
         };
     }
 

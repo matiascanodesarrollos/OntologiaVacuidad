@@ -23,7 +23,7 @@ namespace DomainLogic.Services.Ondas
             var pilotosIndices = new List<int> { 11, 25, 39, 53 };
             
             // Obtener datos y agrupar por naturaleza (Causa.Texto)
-            var datos = designacion.Nombre.BuscarSignificado();
+            var datos = designacion.Nombre.BuscarSignificado(48); // Limitar a 48 datos para evitar sobrecargar el frame
             var gruposPorNaturaleza = datos
                 .GroupBy(d => d.Causa.Texto)
                 .OrderByDescending(g => g.Average(d => d.Amplitud))  // Mayor energía al centro
