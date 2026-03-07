@@ -17,15 +17,17 @@ public class Nombre
         Texto = sustantivo;
     }
 
-    public List<Apariencia> BuscarSignificado()
+    public List<Apariencia> BuscarSignificado(int maxProfundidad = 5)
     {
         var resultado = new List<Apariencia>();
         Nombre actual = this;
-        while (actual.Efecto.Esencia.Frecuencia != 0)
+        int profundidad = 0;
+        while (actual.Efecto.Esencia.Frecuencia != 0 && profundidad < maxProfundidad)
         {
             actual.Efecto.Amplitud++;
             resultado.Add(actual.Efecto);
             actual = actual.Causa.Nombre;
+            profundidad++;
         }
         return resultado;
     }
