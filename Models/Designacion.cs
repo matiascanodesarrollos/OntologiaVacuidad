@@ -46,20 +46,20 @@ public class Designacion
         double? fase = null //Designar conociendo la vacuidad, se controla por completo como interactua la nueva designación con la base y por lo tanto su apariencia.
     )
     {
-        var frecuenciaDesignacion = !frecuencia.HasValue 
+        var deltaFrecuencia = !frecuencia.HasValue 
             ? significado.Causa.Frecuencia + 1 //Se asume una frecuencia cercana para que las ondas interactuen.
             : significado.Causa.Frecuencia + frecuencia.Value; //Se controlla durante el diseño como interactua con la onda original.
 
-        var faseDesignacion = !fase.HasValue 
+        var deltaFase = !fase.HasValue 
             ? significado.Naturaleza.Fase + Math.PI / 2 //Se asume desfase de 90º para evitar interferencia y permitir que interactuen.
             : significado.Naturaleza.Fase + fase.Value; //Admite cualquier tipo de interacción.
-        faseDesignacion %= 2 * Math.PI;
+        deltaFase %= 2 * Math.PI;
         
         var nuevaDesignacion = Imaginar(significado.Naturaleza.Texto, 
             sustantivo,
             $"Parecer {sustantivo}/{significado.Causa.Verbo}",
-            faseDesignacion,
-            frecuenciaDesignacion);
+            deltaFase,
+            deltaFrecuencia);
         nuevaDesignacion.Nombre.Causa = apariencia.Esencia;
         nuevaDesignacion.Nombre.Efecto = nuevaDesignacion.Apariencia;
 

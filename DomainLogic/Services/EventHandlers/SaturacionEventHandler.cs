@@ -32,8 +32,8 @@ namespace DomainLogic.Services.EventHandlers
             await Task.Delay(TimeSpan.FromSeconds(delay));
             var nombre = notification.NombreOrigen;
             var apariencia = nombre.BuscarSignificado().Last();
-            var nuevaDesignacion = Designacion.Designar(nombre, apariencia, nombre.Texto, apariencia.Esencia.Nombre.Naturaleza.Fase, apariencia.Esencia.Frecuencia);
-            var designacionEvent = new DesignacionEvent(nuevaDesignacion, apariencia);
+            var nuevaDesignacion = Designacion.Designar(nombre, apariencia, nombre.Texto);
+            var designacionEvent = new DesignacionEvent(nuevaDesignacion);
             lock (ServiceConfig.LogLock)
             {
                 _logger.LogInformation($"Nueva designacion por saturación: {notification.NombreOrigen.Texto}.");

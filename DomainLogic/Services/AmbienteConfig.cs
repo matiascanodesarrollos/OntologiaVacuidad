@@ -25,8 +25,8 @@ namespace DomainLogic.Services
             var airePuro = Designacion.Designar(aguaPura.Nombre, aguaPura.Apariencia, "AirePuro", frecuenciaMediaBaja);
             var fuegoPuro = Designacion.Designar(airePuro.Nombre, airePuro.Apariencia, "FuegoPuro", frecuenciaBaja);
 
-            var aguaFuida = Designacion.Designar(aguaPura.Nombre, fuegoPuro.Apariencia, "Agua", frecuenciaAlta, 3 * Math.PI / 2);
-            var tierraSolida = Designacion.Designar(tierraPura.Nombre, aguaFuida.Apariencia, "Tierra", frecuenciaMediaBaja);            
+            var aguaFluida = Designacion.Designar(aguaPura.Nombre, fuegoPuro.Apariencia, "Agua", frecuenciaAlta, 3 * Math.PI / 2);
+            var tierraSolida = Designacion.Designar(tierraPura.Nombre, aguaFluida.Apariencia, "Tierra", frecuenciaMediaBaja);            
             var aireDisperso = Designacion.Designar(aguaPura.Nombre, tierraSolida.Apariencia, "Aire", frecuenciaMediaAlta);
             var fuegoCaliente = Designacion.Designar(fuegoPuro.Nombre, aireDisperso.Apariencia, "Fuego", frecuenciaBaja, 0);
 
@@ -34,7 +34,7 @@ namespace DomainLogic.Services
             logger.LogInformation(yo.ToString());
             logger.LogInformation("═══ Ambiente configurado ═══\n");
             PilotosOfdmFrame = new List<Designacion> { tierraPura, aguaPura, airePuro, fuegoPuro };
-            SubPilotosOfdmFrame = new List<Designacion> { aguaFuida, tierraSolida, aireDisperso, fuegoCaliente };
+            SubPilotosOfdmFrame = new List<Designacion> { aguaFluida, tierraSolida, aireDisperso, fuegoCaliente };
             return fuegoPuro;
         }
     }
