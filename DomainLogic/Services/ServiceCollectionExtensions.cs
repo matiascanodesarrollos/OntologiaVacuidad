@@ -1,7 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
-using DomainLogic.Services.Ondas;
 
 namespace DomainLogic.Services
 {

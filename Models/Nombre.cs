@@ -17,7 +17,7 @@ public class Nombre
         Texto = sustantivo;
     }
 
-    public List<Apariencia> BuscarSignificado(int maxProfundidad = 5)
+    public List<Apariencia> BuscarSignificado(int maxProfundidad = 10)
     {
         var resultado = new List<Apariencia>();
         Nombre actual = this;

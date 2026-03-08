@@ -31,8 +31,8 @@ namespace DomainLogic.Services.EventHandlers
             double delay = _config.MinDelaySeconds + new Random().NextDouble() * (_config.MaxDelaySeconds - _config.MinDelaySeconds);
             await Task.Delay(TimeSpan.FromSeconds(delay));
             var nombre = notification.NombreOrigen;
-            var apariencia = nombre.BuscarSignificado(_config.MaxDelaySeconds).Last();
-            var nuevaDesignacion = Designacion.Designar(nombre, apariencia, nombre.Texto);
+            var apariencia = nombre.BuscarSignificado(1).First();
+            var nuevaDesignacion = Designacion.Designar(apariencia.Causa, nombre.Causa.Apariencia, nombre.Texto, 0.5);
             var designacionEvent = new DesignacionEvent(nuevaDesignacion);
             lock (ServiceConfig.LogLock)
             {

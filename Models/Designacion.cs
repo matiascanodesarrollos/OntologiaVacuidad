@@ -18,12 +18,24 @@ public class Designacion
         Frecuencia = frecuencia;
     }
 
+
+    /// <summary>
+    /// Crea una nueva designación imaginando un nuevo significado a partir de un adjetivo, un sustantivo y un verbo, junto con su fase y frecuencia.
+    /// De esta manera se crea una onda portadora que puede ser modulada posteriormente para crear nuevas designaciones a partir de esta.
+    /// Se asemeja a la modulación PM [s(φ)=p(φ+m(φ))].
+    /// </summary>
+    /// <param name="adjetivo">Permite derivar la fase</param>
+    /// <param name="nombre">Permite derivar la frecuencia</param>
+    /// <param name="verbo">Permite derivar la amplitud</param>
+    /// <param name="frecuencia">Permite controlar la interacción con otras ondas y por lo tanto el significado</param>
+    /// <param name="fase">Permite elegir la función de la onda portadora (ej: cos(φ)=sen(φ+90º))</param>
+    /// <returns>La nueva designación creada (con su Nombre/Palabra y su Apariencia).</returns>
     public static Designacion Imaginar(
         string adjetivo, 
         string nombre, 
-        string verbo, 
-        double fase, 
-        double frecuencia)
+        string verbo,
+        double frecuencia,
+        double fase)
     {
         var designacion = new Designacion(null, null, verbo, frecuencia);
         var nuevoNombre = new Nombre(nombre, new Palabra(adjetivo, fase), null);
@@ -38,6 +50,15 @@ public class Designacion
         return designacion;
     }
 
+    /// <summary>
+    /// Crea una nueva designación proyectando un significado existente sobre una apariencia
+    /// </summary>
+    /// <param name="significado">El significado proyectado sobre la apariencia.</param>
+    /// <param name="apariencia">La apariencia asociada al significado base.</param>
+    /// <param name="sustantivo">El sustantivo que define la nueva designación.</param>
+    /// <param name="frecuencia">Permite modular estilo FM[s(f)=p(f+∫m(f))]</param>
+    /// <param name="fase">Permite modular estilo AM[s(φ)=p(φ)*(1+m(φ)))]</param>
+    /// <returns>La nueva designación creada (con su Nombre/Palabra y su Apariencia).</returns>
     public static Designacion Designar(
         Nombre significado, 
         Apariencia apariencia, 
@@ -46,20 +67,22 @@ public class Designacion
         double? fase = null //Designar conociendo la vacuidad, se controla por completo como interactua la nueva designación con la base y por lo tanto su apariencia.
     )
     {
-        var deltaFrecuencia = !frecuencia.HasValue 
-            ? significado.Causa.Frecuencia + 1 //Se asume una frecuencia cercana para que las ondas interactuen.
-            : significado.Causa.Frecuencia + frecuencia.Value; //Se controlla durante el diseño como interactua con la onda original.
+        var frecuenciaModulada = apariencia.Esencia.Frecuencia + 1; //Se asume una frecuencia muy cercana para que las ondas interactuen.
+        if (frecuencia.HasValue)
+        {
+            frecuenciaModulada = significado.Causa.Frecuencia * frecuencia.Value; // ∫m(f)df ≈ m(f) * Δf (aproximación de la integral)
+        }
 
-        var deltaFase = !fase.HasValue 
-            ? significado.Naturaleza.Fase + Math.PI / 2 //Se asume desfase de 90º para evitar interferencia y permitir que interactuen.
-            : significado.Naturaleza.Fase + fase.Value; //Admite cualquier tipo de interacción.
-        deltaFase %= 2 * Math.PI;
-        
+        var faseModulada = !fase.HasValue 
+            ? apariencia.Causa.Naturaleza.Fase + Math.PI / 2 //Se asume desfase de 90º para evitar interferencia y permitir que interactuen.
+            : apariencia.Causa.Naturaleza.Fase * (1 + fase.Value); // Modulación AM
+        faseModulada %= 2 * Math.PI;
+
         var nuevaDesignacion = Imaginar(significado.Naturaleza.Texto, 
             sustantivo,
             $"Parecer {sustantivo}/{significado.Causa.Verbo}",
-            deltaFase,
-            deltaFrecuencia);
+            frecuenciaModulada,
+            faseModulada);
         nuevaDesignacion.Nombre.Causa = apariencia.Esencia;
         nuevaDesignacion.Nombre.Efecto = nuevaDesignacion.Apariencia;
 

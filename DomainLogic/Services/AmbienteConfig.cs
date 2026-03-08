@@ -11,31 +11,33 @@ namespace DomainLogic.Services
         public static Designacion CrearAmbiente(ILogger logger)
         {
             logger.LogInformation("═══ Configurando ambiente ═══\n");
-            var frecuenciaBase = 100000.0; //Frecuencia base para el espacio, se asume que es la más alta para que las demás interactuen con ella.  
-            var frecuenciaExtrema = frecuenciaBase * 2;
-            var frecuenciaAlta = frecuenciaBase/100;
-            var frecuenciaMediaAlta = frecuenciaBase/1000;
-            var frecuenciaMediaBaja = frecuenciaBase/5000;
+            var frecuenciaBase = 1000000;
+            var frecuenciaAlta = frecuenciaBase/10;
+            var frecuenciaMedia = frecuenciaBase/100;
+            var frecuenciaMediaBaja = frecuenciaBase/1000;
             var frecuenciaBaja = frecuenciaBase/10000;
+                       
+            var espacio = Designacion.Imaginar("Estado", "Espacio", "Estar", frecuenciaBase, 0);
+            var tiempo = Designacion.Imaginar("Parecido", "Tiempo", "Parecer", 0, Math.PI);
+            var mente = Designacion.Designar(espacio.Nombre, tiempo.Apariencia, "Mente", 1);
 
-            var espacio = Designacion.Imaginar("Vacío", "Espacio", "Estar", 0, frecuenciaBase);
-            var tiempo = Designacion.Imaginar("Puro", "Tiempo", "Ser", 2 * Math.PI, 0);   
-            var tierraPura = Designacion.Designar(espacio.Nombre, tiempo.Apariencia, "TierraPura", frecuenciaAlta, 0);
-            var aguaPura = Designacion.Designar(tierraPura.Nombre, tierraPura.Apariencia, "AguaPura", frecuenciaBase);
-            var airePuro = Designacion.Designar(aguaPura.Nombre, aguaPura.Apariencia, "AirePuro", frecuenciaMediaBaja);
-            var fuegoPuro = Designacion.Designar(airePuro.Nombre, airePuro.Apariencia, "FuegoPuro", frecuenciaBaja);
+            var elementoTierra = Designacion.Imaginar("Solida", "Tierra", "Permanecer", frecuenciaAlta, 0);
+            var elementoAgua = Designacion.Imaginar("Liquida", "Agua", "Fluir", frecuenciaMediaBaja, Math.PI / 2);
+            var elementoAire = Designacion.Imaginar("Gaseoso", "Aire", "Mover", frecuenciaMedia, Math.PI);
+            var elementoFuego = Designacion.Imaginar("Caliente", "Fuego", "Plasmar", frecuenciaBaja, 3 * Math.PI / 2);
+        
+            var yo = Designacion.Imaginar("Frío", "Yo", "Ser", frecuenciaBase, Math.PI / 2);
+            var espacioTiempo = Designacion.Designar(yo.Nombre, mente.Apariencia, "Espacio-Tiempo", 1);
+            var liquido = Designacion.Designar(elementoAgua.Nombre, espacioTiempo.Apariencia, "Líquido", 3, Math.PI);
+            var solido = Designacion.Designar(elementoTierra.Nombre, liquido.Apariencia, "Sólido", 0.5);
+            var gas = Designacion.Designar(elementoAire.Nombre, solido.Apariencia, "Gas", 0.5);
+            var plasma = Designacion.Designar(elementoFuego.Nombre, gas.Apariencia, "Plasma", 0.03);
 
-            var aguaFluida = Designacion.Designar(aguaPura.Nombre, fuegoPuro.Apariencia, "Agua", frecuenciaAlta, 3 * Math.PI / 2);
-            var tierraSolida = Designacion.Designar(tierraPura.Nombre, aguaFluida.Apariencia, "Tierra", frecuenciaMediaBaja);            
-            var aireDisperso = Designacion.Designar(aguaPura.Nombre, tierraSolida.Apariencia, "Aire", frecuenciaMediaAlta);
-            var fuegoCaliente = Designacion.Designar(fuegoPuro.Nombre, aireDisperso.Apariencia, "Fuego", frecuenciaBaja, 0);
-
-            var yo = Designacion.Designar(fuegoCaliente.Nombre, fuegoCaliente.Apariencia, "Yo", frecuenciaExtrema, Math.PI);
-            logger.LogInformation(yo.ToString());
+            logger.LogInformation(plasma.ToString());
             logger.LogInformation("═══ Ambiente configurado ═══\n");
-            PilotosOfdmFrame = new List<Designacion> { tierraPura, aguaPura, airePuro, fuegoPuro };
-            SubPilotosOfdmFrame = new List<Designacion> { aguaFluida, tierraSolida, aireDisperso, fuegoCaliente };
-            return fuegoPuro;
+            PilotosOfdmFrame = new List<Designacion> { liquido, solido, gas, plasma };
+            SubPilotosOfdmFrame = new List<Designacion> { mente, elementoTierra, elementoAgua, elementoAire, elementoFuego };
+            return plasma;
         }
     }
 }

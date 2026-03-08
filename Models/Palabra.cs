@@ -9,6 +9,6 @@ public class Palabra
     {
         Id = Guid.NewGuid();
         Texto = texto;
-        Fase = fase;
+        Fase = fase % (2 * Math.PI);
     }
 }
