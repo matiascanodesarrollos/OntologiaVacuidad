@@ -16,29 +16,28 @@ namespace DomainLogic.Services
             var frecuenciaMedia = frecuenciaBase/100;
             var frecuenciaMediaBaja = frecuenciaBase/1000;
             var frecuenciaBaja = frecuenciaBase/10000;
-                    
-            var tiempo = Designacion.Imaginar("Parecido", "Tiempo", "Parecer", 0, Math.PI);
+                       
             var espacio = Designacion.Imaginar("Estado", "Espacio", "Estar", frecuenciaBase, 0);
-            var yo = Designacion.Designar(espacio.Nombre, tiempo.Apariencia, "Yo", 1);
+            var tiempo = Designacion.Imaginar("Parecido", "Tiempo", "Parecer", 0, Math.PI);
+            var mente = Designacion.Designar(espacio.Nombre, tiempo.Apariencia, "Mente", 1);
 
-            var tierraPura = Designacion.Imaginar("Pura", "Tierra", "Permanecer", frecuenciaAlta, 0);
-            var aguaPura = Designacion.Imaginar("Pura", "Agua", "Fluir", frecuenciaMediaBaja, Math.PI / 2);            
-            var airePuro = Designacion.Imaginar("Puro", "Aire", "Mover", frecuenciaMedia, Math.PI);
-            var fuegoPuro = Designacion.Imaginar("Caliente", "Fuego", "Calentar", frecuenciaBaja, 3 * Math.PI / 2);
-            
-            var yoPuro = Designacion.Imaginar("Frío", "Yo", "Ser", frecuenciaBase, 3 * Math.PI / 2);
-            var espacioTiempo = Designacion.Designar(yoPuro.Nombre, yo.Apariencia, "Espacio-Tiempo", 1);
+            var elementoTierra = Designacion.Imaginar("Solida", "Tierra", "Permanecer", frecuenciaAlta, 0);
+            var elementoAgua = Designacion.Imaginar("Liquida", "Agua", "Fluir", frecuenciaMediaBaja, Math.PI / 2);
+            var elementoAire = Designacion.Imaginar("Gaseoso", "Aire", "Mover", frecuenciaMedia, Math.PI);
+            var elementoFuego = Designacion.Imaginar("Caliente", "Fuego", "Plasmar", frecuenciaBaja, 3 * Math.PI / 2);
+        
+            var yo = Designacion.Imaginar("Frío", "Yo", "Ser", frecuenciaBase, Math.PI / 2);
+            var espacioTiempo = Designacion.Designar(yo.Nombre, mente.Apariencia, "Espacio-Tiempo", 1);
+            var liquido = Designacion.Designar(elementoAgua.Nombre, espacioTiempo.Apariencia, "Líquido", 3, Math.PI);
+            var solido = Designacion.Designar(elementoTierra.Nombre, liquido.Apariencia, "Sólido", 0.5);
+            var gas = Designacion.Designar(elementoAire.Nombre, solido.Apariencia, "Gas", 0.5);
+            var plasma = Designacion.Designar(elementoFuego.Nombre, gas.Apariencia, "Plasma", 0.03);
 
-            var agua = Designacion.Designar(aguaPura.Nombre, espacioTiempo.Apariencia, "Agua", 3, Math.PI);
-            var tierra = Designacion.Designar(tierraPura.Nombre, agua.Apariencia, "Tierra", 0.5);
-            var aire = Designacion.Designar(airePuro.Nombre, tierra.Apariencia, "Aire", 0.5);
-            var fuego = Designacion.Designar(fuegoPuro.Nombre, aire.Apariencia, "Fuego", 0.03);
-
-            logger.LogInformation(fuego.ToString());
+            logger.LogInformation(plasma.ToString());
             logger.LogInformation("═══ Ambiente configurado ═══\n");
-            PilotosOfdmFrame = new List<Designacion> { agua, tierra, aire, fuego };
-            SubPilotosOfdmFrame = new List<Designacion> { espacioTiempo, yoPuro, tierraPura, aguaPura, airePuro, fuegoPuro };
-            return fuego;
+            PilotosOfdmFrame = new List<Designacion> { liquido, solido, gas, plasma };
+            SubPilotosOfdmFrame = new List<Designacion> { mente, elementoTierra, elementoAgua, elementoAire, elementoFuego };
+            return plasma;
         }
     }
 }
