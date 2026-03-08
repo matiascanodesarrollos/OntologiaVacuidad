@@ -11,7 +11,7 @@ namespace DomainLogic.Services
         public static Designacion CrearAmbiente(ILogger logger)
         {
             logger.LogInformation("═══ Configurando ambiente ═══\n");
-            var frecuenciaBase = Math.PI / 2 * 1000000; //Frecuencia base para el espacio, se asume que es la más alta para que las demás interactuen con ella.            
+            var frecuenciaBase = 1000000;
             var frecuenciaAlta = frecuenciaBase/10;
             var frecuenciaMedia = frecuenciaBase/100;
             var frecuenciaMediaBaja = frecuenciaBase/1000;
@@ -24,12 +24,12 @@ namespace DomainLogic.Services
             var tierraPura = Designacion.Imaginar("Pura", "Tierra", "Permanecer", frecuenciaAlta, 0);
             var aguaPura = Designacion.Imaginar("Pura", "Agua", "Fluir", frecuenciaMediaBaja, Math.PI / 2);            
             var airePuro = Designacion.Imaginar("Puro", "Aire", "Mover", frecuenciaMedia, Math.PI);
-            var fuegoPuro = Designacion.Imaginar("Caliente", "Fuego", "Ser", frecuenciaBaja, 3 * Math.PI / 2);
+            var fuegoPuro = Designacion.Imaginar("Caliente", "Fuego", "Calentar", frecuenciaBaja, 3 * Math.PI / 2);
             
             var yoPuro = Designacion.Imaginar("Frío", "Yo", "Ser", frecuenciaBase, 3 * Math.PI / 2);
             var espacioTiempo = Designacion.Designar(yoPuro.Nombre, yo.Apariencia, "Espacio-Tiempo", 1);
 
-            var agua = Designacion.Designar(aguaPura.Nombre, espacioTiempo.Apariencia, "Agua", 0.5, Math.PI);
+            var agua = Designacion.Designar(aguaPura.Nombre, espacioTiempo.Apariencia, "Agua", 3, Math.PI);
             var tierra = Designacion.Designar(tierraPura.Nombre, agua.Apariencia, "Tierra", 0.5);
             var aire = Designacion.Designar(airePuro.Nombre, tierra.Apariencia, "Aire", 0.5);
             var fuego = Designacion.Designar(fuegoPuro.Nombre, aire.Apariencia, "Fuego", 0.03);
