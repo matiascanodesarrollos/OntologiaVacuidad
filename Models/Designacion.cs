@@ -27,13 +27,13 @@ public class Designacion
     /// <param name="adjetivo">Permite derivar la fase</param>
     /// <param name="nombre">Permite derivar la frecuencia</param>
     /// <param name="verbo">Permite derivar la amplitud</param>
-    /// <param name="frecuencia">Permite controlar la interacción con otras ondas y por lo tanto el significado</param>    /// 
+    /// <param name="frecuencia">Permite controlar la interacción con otras ondas y por lo tanto el significado</param>
     /// <param name="fase">Permite elegir la función de la onda portadora (ej: cos(φ)=sen(φ+90º))</param>
     /// <returns>La nueva designación creada (con su Nombre/Palabra y su Apariencia).</returns>
     public static Designacion Imaginar(
         string adjetivo, 
         string nombre, 
-        string verbo,        
+        string verbo,
         double frecuencia,
         double fase)
     {
@@ -57,7 +57,7 @@ public class Designacion
     /// <param name="apariencia">La apariencia asociada al significado base.</param>
     /// <param name="sustantivo">El sustantivo que define la nueva designación.</param>
     /// <param name="frecuencia">Permite modular estilo FM[s(f)=p(f+∫m(f))]</param>
-    /// <param name="fase">Permite modular estilo PM[s(φ)=p(φ+m(φ))]</param>
+    /// <param name="fase">Permite modular estilo AM[s(φ)=p(φ)*(1+m(φ)))]</param>
     /// <returns>La nueva designación creada (con su Nombre/Palabra y su Apariencia).</returns>
     public static Designacion Designar(
         Nombre significado, 
@@ -67,15 +67,15 @@ public class Designacion
         double? fase = null //Designar conociendo la vacuidad, se controla por completo como interactua la nueva designación con la base y por lo tanto su apariencia.
     )
     {
-        var frecuenciaModulada = apariencia.Esencia.Frecuencia + significado.Naturaleza.Fase; //Se asume una frecuencia muy cercana para que las ondas interactuen.
+        var frecuenciaModulada = apariencia.Esencia.Frecuencia + 1; //Se asume una frecuencia muy cercana para que las ondas interactuen.
         if (frecuencia.HasValue)
         {
-            frecuenciaModulada = apariencia.Causa.Naturaleza.Fase * frecuencia.Value; // ∫m(f)df ≈ m(f) * Δf (aproximación de la integral)
+            frecuenciaModulada = significado.Causa.Frecuencia * frecuencia.Value; // ∫m(f)df ≈ m(f) * Δf (aproximación de la integral)
         }
 
         var faseModulada = !fase.HasValue 
             ? apariencia.Causa.Naturaleza.Fase + Math.PI / 2 //Se asume desfase de 90º para evitar interferencia y permitir que interactuen.
-            : Math.Cos(significado.Naturaleza.Fase + Math.Sin(fase.Value)); // Ejemplo de modulación PM que impide que el significado se aleje mucho del original
+            : apariencia.Causa.Naturaleza.Fase * (1 + fase.Value); // Modulación AM
         faseModulada %= 2 * Math.PI;
 
         var nuevaDesignacion = Imaginar(significado.Naturaleza.Texto, 

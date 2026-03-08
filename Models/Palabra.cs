@@ -9,6 +9,6 @@ public class Palabra
     {
         Id = Guid.NewGuid();
         Texto = texto;
-        Fase = fase % (2 * Math.PI); // Normalizar fase entre 0 y 2π
+        Fase = fase % (2 * Math.PI);
     }
 }
