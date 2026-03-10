@@ -22,9 +22,9 @@ public class Designacion
 
 
     /// <summary>
-    /// Crea una nueva designación imaginando un nuevo significado a partir de un adjetivo, un sustantivo y un verbo, junto con su fase y frecuencia.
+    /// Crea una nueva designación imaginando un nuevo significado para un adjetivo, un sustantivo y un verbo, junto con su fase y frecuencia.
     /// De esta manera se crea una onda portadora que puede ser modulada posteriormente para crear nuevas designaciones a partir de esta.
-    /// Se asemeja a la modulación PM [s(φ)=p(φ+m(φ))].
+    /// Se asemeja a la modulación PM [s(φ)=p(φ+m(φ))] en el sentido de crear un "foton" de frecuencia y fase, que luego puede ser modulado por otras designaciones para generar nuevos significados.
     /// </summary>
     /// <param name="adjetivo">Permite derivar la fase</param>
     /// <param name="nombre">Permite derivar la frecuencia</param>
@@ -53,7 +53,12 @@ public class Designacion
     }
 
     /// <summary>
-    /// Crea una nueva designación proyectando un significado existente sobre una apariencia, simula modulación FM s(f)=p(f+∫m(f))
+    /// Crea una nueva designación proyectando un significado existente sobre una apariencia, simula modulación FM s(f)=p(f+∫m(f)) sobre el significado y AM s(f)=p(f)*(1+m(f)) sobre la apariencia.
+    /// De esta manera se crean nuevas designaciones a partir de otras preexistentes, generando una red de significados interconectados.
+    /// Se asemeja a la creatividad humana, donde se toman conceptos existentes y se combinan para generar nuevos significados.
+    /// La modulación FM simula cómo el nuevo significado puede validar o no el significado proyectado dependiendo de su frecuencia, mientras que la modulación AM simula cómo la nueva designación puede tener más o menos fuerza dependiendo de la apariencia sobre la que se proyecta.
+    /// El resultado es una nueva designación que puede ser similar al significado original (si la modulación FM valida el significado proyectado) o completamente diferente (si no lo valida), y que puede tener una apariencia más o menos fuerte dependiendo de la modulación AM.
+    /// Esta función es fundamental para generar nuevas designaciones a partir de las existentes, permitiendo la evolución y expansión del sistema de designaciones a lo largo del tiempo.
     /// </summary>
     /// <param name="significado">El significado proyectado sobre la apariencia.</param>
     /// <param name="apariencia">La apariencia asociada al significado base.</param>
@@ -69,7 +74,7 @@ public class Designacion
         double? fase = null //Designar conociendo la vacuidad
     )
     {
-        var frecuenciaModulada = significado.Modular(apariencia.Causas.Select(c => c.Causa.Frecuencia).ToArray()); //Modulación FM s(f)=p(f+∫m(f))
+        var frecuenciaModulada = significado.Modular(apariencia.Significados.Select(c => c.Causa.Frecuencia).ToArray()); //Modulación FM s(f)=p(f+∫m(f))
         apariencia.Modular(significado, frecuencia); //Modulación AM s(f)=p(f)*(1+m(f)))
 
         var faseModulada = significado.Naturaleza.Fase;
@@ -91,14 +96,14 @@ public class Designacion
 
     public List<Nombre> BuscarSignificado(int profundidad = 5)
     {
-        return Apariencia.Causas.TakeLast(profundidad).ToList();
+        return Apariencia.Significados.TakeLast(profundidad).ToList();
     }
 
     public override string ToString()
     {
         var resultado = new StringBuilder();
         resultado.AppendLine("═══ Designación ═══");
-        foreach (var causa in Apariencia.Causas)
+        foreach (var causa in Apariencia.Significados)
         {
             if(causa.Causa.Frecuencia == 0)
             {

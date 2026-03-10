@@ -5,14 +5,14 @@ public class Apariencia
 {
     public Guid Id { get; }
     public Designacion Esencia { get; }
-    public List<Nombre> Causas { get; }
-    public double Amplitud { get => Causas.Count; }    
+    public List<Nombre> Significados { get; }
+    public double Amplitud { get => Significados.Count; }
     public IEnumerable<string> EnteDesignado {  get => new List<string>
         {
-            $"Naturaleza: {Causas.First().Naturaleza.Texto}",
-            $"Causa: {Causas.Last().Texto}",            
+            $"Naturaleza: {Significados.First().Naturaleza.Texto}",
+            $"Causa: {Significados.Last().Texto}",            
             $"Frecuencia: {Esencia.Frecuencia:F2}",
-            $"Fase: {Causas.Last().Naturaleza.Fase * (180 / Math.PI):F2}°",
+            $"Fase: {Significados.Last().Naturaleza.Fase * (180 / Math.PI):F2}°",
             $"Amplitud: {Amplitud:F2}",
             $"Efecto: {Esencia.Texto}",
         };
@@ -24,7 +24,7 @@ public class Apariencia
     {
         Id = Guid.NewGuid();
         Esencia = esencia;
-        Causas = new List<Nombre> { causa };
+        Significados = new List<Nombre> { causa };
     }
 
     /// <summary>
@@ -45,7 +45,7 @@ public class Apariencia
             return Aparentar(nuevoNombre.Nombre);
         }
 
-        if(Causas.Any(c => Math.Abs(nombreProyectado.Causa.Frecuencia - c.Causa.Frecuencia) <= 1))
+        if(Significados.Any(c => Math.Abs(nombreProyectado.Causa.Frecuencia - c.Causa.Frecuencia) <= 1))
         {
             return Aparentar(nombreProyectado);
         }
@@ -55,9 +55,9 @@ public class Apariencia
 
     private double Aparentar(Nombre nombreProyectado)
     {
-        if(!Causas.Any(c => c.Id == nombreProyectado.Id))
+        if(!Significados.Any(c => c.Id == nombreProyectado.Id))
         {
-            Causas.Add(nombreProyectado);
+            Significados.Add(nombreProyectado);
         }
 
         return Esencia.Frecuencia * (1 + nombreProyectado.Causa.Frecuencia);
