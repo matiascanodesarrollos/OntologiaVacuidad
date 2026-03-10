@@ -16,7 +16,7 @@ public class Nombre
     }
 
     /// <summary>
-    /// Modulacion FM
+    /// Simula modulacion FM s(f)=p(f+∫m(f))
     /// </summary>
     /// <param name="frecuencia">La frecuencia a modular.</param>
     /// <returns>La frecuencia modulada.</returns>
@@ -26,7 +26,7 @@ public class Nombre
         {
             if(Math.Abs(Causa.Frecuencia - frecuencia) <= 1)
             {
-                return frecuencia; // Modulación FM
+                return frecuencia;
             }
         }
 
@@ -35,6 +35,6 @@ public class Nombre
 
     public override string ToString()
     {
-        return $"Nombre: {Texto}, Naturaleza: {Naturaleza.Texto}, Fase: {Naturaleza.Fase * (180 / Math.PI):F2}º, Frecuencia: {Causa.Frecuencia:F2} Hz.";
+        return $"Nombre: {Texto}, Naturaleza: {Naturaleza.Texto}, Fase: {Naturaleza.Fase * (180 / Math.PI):F2}º, Frecuencia: {Causa.Frecuencia:F2} Hz";
     }
 }

@@ -28,14 +28,14 @@ public class Apariencia
     }
 
     /// <summary>
-    /// Modula AM, si la frecuencia proyectada es cercana a alguna de las frecuencias de las causas, o con una pequeña probabilidad aunque no lo sea, para permitir la interacción entre ondas.
+    /// Simula modulación AM s(f)=p(f)*(1+m(f)))
     /// </summary>
     /// <param name="nombreProyectado">El nombre proyectado sobre la apariencia.</param>
-    /// <param name="frecuenciaArmonica">Fuerza la modulación.</param>
+    /// <param name="frecuenciaArmonica">Si no es nulo, fuerza la modulación.</param>
     /// <returns>La frecuencia modulada.</returns>
     internal double Modular(Nombre nombreProyectado, double? frecuenciaArmonica = null)
     {
-        if(frecuenciaArmonica.HasValue || _random.NextDouble() < 0.1) // 10% de probabilidad de validar, simila cuando validamos un significado aunque no coincida
+        if(frecuenciaArmonica.HasValue || _random.NextDouble() < 0.1) // modulación forzada o 10% de probabilidad de validar aunque no coincida el significado 
         {
             var nuevoNombre = Designacion.Imaginar(nombreProyectado.Naturaleza.Texto, 
                 nombreProyectado.Texto, 
@@ -59,11 +59,11 @@ public class Apariencia
         {
             Causas.Add(nombreProyectado);
         }
-        
+
         return Esencia.Frecuencia * (1 + nombreProyectado.Causa.Frecuencia);
     }
     public override string ToString()
     {
-        return $"Apariencia: {string.Join(", ", EnteDesignado)}.";
+        return $"Apariencia: {string.Join(", ", EnteDesignado)}";
     }
 }

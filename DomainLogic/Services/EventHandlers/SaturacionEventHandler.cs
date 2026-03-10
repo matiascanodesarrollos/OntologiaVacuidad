@@ -5,6 +5,7 @@ using System.Threading;
 using System;
 using Microsoft.Extensions.Logging;
 using System.Linq;
+using System.Collections.Generic;
 
 namespace DomainLogic.Services.EventHandlers
 {
@@ -28,16 +29,12 @@ namespace DomainLogic.Services.EventHandlers
 
         public async Task Handle(SaturacionEvent notification, CancellationToken cancellationToken)
         {
-            // Emitir evento de designación con delay aleatorio
+            // Emitir evento de designación            
             double delay = _config.MinDelaySeconds + _random.NextDouble() * (_config.MaxDelaySeconds - _config.MinDelaySeconds);
             await Task.Delay(TimeSpan.FromSeconds(delay));
             var nombreOriginal = notification.NombreOrigen;
             var nuevaDesignacion = Designacion.Designar(nombreOriginal, nombreOriginal.Efecto, nombreOriginal.Texto);
-            var designacionEvent = new DesignacionEvent(nuevaDesignacion);
-            lock (ServiceConfig.LogLock)
-            {
-                _logger.LogInformation($"Nueva designacion por saturación: {notification.NombreOrigen.Texto}.");
-            }            
+            var designacionEvent = new DesignacionEvent(nuevaDesignacion, notification.Stack);
             await _mediator.Publish(designacionEvent, cancellationToken);
         }
     }

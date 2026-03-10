@@ -1,14 +1,17 @@
 using System;
+using System.Collections.Generic;
 using MediatR;
 
 public class DesignacionEvent : INotification
 {
-    public Designacion NuevaDesignacion { get; set; }
-    public DateTime OcurridoEn { get; set; }
+    public Designacion NuevaDesignacion { get; }
+    public DateTime OcurridoEn { get; }
+    public Stack<Designacion> Stack { get; }
 
-    public DesignacionEvent(Designacion nuevaDesignacion)
+    public DesignacionEvent(Designacion nuevaDesignacion, Stack<Designacion> stack)
     {
         NuevaDesignacion = nuevaDesignacion;
         OcurridoEn = DateTime.UtcNow;
+        Stack = stack;
     }
 }

@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using DomainLogic.Services;
+using System.Collections.Generic;
 
 namespace ConsoleApp
 {
@@ -20,11 +21,16 @@ namespace ConsoleApp
             var designacion = AmbienteConfig.CrearAmbiente(logger);
             
             logger.LogInformation("═══ INICIANDO VIBRACIÓN ═══\n");
+            var stack = new Stack<Designacion>();
+            stack.Push(designacion);
             try
             {
-                await designacion.Nombre.Vibrar(
-                    serviceProvider.GetRequiredService<IMediator>(), 
-                    logger);
+                while (stack.Count > 0)
+                {
+                    var designacionActual = stack.Pop();
+                    logger.LogInformation($"Vibrando: {designacionActual} | Pila: {stack.Count}");
+                    
+                }
                 logger.LogInformation("✓ Vibración de todas las designaciones completada");
             }
             catch (Exception ex)

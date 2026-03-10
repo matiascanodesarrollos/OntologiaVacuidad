@@ -12,7 +12,7 @@ namespace DomainLogic.Services.Behaviors
     /// <summary>
     /// Comportamiento tipo plasma: sistema de EDOs acopladas que modelan
     /// dinámicas no lineales con interacción entre subportadoras OFDM.
-    /// Usa MathNet.Numerics para resolver la evolución temporal realista.
+    /// Usa integración Runge-Kutta para resolver la evolución temporal realista.
     /// Considera la cadena causa-efecto de las Designaciones como sub-plasmas que interactúan.
     /// </summary>
     public class PlasmaBehavior : IBehavior
@@ -29,7 +29,7 @@ namespace DomainLogic.Services.Behaviors
         /// </summary>
         public RgbColor ColorActual { get; private set; }
 
-        public async Task Execute(Nombre nombre, IMediator mediator, ILogger logger)
+        public async Task Execute(Nombre nombre, IMediator mediator, ILogger logger, Stack<Designacion> stack)
         {
             try
             {
@@ -58,6 +58,10 @@ namespace DomainLogic.Services.Behaviors
                 {
                     estadoPrevio[i] = (false, false);
                 }
+                
+                // Flags para publicar eventos solo una vez
+                bool saturacionYaPublicada = false;
+                bool desaparicionYaPublicada = false;
 
                 // Simulación temporal: resolver sistema de EDOs acopladas
                 double t = 0.0;
@@ -152,18 +156,6 @@ namespace DomainLogic.Services.Behaviors
                     var colorPlasma = PlasmaColor.CalcularColor(amplitudes, frequencies);
                     var colorEstado = PlasmaColor.CalcularColorEstado(countSaturacion, countDesaparicion, numSubcarriers);
                     
-                    // Análisis por secciones: dividir en 4 zonas
-                    int seccionSize = numSubcarriers / 4;
-                    var coloresSecciones = new RgbColor[4];
-                    var descSecciones = new string[4];
-                    for (int sec = 0; sec < 4; sec++)
-                    {
-                        int inicio = sec * seccionSize;
-                        int fin = (sec == 3) ? numSubcarriers : (sec + 1) * seccionSize;
-                        coloresSecciones[sec] = PlasmaColor.CalcularColorSeccion(amplitudes, frequencies, inicio, fin);
-                        descSecciones[sec] = PlasmaColor.DescribirColor(coloresSecciones[sec]);
-                    }
-                    
                     // Obtener descripciones de color
                     string descColorPlasma = PlasmaColor.DescribirColor(colorPlasma);
                     string categoriaPlasma = PlasmaColor.CategoriaPlasma(colorPlasma);
@@ -173,20 +165,7 @@ namespace DomainLogic.Services.Behaviors
                                    Math.Abs(colorPlasma.G - colorAnterior.G) + 
                                    Math.Abs(colorPlasma.B - colorAnterior.B);
                     bool colorCambio = deltColor > 40;  // Cambio significativo
-                    
-                    // Log logarítmico cada N pasos
-                    if (paso % 20 == 0)
-                    {
-                        logger?.LogInformation($"[PLASMA-PASO {paso}] t={t:F2}s | Amp.Prom={amplitudPromedio:F3} | " +
-                            $"Max={amplitudMaxima:F3} | Activas={subportadorasActivas}/{numSubcarriers}");
-                        logger?.LogInformation($"[COLOR-GLOBAL] {colorPlasma.ToHex()} - {descColorPlasma} | {categoriaPlasma}");
-                        logger?.LogInformation($"[COLOR-ESTADO] {colorEstado.ToHex()}");
-                        logger?.LogInformation($"[SECCIONES] S0:{coloresSecciones[0].ToHex()}({descSecciones[0]}) | " +
-                            $"S1:{coloresSecciones[1].ToHex()}({descSecciones[1]}) | " +
-                            $"S2:{coloresSecciones[2].ToHex()}({descSecciones[2]}) | " +
-                            $"S3:{coloresSecciones[3].ToHex()}({descSecciones[3]})");
-                    }
-                    
+                                        
                     // Log detallado cuando hay cambio significativo de color
                     if (colorCambio)
                     {
@@ -201,20 +180,22 @@ namespace DomainLogic.Services.Behaviors
                         bool esSaturada = amplitudes[i] >= AmplitudSaturacionThreshold;
                         bool esDesaparecida = amplitudes[i] <= AmplitudDesaparicionThreshold;
 
-                        // Transición a saturación
-                        if (esSaturada && !wasSaturada && !esDesaparecida)
+                        // Transición a saturación (solo publicar una vez)
+                        if (esSaturada && !wasSaturada && !esDesaparecida && !saturacionYaPublicada)
                         {
                             countSaturacion++;
                             logger?.LogWarning($"[SATURACIÓN] {nombre.Texto} | Subportadora {i}: A={amplitudes[i]:F3}, φ={phases[i]:F2} | Paso {paso}");
-                            await mediator.Publish(new SaturacionEvent(nombre));
+                            await mediator.Publish(new SaturacionEvent(nombre, stack));
+                            saturacionYaPublicada = true;
                         }
 
-                        // Transición a desaparición
-                        if (esDesaparecida && !wasDesaparecida)
+                        // Transición a desaparición (solo publicar una vez)
+                        if (esDesaparecida && !wasDesaparecida && !desaparicionYaPublicada)
                         {
                             countDesaparicion++;
                             logger?.LogWarning($"[DESAPARICIÓN] {nombre.Texto} | Subportadora {i}: A={amplitudes[i]:F3}, φ={phases[i]:F2} | Paso {paso}");
-                            await mediator.Publish(new DesaparicionEvent(nombre));
+                            await mediator.Publish(new DesaparicionEvent(nombre, stack));
+                            desaparicionYaPublicada = true;
                         }
 
                         estadoPrevio[i] = (esSaturada, esDesaparecida);
@@ -246,29 +227,12 @@ namespace DomainLogic.Services.Behaviors
                 var colorEstadoFinal = PlasmaColor.CalcularColorEstado(countSaturacion, countDesaparicion, numSubcarriers);
                 string descColorFinal = PlasmaColor.DescribirColor(ColorActual);
                 string categoriaFinal = PlasmaColor.CategoriaPlasma(ColorActual);
-                
-                // Análisis final por secciones
-                int seccionSizeFinal = numSubcarriers / 4;
-                var coloresSecconesFinal = new RgbColor[4];
-                var descSecconesFinal = new string[4];
-                for (int sec = 0; sec < 4; sec++)
-                {
-                    int inicio = sec * seccionSizeFinal;
-                    int fin = (sec == 3) ? numSubcarriers : (sec + 1) * seccionSizeFinal;
-                    coloresSecconesFinal[sec] = PlasmaColor.CalcularColorSeccion(amplitudes, frequencies, inicio, fin);
-                    descSecconesFinal[sec] = PlasmaColor.DescribirColor(coloresSecconesFinal[sec]);
-                }
 
                 logger?.LogInformation($"[PLASMA] Simulación completada para {nombre.Texto} en {pasosSimulacion} pasos ({pasosSimulacion * dt:F1}s)");
                 logger?.LogInformation($"[PLASMA-RESUMEN] Eventos generados: Saturaciones={countSaturacion}, " +
                     $"Desapariciones={countDesaparicion} | Amplitud Final Máx={amplitudes.Max():F3}, " +
                     $"Prom={amplitudes.Average():F3}");
-                logger?.LogInformation($"[COLOR-FINAL-GLOBAL] {ColorActual.ToHex()} - {descColorFinal}");
-                logger?.LogInformation($"[ETAPA-FINAL] {categoriaFinal}");
-                logger?.LogInformation($"[SECCIONES-FINAL] S0[0-{seccionSizeFinal-1}]:{coloresSecconesFinal[0].ToHex()}({descSecconesFinal[0]}) | " +
-                    $"S1[{seccionSizeFinal}-{seccionSizeFinal*2-1}]:{coloresSecconesFinal[1].ToHex()}({descSecconesFinal[1]}) | " +
-                    $"S2[{seccionSizeFinal*2}-{seccionSizeFinal*3-1}]:{coloresSecconesFinal[2].ToHex()}({descSecconesFinal[2]}) | " +
-                    $"S3[{seccionSizeFinal*3}-{numSubcarriers-1}]:{coloresSecconesFinal[3].ToHex()}({descSecconesFinal[3]})");
+                logger?.LogInformation($"[COLOR-FINAL] {ColorActual.ToHex()} - {descColorFinal} | {categoriaFinal}");
 
             }
             catch (Exception ex)

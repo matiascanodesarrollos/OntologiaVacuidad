@@ -12,6 +12,11 @@ public class Palabra
         Fase = Normalizar(fase);
     }
 
+    /// <summary>
+    /// Simula modulación PM s(φ)=p(φ+m(φ)))
+    /// </summary>
+    /// <param name="fase">La fase a modular.</param>
+    /// <returns>La fase modulada.</returns>
     internal double Modular(double fase)
     {
         if(Math.Abs(Fase - fase) <= 0.1)

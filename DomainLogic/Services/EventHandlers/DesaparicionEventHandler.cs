@@ -5,6 +5,7 @@ using System.Threading;
 using System;
 using Microsoft.Extensions.Logging;
 using System.Linq;
+using System.Collections.Generic;
 
 namespace DomainLogic.Services.EventHandlers
 {
@@ -41,12 +42,8 @@ namespace DomainLogic.Services.EventHandlers
                 ? nombreOriginal
                 : nuevaDesignacionProyectada.Nombre; 
             var nuevaDesignacion = Designacion.Designar(nuevoNombre, nombreOriginal.Efecto, nombreOriginal.Texto);
-            var designacionEvent = new DesignacionEvent(nuevaDesignacion);
-            lock (ServiceConfig.LogLock)
-            {
-                _logger.LogInformation($"Nueva designacion por desaparición de {notification.NombreOrigen.Texto}.");                
-            }
-            await _mediator.Publish(designacionEvent, cancellationToken);            
+            var designacionEvent = new DesignacionEvent(nuevaDesignacion, notification.Stack);
+            await _mediator.Publish(designacionEvent, cancellationToken);
         }
     }
 }

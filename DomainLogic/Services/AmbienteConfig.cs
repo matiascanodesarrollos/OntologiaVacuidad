@@ -10,7 +10,6 @@ namespace DomainLogic.Services
         public static List<Designacion> SubPilotosOfdmFrame { get; private set; } = new List<Designacion>();
         public static Designacion CrearAmbiente(ILogger logger)
         {
-            logger.LogInformation("═══ Configurando ambiente ═══\n");
             var frecuenciaBase = 1000000;
             var espacio = Designacion.Imaginar("Estado", "Espacio", "Estar", 0, 0);
             var tiempo = Designacion.Imaginar("Parecido", "Tiempo", "Parecer", frecuenciaBase, Math.PI);
@@ -28,8 +27,6 @@ namespace DomainLogic.Services
             var gas = Designacion.Designar(elementoAire.Nombre, mente.Apariencia, "Gas", frecuenciaBase/1000);
             var plasma = Designacion.Designar(elementoFuego.Nombre, mente.Apariencia, "Plasma", 1);
 
-            logger.LogInformation(mente.ToString());
-            logger.LogInformation("═══ Ambiente configurado ═══\n");
             PilotosOfdmFrame = new List<Designacion> { liquido, solido, gas, plasma };
             SubPilotosOfdmFrame = new List<Designacion> { mente, espacioTiempo, elementoTierra, elementoAgua, elementoAire, elementoFuego };
             return mente;

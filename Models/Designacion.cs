@@ -106,6 +106,7 @@ public class Designacion
             }
             resultado.AppendLine(apariencia.ToString());
         }
+        resultado.AppendLine("═══ Fin ═══");
         return resultado.ToString();
     }
 
