@@ -1,7 +1,6 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using DomainLogic.Services;
 using DomainLogic.Services.Events;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -30,7 +29,7 @@ namespace DomainLogic.Services.Plasma
             RgbColor? lastLoggedFieldColor = null;
 
             // Amplitud inicial simple
-            double amplitude = 0.05;
+            double amplitude = 0.11;
             
             const int steps = 120;
             const double dt = 0.04;

@@ -98,13 +98,13 @@ public class Designacion
     {
         var resultado = new StringBuilder();
         resultado.AppendLine("═══ Designación ═══");
-        foreach (var apariencia in Apariencia.Causas)
+        foreach (var causa in Apariencia.Causas)
         {
-            if(apariencia.Causa.Frecuencia == 0)
+            if(causa.Causa.Frecuencia == 0)
             {
                 break;
             }
-            resultado.AppendLine(apariencia.ToString());
+            resultado.AppendLine(causa.ToString());
         }
         resultado.AppendLine("═══ Fin ═══");
         return resultado.ToString();

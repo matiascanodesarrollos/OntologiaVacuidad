@@ -4,8 +4,6 @@ using System.Threading.Tasks;
 using System.Threading;
 using System;
 using Microsoft.Extensions.Logging;
-using System.Linq;
-using System.Collections.Generic;
 
 namespace DomainLogic.Services.EventHandlers
 {
@@ -18,22 +16,19 @@ namespace DomainLogic.Services.EventHandlers
         private readonly IMediator _mediator;
         private readonly ILogger<DesaparicionEventHandler> _logger;
         private readonly ServiceConfig _config;
-        private readonly IDesignacionQueue _designacionQueue;
         private readonly Random _random = new Random();
 
-        public DesaparicionEventHandler(IMediator mediator, ILogger<DesaparicionEventHandler> logger, ServiceConfig config, IDesignacionQueue designacionQueue)
+        public DesaparicionEventHandler(IMediator mediator, ILogger<DesaparicionEventHandler> logger, ServiceConfig config)
         {
             _mediator = mediator;
             _logger = logger;
             _config = config;
-            _designacionQueue = designacionQueue;
         }
 
         public async Task Handle(DesaparicionEvent notification, CancellationToken cancellationToken)
         {
-            // Crear nueva designación y acumularla en la cola
             double delay = _config.MinDelaySeconds + _random.NextDouble() * (_config.MaxDelaySeconds - _config.MinDelaySeconds);
-            await Task.Delay(TimeSpan.FromSeconds(delay));
+            await Task.Delay(TimeSpan.FromSeconds(delay), cancellationToken);
             var nombreOriginal = notification.NombreOrigen;
             var nuevaDesignacionProyectada = Designacion.Imaginar(nombreOriginal.Naturaleza.Texto, 
                 nombreOriginal.Texto, 
@@ -44,9 +39,7 @@ namespace DomainLogic.Services.EventHandlers
                 ? nombreOriginal
                 : nuevaDesignacionProyectada.Nombre; 
             var nuevaDesignacion = Designacion.Designar(nuevoNombre, nombreOriginal.Efecto, nombreOriginal.Texto);
-            
-            // En lugar de publicar evento, agregar a la cola
-            _designacionQueue.Enqueue(nuevaDesignacion);
+            await _mediator.Publish(new DesignacionEvent(nuevaDesignacion, null), cancellationToken);
             _logger.LogInformation($"[DESIGNACION-ENQUEUED] {nuevaDesignacion.Texto} (de Desaparición en {nombreOriginal.Texto})");
         }
     }

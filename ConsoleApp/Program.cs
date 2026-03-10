@@ -38,7 +38,7 @@ namespace ConsoleApp
                     iterationCount++;
                     var designacionActual = pendientes[pendientes.Count - 1];
                     pendientes.RemoveAt(pendientes.Count - 1);
-                    logger.LogInformation($"[STACK] Iteration={iterationCount} | Designacion={designacionActual.Texto} | pendiente={pendientes.Count}");
+                    logger.LogInformation($"[STACK] Iteration={iterationCount} | Designacion={designacionActual} | pendiente={pendientes.Count}");
 
                     var causas = designacionActual.Apariencia.Causas;
                     for (int i = 0; i < causas.Count; i++)
@@ -67,7 +67,7 @@ namespace ConsoleApp
                         logger.LogInformation(
                             $"[CAMPO-COLOR] Designacion={designacionActual.Texto} | " +
                             $"Color={fieldColor.ToHex()} ({PlasmaColor.Describe(fieldColor)}) | " +
-                            $"Energia={fieldEnergy:F3} | Progreso={(fieldProgress * 100):F1}%");
+                            $"Energia={fieldEnergy:F3} | Progreso={fieldProgress * 100:F1}%");
                         lastLoggedFieldColor = fieldColor;
                     }
                 }

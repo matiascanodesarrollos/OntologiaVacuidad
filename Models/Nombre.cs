@@ -18,7 +18,7 @@ public class Nombre
     /// <summary>
     /// Simula modulacion FM s(f)=p(f+∫m(f))
     /// </summary>
-    /// <param name="frecuencia">La frecuencia a modular.</param>
+    /// <param name="frecuencias">Las frecuencias historicas para simular la integral.</param>
     /// <returns>La frecuencia modulada.</returns>
     internal double Modular(double[] frecuencias)
     {
