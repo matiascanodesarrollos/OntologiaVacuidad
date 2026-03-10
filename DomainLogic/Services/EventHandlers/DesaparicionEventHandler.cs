@@ -17,6 +17,7 @@ namespace DomainLogic.Services.EventHandlers
         private readonly IMediator _mediator;
         private readonly ILogger<DesaparicionEventHandler> _logger;
         private readonly ServiceConfig _config;
+        private readonly Random _random = new Random();
 
         public DesaparicionEventHandler(IMediator mediator, ILogger<DesaparicionEventHandler> logger, ServiceConfig config)
         {
@@ -28,11 +29,18 @@ namespace DomainLogic.Services.EventHandlers
         public async Task Handle(DesaparicionEvent notification, CancellationToken cancellationToken)
         {
             // Emitir evento de designación            
-            double delay = _config.MinDelaySeconds + new Random().NextDouble() * (_config.MaxDelaySeconds - _config.MinDelaySeconds);
+            double delay = _config.MinDelaySeconds + _random.NextDouble() * (_config.MaxDelaySeconds - _config.MinDelaySeconds);
             await Task.Delay(TimeSpan.FromSeconds(delay));
-            var nombre = notification.NombreOrigen;
-            var apariencia = nombre.BuscarSignificado(1).First();
-            var nuevaDesignacion = Designacion.Designar(apariencia.Causa, nombre.Causa.Apariencia, nombre.Texto, 0.5);
+            var nombreOriginal = notification.NombreOrigen;
+            var nuevaDesignacionProyectada = Designacion.Imaginar(nombreOriginal.Naturaleza.Texto, 
+                nombreOriginal.Texto, 
+                nombreOriginal.Causa.Texto,
+                nombreOriginal.Causa.Frecuencia + _random.Next(2), // 50% de probabilidad de no encontrarlo
+                nombreOriginal.Naturaleza.Fase);
+            var nuevoNombre = Math.Abs(nuevaDesignacionProyectada.Frecuencia - nombreOriginal.Causa.Frecuencia) <= 1
+                ? nombreOriginal
+                : nuevaDesignacionProyectada.Nombre; 
+            var nuevaDesignacion = Designacion.Designar(nuevoNombre, nombreOriginal.Efecto, nombreOriginal.Texto);
             var designacionEvent = new DesignacionEvent(nuevaDesignacion);
             lock (ServiceConfig.LogLock)
             {

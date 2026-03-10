@@ -17,6 +17,7 @@ namespace DomainLogic.Services.EventHandlers
         private readonly IMediator _mediator;
         private readonly ILogger<SaturacionEventHandler> _logger;
         private readonly ServiceConfig _config;
+        private readonly Random _random = new Random();
 
         public SaturacionEventHandler(IMediator mediator, ILogger<SaturacionEventHandler> logger, ServiceConfig config)
         {
@@ -28,10 +29,10 @@ namespace DomainLogic.Services.EventHandlers
         public async Task Handle(SaturacionEvent notification, CancellationToken cancellationToken)
         {
             // Emitir evento de designación con delay aleatorio
-            double delay = _config.MinDelaySeconds + new Random().NextDouble() * (_config.MaxDelaySeconds - _config.MinDelaySeconds);
+            double delay = _config.MinDelaySeconds + _random.NextDouble() * (_config.MaxDelaySeconds - _config.MinDelaySeconds);
             await Task.Delay(TimeSpan.FromSeconds(delay));
-            var nombre = notification.NombreOrigen;
-            var nuevaDesignacion = Designacion.Designar(nombre, nombre.Causa.Apariencia, nombre.Texto);
+            var nombreOriginal = notification.NombreOrigen;
+            var nuevaDesignacion = Designacion.Designar(nombreOriginal, nombreOriginal.Efecto, nombreOriginal.Texto);
             var designacionEvent = new DesignacionEvent(nuevaDesignacion);
             lock (ServiceConfig.LogLock)
             {

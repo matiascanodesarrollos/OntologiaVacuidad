@@ -23,10 +23,10 @@ namespace DomainLogic.Services.Ondas
             var pilotosIndices = new List<int> { 11, 25, 39, 53 };
             
             // Obtener datos y agrupar por naturaleza (Causa.Texto)
-            var datos = designacion.Nombre.BuscarSignificado(48); // Limitar a 48 datos para evitar sobrecargar el frame
+            var datos = designacion.BuscarSignificado(48); // Limitar a 48 datos para evitar sobrecargar el frame
             var gruposPorNaturaleza = datos
-                .GroupBy(d => d.Causa.Texto)
-                .OrderByDescending(g => g.Average(d => d.Amplitud))  // Mayor energía al centro
+                .GroupBy(d => d.Texto)
+                .OrderByDescending(g => g.Average(d => d.Efecto.Amplitud))  // Mayor energía al centro
                 .ToList();
             
             // Estrategia de distribución: simetría radial desde el centro hacia afuera
@@ -69,9 +69,9 @@ namespace DomainLogic.Services.Ondas
                     
                     int pos = posicionesOrdenadas[posIndex];
                     frame[pos] = new OscillatorSignal(
-                        dato.Esencia.Frecuencia,
-                        dato.Amplitud,
-                        dato.Causa.Naturaleza.Fase);
+                        dato.Causa.Frecuencia,
+                        dato.Efecto.Amplitud,
+                        dato.Naturaleza.Fase);
                     
                     datosEnGrupo++;
                     
@@ -95,9 +95,9 @@ namespace DomainLogic.Services.Ondas
                 {
                     int pos = posicionesOrdenadas[posIndex];
                     frame[pos] = new OscillatorSignal(
-                        datos[i].Esencia.Frecuencia,
-                        datos[i].Amplitud,
-                        datos[i].Causa.Naturaleza.Fase);
+                        datos[i].Causa.Frecuencia,
+                        datos[i].Efecto.Amplitud,
+                        datos[i].Naturaleza.Fase);
                     posIndex += 2;  // Mantener espaciado
                 }
             }

@@ -1,10 +1,12 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 public class Designacion
 {
     public Guid Id { get; }    
-    public string Verbo { get; }
+    public string Texto { get; }
     public Nombre Nombre { get; private set; }
     public Apariencia Apariencia { get; private set; }    
     public double Frecuencia { get; internal set; }
@@ -14,7 +16,7 @@ public class Designacion
         Id = Guid.NewGuid();
         Nombre = nombre;
         Apariencia = apariencia;
-        Verbo = verbo;        
+        Texto = verbo;        
         Frecuencia = frecuencia;
     }
 
@@ -51,37 +53,35 @@ public class Designacion
     }
 
     /// <summary>
-    /// Crea una nueva designación proyectando un significado existente sobre una apariencia
+    /// Crea una nueva designación proyectando un significado existente sobre una apariencia, simula modulación FM s(f)=p(f+∫m(f))
     /// </summary>
     /// <param name="significado">El significado proyectado sobre la apariencia.</param>
     /// <param name="apariencia">La apariencia asociada al significado base.</param>
     /// <param name="sustantivo">El sustantivo que define la nueva designación.</param>
-    /// <param name="frecuencia">Permite modular estilo FM[s(f)=p(f+∫m(f))]</param>
-    /// <param name="fase">Permite modular estilo AM[s(φ)=p(φ)*(1+m(φ)))]</param>
+    /// <param name="frecuencia">Simula modulación AM s(f)=p(f)*(1+m(f)))</param>
+    /// <param name="fase">Simula modulación PM s(φ)=p(φ+m(φ)))</param>
     /// <returns>La nueva designación creada (con su Nombre/Palabra y su Apariencia).</returns>
     public static Designacion Designar(
         Nombre significado, 
         Apariencia apariencia, 
         string sustantivo, 
         double? frecuencia = null, //Designar buscando crear un nuevo significado, por ejemplo cuando un arquitecto diseña una casa.
-        double? fase = null //Designar conociendo la vacuidad, se controla por completo como interactua la nueva designación con la base y por lo tanto su apariencia.
+        double? fase = null //Designar conociendo la vacuidad
     )
     {
-        var frecuenciaModulada = apariencia.Esencia.Frecuencia + 1; //Se asume una frecuencia muy cercana para que las ondas interactuen.
-        if (frecuencia.HasValue)
-        {
-            frecuenciaModulada = significado.Causa.Frecuencia * frecuencia.Value; // ∫m(f)df ≈ m(f) * Δf (aproximación de la integral)
-        }
+        var frecuenciaModulada = significado.Modular(apariencia.Causas.Select(c => c.Causa.Frecuencia).ToArray()); //Modulación FM s(f)=p(f+∫m(f))
+        apariencia.Modular(significado, frecuencia); //Modulación AM s(f)=p(f)*(1+m(f)))
 
-        var faseModulada = !fase.HasValue 
-            ? apariencia.Causa.Naturaleza.Fase + Math.PI / 2 //Se asume desfase de 90º para evitar interferencia y permitir que interactuen.
-            : apariencia.Causa.Naturaleza.Fase * (1 + fase.Value); // Modulación AM
-        faseModulada %= 2 * Math.PI;
+        var faseModulada = significado.Naturaleza.Fase;
+        if(fase.HasValue)
+        {
+            faseModulada = significado.Naturaleza.Modular(fase.Value);
+        }
 
         var nuevaDesignacion = Imaginar(significado.Naturaleza.Texto, 
             sustantivo,
-            $"Parecer {sustantivo}/{significado.Causa.Verbo}",
-            frecuenciaModulada,
+            $"Parecer {sustantivo}/{significado.Causa.Texto}",
+            frecuenciaModulada > 0 ? frecuenciaModulada : apariencia.Esencia.Frecuencia,
             faseModulada);
         nuevaDesignacion.Nombre.Causa = apariencia.Esencia;
         nuevaDesignacion.Nombre.Efecto = nuevaDesignacion.Apariencia;
@@ -89,13 +89,21 @@ public class Designacion
         return nuevaDesignacion;
     }
 
+    public List<Nombre> BuscarSignificado(int profundidad = 5)
+    {
+        return Apariencia.Causas.TakeLast(profundidad).ToList();
+    }
+
     public override string ToString()
     {
         var resultado = new StringBuilder();
         resultado.AppendLine("═══ Designación ═══");
-        var apariencias = Nombre.BuscarSignificado();
-        foreach (var apariencia in apariencias)
+        foreach (var apariencia in Apariencia.Causas)
         {
+            if(apariencia.Causa.Frecuencia == 0)
+            {
+                break;
+            }
             resultado.AppendLine(apariencia.ToString());
         }
         return resultado.ToString();

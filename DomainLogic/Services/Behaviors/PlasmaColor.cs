@@ -56,6 +56,8 @@ namespace DomainLogic.Services.Behaviors
 
         /// <summary>
         /// Cálculo interno del color basado en amplitudes
+        /// Mapea energía/temperatura del plasma a progresión de colores
+        /// Naranja → Amarillo → Verde → Blanco → Azul
         /// </summary>
         private static RgbColor CalcularColorInterno(double[] amplitudes, double[] frequencies)
         {
@@ -69,17 +71,72 @@ namespace DomainLogic.Services.Behaviors
                 ? Math.Sqrt(amplitudes.Sum(a => Math.Pow(a - amplitudPromedio, 2)) / amplitudes.Length)
                 : 0;
 
-            // Ratio Max/Promedio → controla el tono (hue)
-            // Ratio ~1.0 (uniforme) → Rojo (hue=0)
-            // Ratio ~10.0 (muy picos) → Azul (hue=1)
+            // Ratio Max/Promedio → controla la estructura del plasma
             double ratio = amplitudPromedio > 0.01 ? amplitudMaxima / amplitudPromedio : 1.0;
-            double hue = Math.Min(1.0, Math.Max(0.0, (ratio - 1.0) / 9.0));
+            
+            // Mapear amplitud promedio a progresión de colores esperada:
+            // 0.0 - 0.1   → Rojo (muy frío)
+            // 0.1 - 0.25  → Rojo-Naranja
+            // 0.25 - 0.4  → Naranja (color esperado al inicio ~0.26)
+            // 0.4 - 0.55  → Naranja-Amarillo
+            // 0.55 - 0.7  → Amarillo-Verde
+            // 0.7 - 0.85  → Verde-Cian
+            // 0.85 - 1.0  → Cian-Azul (extremo)
+            
+            double normalizedAmp = Math.Min(1.0, amplitudPromedio);
+            double hue;
+            double saturation;
+            
+            if (normalizedAmp < 0.1)
+            {
+                // Rojo muy frío
+                hue = 0.0;
+                saturation = 0.7;
+            }
+            else if (normalizedAmp < 0.25)
+            {
+                // Rojo a Naranja oscuro
+                hue = (normalizedAmp - 0.1) / 0.15 * 0.05; // 0.0 → 0.05
+                saturation = 0.7 + (normalizedAmp - 0.1) / 0.15 * 0.3; // 0.7 → 1.0
+            }
+            else if (normalizedAmp < 0.4)
+            {
+                // Naranja (color inicial esperado)
+                hue = 0.05 + (normalizedAmp - 0.25) / 0.15 * 0.05; // 0.05 → 0.10
+                saturation = 1.0;
+            }
+            else if (normalizedAmp < 0.55)
+            {
+                // Naranja a Amarillo
+                hue = 0.10 + (normalizedAmp - 0.4) / 0.15 * 0.10; // 0.10 → 0.20
+                saturation = 1.0;
+            }
+            else if (normalizedAmp < 0.7)
+            {
+                // Amarillo a Verde
+                hue = 0.20 + (normalizedAmp - 0.55) / 0.15 * 0.13; // 0.20 → 0.33
+                saturation = 1.0;
+            }
+            else if (normalizedAmp < 0.85)
+            {
+                // Verde a Cian  (transición a blanco)
+                hue = 0.33 + (normalizedAmp - 0.7) / 0.15 * 0.34; // 0.33 → 0.67
+                saturation = Math.Max(0.3, 1.0 - (normalizedAmp - 0.7) * 1.5); // Desatura hacia blanco
+            }
+            else
+            {
+                // Cian a Azul (plasma extremo)
+                hue = 0.67 + (normalizedAmp - 0.85) / 0.15 * 0.33; // 0.67 → 1.0
+                saturation = Math.Max(0.2, 1.0 - varianzaAmplitudes * 2);
+            }
+            
+            // Ajuste adicional basado en ratio de amplitudes (contribución mínima)
+            double hueFromRatio = Math.Min(1.0, Math.Max(0.0, (ratio - 1.0) / 9.0));
+            hue = Math.Min(1.0, hue * 0.95 + hueFromRatio * 0.05);
 
-            // Saturation basada en varianza (más varianza = colores más puros)
-            double saturation = Math.Min(1.0, varianzaAmplitudes * 2);
-
-            // Value (brillo) basado en amplitud máxima
-            double value = amplitudMaxima;
+            // Value (brillo) basado en amplitud máxima, normalizado entre 0 y 1
+            // Asumiendo que 1.0 ampliude máxima = brillo máximo, escalar cualquier valor mayor
+            double value = Math.Min(1.0, amplitudMaxima);
 
             // Convertir HSV a RGB
             return HsvToRgb(hue, saturation, value);

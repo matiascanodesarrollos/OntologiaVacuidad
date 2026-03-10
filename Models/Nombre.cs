@@ -1,6 +1,4 @@
 using System;
-using System.Collections.Generic;
-
 public class Nombre
 {
     public Guid Id { get; }
@@ -17,23 +15,26 @@ public class Nombre
         Texto = sustantivo;
     }
 
-    public List<Apariencia> BuscarSignificado(int maxProfundidad = 10)
+    /// <summary>
+    /// Modulacion FM
+    /// </summary>
+    /// <param name="frecuencia">La frecuencia a modular.</param>
+    /// <returns>La frecuencia modulada.</returns>
+    internal double Modular(double[] frecuencias)
     {
-        var resultado = new List<Apariencia>();
-        Nombre actual = this;
-        int profundidad = 0;
-        while (actual.Efecto.Esencia.Frecuencia != 0 && profundidad < maxProfundidad)
+        foreach (var frecuencia in frecuencias)
         {
-            actual.Efecto.Amplitud++;
-            resultado.Add(actual.Efecto);
-            actual = actual.Causa.Nombre;
-            profundidad++;
+            if(Math.Abs(Causa.Frecuencia - frecuencia) <= 1)
+            {
+                return frecuencia; // Modulación FM
+            }
         }
-        return resultado;
+
+        return 0.0;
     }
 
     public override string ToString()
     {
-        return $"Nombre: {Texto}, Naturaleza: {Naturaleza.Texto}, Fase: {Naturaleza.Fase:F2}";
+        return $"Nombre: {Texto}, Naturaleza: {Naturaleza.Texto}, Fase: {Naturaleza.Fase * (180 / Math.PI):F2}º, Frecuencia: {Causa.Frecuencia:F2} Hz.";
     }
 }

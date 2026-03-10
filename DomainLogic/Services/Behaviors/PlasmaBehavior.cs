@@ -107,9 +107,6 @@ namespace DomainLogic.Services.Behaviors
                                      + DrivingForce
                                      + couplingTerm;
 
-                            // Constrain amplitud al rango [0, 1]
-                            deriv[i] = Math.Max(-A[i] / dt, Math.Min(1.0 - A[i] / dt, deriv[i]));
-
                             // Evolución de fase: ω_i + nonlinear frequency shift
                             deriv[numSubcarriers + i] = frequencies[i] + A[i] * frequencies[i] * 0.5;
                         }
@@ -139,6 +136,12 @@ namespace DomainLogic.Services.Behaviors
                     // Actualizar estado desde y
                     Buffer.BlockCopy(y, 0, amplitudes, 0, numSubcarriers * sizeof(double));
                     Buffer.BlockCopy(y, numSubcarriers * sizeof(double), phases, 0, numSubcarriers * sizeof(double));
+                    
+                    // Constrain amplitudes al rango [0, 1]
+                    for (int i = 0; i < numSubcarriers; i++)
+                    {
+                        amplitudes[i] = Math.Clamp(amplitudes[i], 0.0, 1.0);
+                    }
                     
                     // Estadísticas del paso actual
                     double amplitudPromedio = amplitudes.Average();
