@@ -18,24 +18,28 @@ namespace DomainLogic.Services.EventHandlers
         private readonly IMediator _mediator;
         private readonly ILogger<SaturacionEventHandler> _logger;
         private readonly ServiceConfig _config;
+        private readonly IDesignacionQueue _designacionQueue;
         private readonly Random _random = new Random();
 
-        public SaturacionEventHandler(IMediator mediator, ILogger<SaturacionEventHandler> logger, ServiceConfig config)
+        public SaturacionEventHandler(IMediator mediator, ILogger<SaturacionEventHandler> logger, ServiceConfig config, IDesignacionQueue designacionQueue)
         {
             _mediator = mediator;
             _logger = logger;
             _config = config;
+            _designacionQueue = designacionQueue;
         }
 
         public async Task Handle(SaturacionEvent notification, CancellationToken cancellationToken)
         {
-            // Emitir evento de designación            
+            // Crear nueva designación y acumularla en la cola
             double delay = _config.MinDelaySeconds + _random.NextDouble() * (_config.MaxDelaySeconds - _config.MinDelaySeconds);
             await Task.Delay(TimeSpan.FromSeconds(delay));
             var nombreOriginal = notification.NombreOrigen;
             var nuevaDesignacion = Designacion.Designar(nombreOriginal, nombreOriginal.Efecto, nombreOriginal.Texto);
-            var designacionEvent = new DesignacionEvent(nuevaDesignacion, notification.Stack);
-            await _mediator.Publish(designacionEvent, cancellationToken);
+            
+            // En lugar de hacer push directo, agregar a la cola
+            _designacionQueue.Enqueue(nuevaDesignacion);
+            _logger.LogInformation($"[DESIGNACION-ENQUEUED] {nuevaDesignacion.Texto} (de Saturación en {nombreOriginal.Texto})");
         }
     }
 }
