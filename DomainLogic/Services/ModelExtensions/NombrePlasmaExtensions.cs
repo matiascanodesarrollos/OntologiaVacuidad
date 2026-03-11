@@ -8,7 +8,7 @@ namespace DomainLogic.Services.ModelExtensions
 {
     public static class NombrePlasmaExtensions
     {
-    public static Task<PlasmaRunResult> VibrarComoPlasma(
+        public static Task<PlasmaRunResult> VibrarComoPlasma(
             this Nombre nombre,
             IMediator mediator,
             ILogger logger,

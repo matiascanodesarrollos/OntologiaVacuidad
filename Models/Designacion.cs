@@ -53,39 +53,42 @@ public class Designacion
     }
 
     /// <summary>
-    /// Crea una nueva designación proyectando un significado existente sobre una apariencia, simula modulación FM s(f)=p(f+∫m(f)) sobre el significado y AM s(f)=p(f)*(1+m(f)) sobre la apariencia.
+    /// Crea una nueva designación proyectando un significado existente sobre una apariencia. 
+    /// La modulación FM s(f)=p(f+∫m(f)) sobre el significado es un ejemplo de cuando cambiamos el significado de un concepto basado en lo que vemos
+    /// La modulación AM s(f)=p(f)*(1+m(f)) sobre la apariencia es un ejemplo de como proyectar un concepto sobre algo puede cambiarlo.
     /// De esta manera se crean nuevas designaciones a partir de otras preexistentes, generando una red de significados interconectados.
-    /// Se asemeja a la creatividad humana, donde se toman conceptos existentes y se combinan para generar nuevos significados.
-    /// La modulación FM simula cómo el nuevo significado puede validar o no el significado proyectado dependiendo de su frecuencia, mientras que la modulación AM simula cómo la nueva designación puede tener más o menos fuerza dependiendo de la apariencia sobre la que se proyecta.
-    /// El resultado es una nueva designación que puede ser similar al significado original (si la modulación FM valida el significado proyectado) o completamente diferente (si no lo valida), y que puede tener una apariencia más o menos fuerte dependiendo de la modulación AM.
+    /// La modulación FM simula cómo el nuevo significado puede validar o no el significado proyectado dependiendo de su frecuencia.
+    /// La modulación AM simula cómo la nueva designación puede tener más o menos fuerza dependiendo de la apariencia sobre la que se proyecta.
+    /// El resultado es una nueva designación que puede ser similar al significado original (si la modulación FM valida el significado proyectado) 
+    /// o completamente diferente (si no lo valida), y que puede tener una apariencia más o menos fuerte dependiendo de la modulación AM.
     /// Esta función es fundamental para generar nuevas designaciones a partir de las existentes, permitiendo la evolución y expansión del sistema de designaciones a lo largo del tiempo.
     /// </summary>
     /// <param name="significado">El significado proyectado sobre la apariencia.</param>
-    /// <param name="apariencia">La apariencia asociada al significado base.</param>
+    /// <param name="apariencia">La apariencia asociada.</param>
     /// <param name="sustantivo">El sustantivo que define la nueva designación.</param>
-    /// <param name="frecuencia">Simula modulación AM s(f)=p(f)*(1+m(f)))</param>
-    /// <param name="fase">Simula modulación PM s(φ)=p(φ+m(φ)))</param>
+    /// <param name="frecuencia">La frecuencia que representa un nuevo significado, por ejemplo cuando un arquitecto diseña una casa</param>
+    /// <param name="fase">Simula modulación PM s(φ)=p(φ+m(φ))), que solo puede hacerce conociendo la vacuidad y permite crear nuevas apariencias estables</param>
     /// <returns>La nueva designación creada (con su Nombre/Palabra y su Apariencia).</returns>
     public static Designacion Designar(
         Nombre significado, 
         Apariencia apariencia, 
         string sustantivo, 
-        double? frecuencia = null, //Designar buscando crear un nuevo significado, por ejemplo cuando un arquitecto diseña una casa.
-        double? fase = null //Designar conociendo la vacuidad
+        double? frecuencia = null,
+        double? fase = null
     )
     {
-        var frecuenciaModulada = significado.Modular(apariencia.Significados.Select(c => c.Causa.Frecuencia).ToArray()); //Modulación FM s(f)=p(f+∫m(f))
-        apariencia.Modular(significado, frecuencia); //Modulación AM s(f)=p(f)*(1+m(f)))
+        var frecuenciaModulada = significado.Modular(apariencia.Significados.Select(c => c.Causa.Frecuencia).ToArray()); //Modulación FM
+        apariencia.Modular(significado, frecuencia); //Modulación AM
 
         var faseModulada = significado.Naturaleza.Fase;
         if(fase.HasValue)
         {
-            faseModulada = significado.Naturaleza.Modular(fase.Value);
+            faseModulada = significado.Naturaleza.Modular(fase.Value); //Modulación PM
         }
 
         var nuevaDesignacion = Imaginar(significado.Naturaleza.Texto, 
             sustantivo,
-            $"Parecer {sustantivo}/{significado.Causa.Texto}",
+            $"Parecer {sustantivo}/{significado.Texto}",
             frecuenciaModulada > 0 ? frecuenciaModulada : apariencia.Esencia.Frecuencia,
             faseModulada);
         nuevaDesignacion.Nombre.Causa = apariencia.Esencia;
