@@ -29,8 +29,8 @@ namespace DomainLogic.Services.Plasma
             int desapariciones = 0;
             RgbColor? lastLoggedFieldColor = null;
 
-            // Amplitud inicial simple
-            double amplitude = 0.11;
+            // Amplitud inicial dependiente de la apariencia del nombre
+            double amplitude = nombre.Efecto.Amplitud / 55; // Normalizar a un rango inicial razonable
             
             const int steps = 120;
             const double dt = 0.04;

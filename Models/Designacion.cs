@@ -96,12 +96,7 @@ public class Designacion
 
         return nuevaDesignacion;
     }
-
-    public List<Nombre> BuscarSignificado(int profundidad = 5)
-    {
-        return Apariencia.Significados.TakeLast(profundidad).ToList();
-    }
-
+    
     public override string ToString()
     {
         var resultado = new StringBuilder();
