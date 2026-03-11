@@ -19,12 +19,7 @@ public class Palabra
     /// <returns>La fase modulada.</returns>
     internal double Modular(double fase)
     {
-        if(Math.Abs(Fase - fase) <= 0.1)
-        {
-            return Normalizar(Fase + fase); // Modulación PM
-        }
-
-        return Fase;
+        return Normalizar(Fase + fase); // Modulación PM
     }
 
     private double Normalizar(double fase)

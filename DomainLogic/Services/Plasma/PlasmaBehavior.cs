@@ -13,6 +13,7 @@ namespace DomainLogic.Services.Plasma
         private const double DesaparicionThreshold = 0.1;
         private const double Damping = 0.02;
         private const double DrivingForce = 1.80;
+        private const double DecayRate = 0.00005;
 
         public async Task<PlasmaRunResult> ExecuteAsync(
             Nombre nombre,
@@ -49,6 +50,9 @@ namespace DomainLogic.Services.Plasma
                     amplitude * Math.Exp(growthRate * dt), 
                     0.0, 
                     1.0);
+
+                // Aplicar decaimiento exponencial con respecto al tiempo
+                amplitude *= Math.Exp(-DecayRate * step * dt);
 
                 // Actualizar el campo compartido con esta amplitud
                 field.Update(amplitude, amplitude);

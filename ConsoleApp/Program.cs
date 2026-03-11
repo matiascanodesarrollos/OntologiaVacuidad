@@ -31,7 +31,7 @@ namespace ConsoleApp
             try
             {
                 int iterationCount = 0;
-                const int MaxIterations = 200; // Allow more iterations for full color progression
+                const int MaxIterations = 20;
                 
                 while (pendientes.Count > 0 && iterationCount < MaxIterations)
                 {
