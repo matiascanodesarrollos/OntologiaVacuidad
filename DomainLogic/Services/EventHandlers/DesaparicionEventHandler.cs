@@ -16,7 +16,7 @@ namespace DomainLogic.Services.EventHandlers
         private readonly IMediator _mediator;
         private readonly ILogger<DesaparicionEventHandler> _logger;
         private readonly ServiceConfig _config;
-        private readonly Random _random = new Random();
+        private static readonly Random _random = new Random();
 
         public DesaparicionEventHandler(IMediator mediator, ILogger<DesaparicionEventHandler> logger, ServiceConfig config)
         {

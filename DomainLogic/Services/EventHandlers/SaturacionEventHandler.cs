@@ -16,7 +16,7 @@ namespace DomainLogic.Services.EventHandlers
         private readonly IMediator _mediator;
         private readonly ILogger<SaturacionEventHandler> _logger;
         private readonly ServiceConfig _config;
-        private readonly Random _random = new Random();
+        private static readonly Random _random = new Random();
 
         public SaturacionEventHandler(IMediator mediator, ILogger<SaturacionEventHandler> logger, ServiceConfig config)
         {

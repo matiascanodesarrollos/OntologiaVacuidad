@@ -18,7 +18,7 @@ public class Apariencia
         };
     }
 
-    private readonly Random _random = new Random();
+    private static readonly Random _random = new Random();
 
     internal Apariencia(Designacion esencia, Nombre causa)
     {
