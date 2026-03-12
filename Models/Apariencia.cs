@@ -18,8 +18,8 @@ public class Apariencia
         };
     }
 
-    private readonly object _sync = new object();
-    private static readonly Random _random = new Random(); //No se puede usar Random.Shared en .NET standard 2.0
+    private static readonly object _sync = new object();
+    private static readonly Random _random = new Random(); // No se puede usar Random.Shared porque la API no está disponible en netstandard2.1
 
     internal Apariencia(Designacion esencia, Nombre causa)
     {

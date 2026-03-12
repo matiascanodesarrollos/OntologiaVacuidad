@@ -8,7 +8,7 @@ namespace DomainLogic.Services
     {
         public static List<Designacion> PilotosOfdmFrame { get; private set; } = new List<Designacion>();
         public static List<Designacion> SubPilotosOfdmFrame { get; private set; } = new List<Designacion>();
-        public static Designacion CrearAmbiente(ILogger logger)
+        public static Designacion CrearAmbiente()
         {
             var frecuenciaBase = 1000000;
             var espacio = Designacion.Imaginar("Esencial", "Espacio", "Ser", 0, 0);

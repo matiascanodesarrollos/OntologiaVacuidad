@@ -22,7 +22,7 @@ namespace ConsoleApp
             var logger = serviceProvider.GetRequiredService<ILogger<Program>>();
             var mediator = serviceProvider.GetRequiredService<IMediator>();
             var designacionQueue = serviceProvider.GetRequiredService<IDesignacionQueue>();
-            var designacion = AmbienteConfig.CrearAmbiente(logger);
+            var designacion = AmbienteConfig.CrearAmbiente();
             
             logger.LogInformation("═══ INICIANDO VIBRACIÓN ═══\n");
             var pendientes = new List<Designacion> { designacion };

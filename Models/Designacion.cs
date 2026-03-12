@@ -67,7 +67,7 @@ public class Designacion
     /// <param name="apariencia">La apariencia asociada.</param>
     /// <param name="sustantivo">El sustantivo que define la nueva designación.</param>
     /// <param name="frecuencia">La frecuencia que representa un nuevo significado, por ejemplo cuando un arquitecto diseña una casa</param>
-    /// <param name="fase">Simula modulación PM s(φ)=p(φ+m(φ))), que solo puede hacerce conociendo la vacuidad y permite alterar apariencias de forma estable</param>
+    /// <param name="fase">Simula modulación PM s(φ)=p(φ+m(φ))), que solo puede hacerse conociendo la vacuidad y permite alterar apariencias de forma estable</param>
     /// <returns>La nueva designación creada (con su Nombre/Palabra y su Apariencia).</returns>
     public static Designacion Designar(
         Nombre significado, 
@@ -97,7 +97,7 @@ public class Designacion
             frecuenciaModulada,
             faseModulada); //Creo la nueva esencia
         //Creo la nueva naturaleza
-        nuevaDesignacion.Nombre.Causa = apariencia.Esencia; //Si apariencia desapareciera, el nombre se vueve naturaleza porque ya no tiene causa
+        nuevaDesignacion.Nombre.Causa = apariencia.Esencia; //Si apariencia desapareciera, el nombre se vuelve naturaleza porque ya no tiene causa
         nuevaDesignacion.Nombre.Efecto = nuevaDesignacion.Apariencia;
 
         return nuevaDesignacion;
