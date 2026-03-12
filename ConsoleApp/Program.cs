@@ -40,7 +40,7 @@ namespace ConsoleApp
                     pendientes.RemoveAt(pendientes.Count - 1);
                     logger.LogInformation($"[STACK] Iteration={iterationCount} | Designacion={designacionActual} | pendiente={pendientes.Count}");
 
-                    var causas = designacionActual.Apariencia.Significados;
+                    var causas = designacionActual.Apariencia.Naturalezas;
                     for (int i = 0; i < causas.Count; i++)
                     {
                         var causa = causas[i];

@@ -14,12 +14,7 @@ public class Nombre
         Efecto = efecto;
         Texto = sustantivo;
     }
-
-    /// <summary>
-    /// Simula modulacion FM s(f)=p(f+∫m(f))
-    /// </summary>
-    /// <param name="frecuencias">Las frecuencias historicas para simular la integral.</param>
-    /// <returns>La frecuencia modulada.</returns>
+    
     internal double Modular(double[] frecuencias)
     {
         foreach (var frecuencia in frecuencias)

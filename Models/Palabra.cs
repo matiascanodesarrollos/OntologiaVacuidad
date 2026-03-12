@@ -2,7 +2,7 @@ using System;
 public class Palabra
 {
     public Guid Id { get; }
-    public double Fase { get; }
+    public double Fase { get; private set; }
     public string Texto { get; }
 
     internal Palabra(string texto, double fase)
@@ -11,15 +11,11 @@ public class Palabra
         Texto = texto;
         Fase = Normalizar(fase);
     }
-
-    /// <summary>
-    /// Simula modulación PM s(φ)=p(φ+m(φ)))
-    /// </summary>
-    /// <param name="fase">La fase a modular.</param>
-    /// <returns>La fase modulada.</returns>
+    
     internal double Modular(double fase)
     {
-        return Normalizar(Fase + fase); // Modulación PM
+        Fase = Normalizar(Fase + fase);
+        return Fase; // Modulación PM
     }
 
     private double Normalizar(double fase)

@@ -5,14 +5,14 @@ public class Apariencia
 {
     public Guid Id { get; }
     public Designacion Esencia { get; }
-    public List<Nombre> Significados { get; }
-    public double Amplitud { get => Significados.Count; }
+    public List<Nombre> Naturalezas { get; }
+    public double Amplitud { get => Naturalezas.Count; }
     public IEnumerable<string> EnteDesignado {  get => new List<string>
         {
-            $"Naturaleza: {Significados.First().Naturaleza.Texto}",
-            $"Causa: {Significados.Last().Texto}",            
+            $"Naturaleza: {Naturalezas.First().Naturaleza.Texto}",
+            $"Causa: {Naturalezas.Last().Texto}",            
             $"Frecuencia: {Esencia.Frecuencia:F2}",
-            $"Fase: {Significados.Last().Naturaleza.Fase * (180 / Math.PI):F2}°",
+            $"Fase: {Naturalezas.Last().Naturaleza.Fase * (180 / Math.PI):F2}°",
             $"Amplitud: {Amplitud:F2}",
             $"Efecto: {Esencia.Texto}",
         };
@@ -24,15 +24,9 @@ public class Apariencia
     {
         Id = Guid.NewGuid();
         Esencia = esencia;
-        Significados = new List<Nombre> { causa };
+        Naturalezas = new List<Nombre> { causa };
     }
 
-    /// <summary>
-    /// Simula modulación AM s(f)=p(f)*(1+m(f)))
-    /// </summary>
-    /// <param name="nombreProyectado">El nombre proyectado sobre la apariencia.</param>
-    /// <param name="frecuenciaArmonica">Si no es nulo, fuerza la modulación.</param>
-    /// <returns>La frecuencia modulada.</returns>
     internal double Modular(Nombre nombreProyectado, double? frecuenciaArmonica = null)
     {
         if(frecuenciaArmonica.HasValue || _random.NextDouble() < 0.1) // modulación forzada o 10% de probabilidad de validar aunque no coincida el significado 
@@ -45,7 +39,7 @@ public class Apariencia
             return Aparentar(nuevoNombre.Nombre);
         }
 
-        if(Significados.Any(c => Math.Abs(nombreProyectado.Causa.Frecuencia - c.Causa.Frecuencia) <= 1))
+        if(Naturalezas.Any(c => Math.Abs(nombreProyectado.Causa.Frecuencia - c.Causa.Frecuencia) <= 1))
         {
             return Aparentar(nombreProyectado);
         }
@@ -55,9 +49,9 @@ public class Apariencia
 
     private double Aparentar(Nombre nombreProyectado)
     {
-        if(!Significados.Any(c => c.Id == nombreProyectado.Id))
+        if(!Naturalezas.Any(c => c.Id == nombreProyectado.Id))
         {
-            Significados.Add(nombreProyectado);
+            Naturalezas.Add(nombreProyectado);
         }
 
         return Esencia.Frecuencia * (1 + nombreProyectado.Causa.Frecuencia);

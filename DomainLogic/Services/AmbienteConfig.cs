@@ -11,8 +11,8 @@ namespace DomainLogic.Services
         public static Designacion CrearAmbiente(ILogger logger)
         {
             var frecuenciaBase = 1000000;
-            var espacio = Designacion.Imaginar("Estado", "Espacio", "Estar", 0, 0);
-            var tiempo = Designacion.Imaginar("Parecido", "Tiempo", "Parecer", frecuenciaBase, Math.PI);
+            var espacio = Designacion.Imaginar("Esencial", "Espacio", "Ser", 0, 0);
+            var tiempo = Designacion.Imaginar("Estado", "Tiempo", "Estar", frecuenciaBase, Math.PI);
             var mente = Designacion.Designar(espacio.Nombre, tiempo.Apariencia, "Mente", frecuenciaBase);
 
             var elementoTierra = Designacion.Imaginar("Solida", "Tierra", "Permanecer", frecuenciaBase + 2, 0);
@@ -20,8 +20,8 @@ namespace DomainLogic.Services
             var elementoAire = Designacion.Imaginar("Gaseoso", "Aire", "Mover", frecuenciaBase + 1, Math.PI);
             var elementoFuego = Designacion.Imaginar("Caliente", "Fuego", "Plasmar", frecuenciaBase - 2, 3 * Math.PI / 2);
         
-            var yo = Designacion.Imaginar("Frío", "Yo", "Ser", frecuenciaBase, Math.PI / 2);
-            var espacioTiempo = Designacion.Designar(yo.Nombre, mente.Apariencia, "Espacio-Tiempo", frecuenciaBase);
+            var apariencia = Designacion.Imaginar("Fría", "Apariencia", "Parecer", frecuenciaBase, Math.PI / 2);
+            var espacioTiempo = Designacion.Designar(apariencia.Nombre, mente.Apariencia, "Espacio-Tiempo", frecuenciaBase);
             var liquido = Designacion.Designar(elementoAgua.Nombre, mente.Apariencia, "Líquido", frecuenciaBase/10000, Math.PI);
             var solido = Designacion.Designar(elementoTierra.Nombre, mente.Apariencia, "Sólido", frecuenciaBase/10000);
             var gas = Designacion.Designar(elementoAire.Nombre, mente.Apariencia, "Gas", frecuenciaBase/1000);
