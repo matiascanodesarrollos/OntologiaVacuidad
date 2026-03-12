@@ -11,9 +11,9 @@ public class DesignacionEventHandler : INotificationHandler<DesignacionEvent>
         _designacionQueue = designacionQueue;
     }
 
-    public async Task Handle(DesignacionEvent notification, CancellationToken cancellationToken)
+    public Task Handle(DesignacionEvent notification, CancellationToken cancellationToken)
     {
         _designacionQueue.Enqueue(notification.NuevaDesignacion);
-        await Task.CompletedTask;
+        return Task.CompletedTask;
     }
 }

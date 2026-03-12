@@ -18,7 +18,8 @@ public class Apariencia
         };
     }
 
-    private static readonly Random _random = new Random();
+    private readonly object _sync = new object();
+    private static readonly Random _random = new Random(); //No se puede usar Random.Shared en .NET standard 2.0
 
     internal Apariencia(Designacion esencia, Nombre causa)
     {
@@ -29,7 +30,13 @@ public class Apariencia
 
     internal double Modular(Nombre nombreProyectado, double? frecuenciaArmonica = null)
     {
-        if(frecuenciaArmonica.HasValue || _random.NextDouble() < 0.1) // modulación forzada o 10% de probabilidad de validar aunque no coincida el significado 
+        var validacionRandom = false;
+        lock (_sync)
+        {
+            validacionRandom = _random.NextDouble() < 0.1; // 10% de probabilidad de validar aunque no coincida el significado            
+        }
+
+        if(frecuenciaArmonica.HasValue || validacionRandom) // modulación forzada
         {
             var nuevoNombre = Designacion.Imaginar(nombreProyectado.Naturaleza.Texto, 
                 nombreProyectado.Texto, 
@@ -37,7 +44,7 @@ public class Apariencia
                 frecuenciaArmonica ?? nombreProyectado.Causa.Frecuencia,
                 nombreProyectado.Naturaleza.Fase);
             return Aparentar(nuevoNombre.Nombre);
-        }
+        }        
 
         if(Naturalezas.Any(c => Math.Abs(nombreProyectado.Causa.Frecuencia - c.Causa.Frecuencia) <= 1))
         {

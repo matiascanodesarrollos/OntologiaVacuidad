@@ -17,7 +17,7 @@ namespace DomainLogic.Services.Plasma
             }
         }
 
-        public void Update(double avgAmplitude, double maxAmplitude)
+        public void Update(double maxAmplitude)
         {
             lock (_sync)
             {

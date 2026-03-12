@@ -55,7 +55,7 @@ namespace DomainLogic.Services.Plasma
                 amplitude *= Math.Exp(-DecayRate * step * dt);
 
                 // Actualizar el campo compartido con esta amplitud
-                field.Update(amplitude, amplitude);
+                field.Update(amplitude);
 
                 if (step % 4 == 0)
                 {
