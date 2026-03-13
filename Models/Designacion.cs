@@ -1,10 +1,11 @@
 using System;
+using System.Linq;
 using System.Text;
 
 public class Designacion
 {
     public Guid Id { get; }    
-    public string Verbo { get; }
+    public string Texto { get; }
     public Nombre Nombre { get; private set; }
     public Apariencia Apariencia { get; private set; }    
     public double Frecuencia { get; internal set; }
@@ -14,15 +15,15 @@ public class Designacion
         Id = Guid.NewGuid();
         Nombre = nombre;
         Apariencia = apariencia;
-        Verbo = verbo;        
+        Texto = verbo;        
         Frecuencia = frecuencia;
     }
 
 
     /// <summary>
-    /// Crea una nueva designación imaginando un nuevo significado a partir de un adjetivo, un sustantivo y un verbo, junto con su fase y frecuencia.
+    /// Crea una esencia o nueva designación imaginando un nuevo significado para un adjetivo, un sustantivo y un verbo, junto con su fase y frecuencia.
     /// De esta manera se crea una onda portadora que puede ser modulada posteriormente para crear nuevas designaciones a partir de esta.
-    /// Se asemeja a la modulación PM [s(φ)=p(φ+m(φ))].
+    /// Se asemeja a la modulación PM [s(φ)=p(φ+m(φ))] en el sentido de crear un "foton" de frecuencia y fase, que luego puede ser modulado por otras designaciones para generar nuevos significados.
     /// </summary>
     /// <param name="adjetivo">Permite derivar la fase</param>
     /// <param name="nombre">Permite derivar la frecuencia</param>
@@ -38,12 +39,13 @@ public class Designacion
         double fase)
     {
         var designacion = new Designacion(null, null, verbo, frecuencia);
-        var nuevoNombre = new Nombre(nombre, new Palabra(adjetivo, fase), null);
+        var nuevaPalabra = new Palabra(adjetivo, fase);
+        var nuevoNombre = new Nombre(nombre, nuevaPalabra, null);
         var nuevaApariencia = new Apariencia(designacion, nuevoNombre);
 
+        //Creo la nueva esencia, la designación y la apariencia se vuelven inseparables por lo tanto siempre aparecen y desaparecen juntas
         designacion.Nombre = nuevoNombre;
         designacion.Apariencia = nuevaApariencia;
-
         nuevoNombre.Causa = designacion;
         nuevoNombre.Efecto = nuevaApariencia;
 
@@ -51,39 +53,51 @@ public class Designacion
     }
 
     /// <summary>
-    /// Crea una nueva designación proyectando un significado existente sobre una apariencia
+    /// Crea una naturaleza o nueva designación proyectando un significado existente sobre una apariencia. 
+    /// La modulación FM s(f)=p(f+∫m(f)) sobre el significado es un ejemplo de cuando cambiamos el significado de un concepto basado en lo que vemos
+    /// La modulación AM s(f)=p(f)*(1+m(f)) sobre la apariencia es un ejemplo de como proyectar un concepto sobre algo puede cambiarlo.
+    /// De esta manera se crean nuevas designaciones a partir de otras preexistentes, generando una red de significados interconectados.
+    /// La modulación FM simula cómo el nuevo significado puede validar o no el significado proyectado dependiendo de su frecuencia.
+    /// La modulación AM simula cómo la nueva designación puede tener más o menos fuerza dependiendo de la apariencia sobre la que se proyecta.
+    /// El resultado es una nueva designación que puede ser similar al significado original (si la modulación FM valida el significado proyectado) 
+    /// o completamente diferente (si no lo valida), y que puede tener una apariencia más o menos fuerte dependiendo de la modulación AM.
+    /// Esta función es fundamental para generar nuevas designaciones a partir de las existentes, permitiendo la evolución y expansión del sistema de designaciones a lo largo del tiempo.
     /// </summary>
     /// <param name="significado">El significado proyectado sobre la apariencia.</param>
-    /// <param name="apariencia">La apariencia asociada al significado base.</param>
+    /// <param name="apariencia">La apariencia asociada.</param>
     /// <param name="sustantivo">El sustantivo que define la nueva designación.</param>
-    /// <param name="frecuencia">Permite modular estilo FM[s(f)=p(f+∫m(f))]</param>
-    /// <param name="fase">Permite modular estilo AM[s(φ)=p(φ)*(1+m(φ)))]</param>
+    /// <param name="frecuencia">La frecuencia que representa un nuevo significado, por ejemplo cuando un arquitecto diseña una casa</param>
+    /// <param name="fase">Simula modulación PM s(φ)=p(φ+m(φ))), que solo puede hacerse conociendo la vacuidad y permite alterar apariencias de forma estable</param>
     /// <returns>La nueva designación creada (con su Nombre/Palabra y su Apariencia).</returns>
     public static Designacion Designar(
         Nombre significado, 
         Apariencia apariencia, 
         string sustantivo, 
-        double? frecuencia = null, //Designar buscando crear un nuevo significado, por ejemplo cuando un arquitecto diseña una casa.
-        double? fase = null //Designar conociendo la vacuidad, se controla por completo como interactua la nueva designación con la base y por lo tanto su apariencia.
+        double? frecuencia = null,
+        double? fase = null
     )
     {
-        var frecuenciaModulada = apariencia.Esencia.Frecuencia + 1; //Se asume una frecuencia muy cercana para que las ondas interactuen.
-        if (frecuencia.HasValue)
+        var frecuenciaModulada = significado.Modular(apariencia.Naturalezas.Select(c => c.Causa.Frecuencia).ToArray()); //Modulación FM
+        apariencia.Modular(significado, frecuencia); //Modulación AM
+        if(frecuenciaModulada == 0)
         {
-            frecuenciaModulada = significado.Causa.Frecuencia * frecuencia.Value; // ∫m(f)df ≈ m(f) * Δf (aproximación de la integral)
+            frecuenciaModulada = apariencia.Esencia.Frecuencia; //Cuando el significado proyectado no se valida la apariencia domina
         }
 
-        var faseModulada = !fase.HasValue 
-            ? apariencia.Causa.Naturaleza.Fase + Math.PI / 2 //Se asume desfase de 90º para evitar interferencia y permitir que interactuen.
-            : apariencia.Causa.Naturaleza.Fase * (1 + fase.Value); // Modulación AM
-        faseModulada %= 2 * Math.PI;
+        var naturalezaApariencia = apariencia.Esencia.Nombre.Naturaleza;
+        var faseModulada = naturalezaApariencia.Fase;
+        if(fase.HasValue)
+        {
+            faseModulada = naturalezaApariencia.Modular(fase.Value); //Modulación PM
+        }
 
-        var nuevaDesignacion = Imaginar(significado.Naturaleza.Texto, 
+        var nuevaDesignacion = Imaginar(naturalezaApariencia.Texto, 
             sustantivo,
-            $"Parecer {sustantivo}/{significado.Causa.Verbo}",
+            $"Parecer {sustantivo}/{apariencia.Esencia.Texto}",
             frecuenciaModulada,
-            faseModulada);
-        nuevaDesignacion.Nombre.Causa = apariencia.Esencia;
+            faseModulada); //Creo la nueva esencia
+        //Creo la nueva naturaleza
+        nuevaDesignacion.Nombre.Causa = apariencia.Esencia; //Si apariencia desapareciera, el nombre se vuelve naturaleza porque ya no tiene causa
         nuevaDesignacion.Nombre.Efecto = nuevaDesignacion.Apariencia;
 
         return nuevaDesignacion;
@@ -93,11 +107,15 @@ public class Designacion
     {
         var resultado = new StringBuilder();
         resultado.AppendLine("═══ Designación ═══");
-        var apariencias = Nombre.BuscarSignificado();
-        foreach (var apariencia in apariencias)
+        foreach (var causa in Apariencia.Naturalezas)
         {
-            resultado.AppendLine(apariencia.ToString());
+            if(causa.Causa.Frecuencia == 0)
+            {
+                break;
+            }
+            resultado.AppendLine(causa.ToString());
         }
+        resultado.AppendLine("═══ Fin ═══");
         return resultado.ToString();
     }
 

@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using System.Threading;
 using System;
 using Microsoft.Extensions.Logging;
-using System.Linq;
 
 namespace DomainLogic.Services.EventHandlers
 {
@@ -17,6 +16,7 @@ namespace DomainLogic.Services.EventHandlers
         private readonly IMediator _mediator;
         private readonly ILogger<DesaparicionEventHandler> _logger;
         private readonly ServiceConfig _config;
+        private static readonly Random _random = Random.Shared;
 
         public DesaparicionEventHandler(IMediator mediator, ILogger<DesaparicionEventHandler> logger, ServiceConfig config)
         {
@@ -27,18 +27,20 @@ namespace DomainLogic.Services.EventHandlers
 
         public async Task Handle(DesaparicionEvent notification, CancellationToken cancellationToken)
         {
-            // Emitir evento de designación            
-            double delay = _config.MinDelaySeconds + new Random().NextDouble() * (_config.MaxDelaySeconds - _config.MinDelaySeconds);
-            await Task.Delay(TimeSpan.FromSeconds(delay));
-            var nombre = notification.NombreOrigen;
-            var apariencia = nombre.BuscarSignificado(1).First();
-            var nuevaDesignacion = Designacion.Designar(apariencia.Causa, nombre.Causa.Apariencia, nombre.Texto, 0.5);
-            var designacionEvent = new DesignacionEvent(nuevaDesignacion);
-            lock (ServiceConfig.LogLock)
-            {
-                _logger.LogInformation($"Nueva designacion por desaparición de {notification.NombreOrigen.Texto}.");                
-            }
-            await _mediator.Publish(designacionEvent, cancellationToken);            
+            double delay = _config.MinDelaySeconds + _random.NextDouble() * (_config.MaxDelaySeconds - _config.MinDelaySeconds);
+            await Task.Delay(TimeSpan.FromSeconds(delay), cancellationToken);
+            var nombreOriginal = notification.NombreOrigen;
+            var nuevaDesignacionProyectada = Designacion.Imaginar(nombreOriginal.Naturaleza.Texto, 
+                nombreOriginal.Texto, 
+                nombreOriginal.Causa.Texto,
+                nombreOriginal.Causa.Frecuencia + _random.Next(2), // 50% de probabilidad de no encontrarlo
+                nombreOriginal.Naturaleza.Fase);
+            var nuevoNombre = Math.Abs(nuevaDesignacionProyectada.Frecuencia - nombreOriginal.Causa.Frecuencia) <= 1
+                ? nombreOriginal
+                : nuevaDesignacionProyectada.Nombre; 
+            var nuevaDesignacion = Designacion.Designar(nuevoNombre, nombreOriginal.Efecto, nombreOriginal.Texto);
+            await _mediator.Publish(new DesignacionEvent(nuevaDesignacion, null), cancellationToken);
+            _logger.LogInformation($"[DESIGNACION-ENQUEUED] {nuevaDesignacion.Texto} (de Desaparición en {nombreOriginal.Texto})");
         }
     }
 }

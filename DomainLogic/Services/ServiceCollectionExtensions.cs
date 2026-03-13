@@ -14,8 +14,8 @@ namespace DomainLogic.Services
                 configure.AddFile($"Logs/{DateTime.Now:yyyyMMdd_HHmmss}-vibracion.log");
             });
             services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(ServiceCollectionExtensions).Assembly));
-            services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblyContaining<OscillatorSignal>());
             services.AddSingleton<ServiceConfig>();
+            services.AddSingleton<IDesignacionQueue, DesignacionQueue>();
             return services;
         }
     }

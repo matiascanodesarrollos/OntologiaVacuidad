@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using System.Threading;
 using System;
 using Microsoft.Extensions.Logging;
-using System.Linq;
 
 namespace DomainLogic.Services.EventHandlers
 {
@@ -17,6 +16,7 @@ namespace DomainLogic.Services.EventHandlers
         private readonly IMediator _mediator;
         private readonly ILogger<SaturacionEventHandler> _logger;
         private readonly ServiceConfig _config;
+        private static readonly Random _random = Random.Shared;
 
         public SaturacionEventHandler(IMediator mediator, ILogger<SaturacionEventHandler> logger, ServiceConfig config)
         {
@@ -27,17 +27,12 @@ namespace DomainLogic.Services.EventHandlers
 
         public async Task Handle(SaturacionEvent notification, CancellationToken cancellationToken)
         {
-            // Emitir evento de designación con delay aleatorio
-            double delay = _config.MinDelaySeconds + new Random().NextDouble() * (_config.MaxDelaySeconds - _config.MinDelaySeconds);
-            await Task.Delay(TimeSpan.FromSeconds(delay));
-            var nombre = notification.NombreOrigen;
-            var nuevaDesignacion = Designacion.Designar(nombre, nombre.Causa.Apariencia, nombre.Texto);
-            var designacionEvent = new DesignacionEvent(nuevaDesignacion);
-            lock (ServiceConfig.LogLock)
-            {
-                _logger.LogInformation($"Nueva designacion por saturación: {notification.NombreOrigen.Texto}.");
-            }            
-            await _mediator.Publish(designacionEvent, cancellationToken);
+            double delay = _config.MinDelaySeconds + _random.NextDouble() * (_config.MaxDelaySeconds - _config.MinDelaySeconds);
+            await Task.Delay(TimeSpan.FromSeconds(delay), cancellationToken);
+            var nombreOriginal = notification.NombreOrigen;
+            var nuevaDesignacion = Designacion.Designar(nombreOriginal, nombreOriginal.Efecto, nombreOriginal.Texto);
+            await _mediator.Publish(new DesignacionEvent(nuevaDesignacion, null), cancellationToken);
+            _logger.LogInformation($"[DESIGNACION-ENQUEUED] {nuevaDesignacion.Texto} (de Saturación en {nombreOriginal.Texto})");
         }
     }
 }
