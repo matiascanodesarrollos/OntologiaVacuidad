@@ -14,8 +14,12 @@ public class Palabra
     
     internal double Modular(double fase)
     {
-        Fase = Normalizar(Fase + fase);
-        return Fase; // Modulación PM
+        if(Fase != fase)
+        {
+            Fase = Normalizar(Fase + fase); // Modulación PM, simula la suma de fases en la función de onda portadora
+        }
+        
+        return Fase;
     }
 
     private double Normalizar(double fase)

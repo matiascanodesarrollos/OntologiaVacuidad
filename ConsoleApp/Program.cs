@@ -7,6 +7,7 @@ using DomainLogic.Services;
 using System.Collections.Generic;
 using DomainLogic.Services.ModelExtensions;
 using DomainLogic.Services.Plasma;
+using System.Linq;
 
 namespace ConsoleApp
 {
@@ -40,11 +41,11 @@ namespace ConsoleApp
                     pendientes.RemoveAt(pendientes.Count - 1);
                     logger.LogInformation($"[STACK] Iteration={iterationCount} | Designacion={designacionActual} | pendiente={pendientes.Count}");
 
-                    var causas = designacionActual.Apariencia.Naturalezas;
+                    var causas = designacionActual.Apariencia.Naturalezas.ToList();
                     for (int i = 0; i < causas.Count; i++)
                     {
                         var causa = causas[i];
-                        _ = await causa.VibrarComoPlasma(mediator, logger, interactionField);
+                        await causa.VibrarComoPlasma(mediator, logger, interactionField);
                     }
 
                     // Después de procesar TODAS las causas, agregar las nuevas designaciones encoladas
