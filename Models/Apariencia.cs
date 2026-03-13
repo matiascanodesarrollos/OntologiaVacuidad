@@ -5,8 +5,9 @@ public class Apariencia
 {
     public Guid Id { get; }
     public Designacion Esencia { get; }
-    public List<Nombre> Naturalezas { get; }
-    public double Amplitud { get => Naturalezas.Count; }
+    public IEnumerable<Nombre> Naturalezas => _naturalezas;
+    private List<Nombre> _naturalezas;
+    public double Amplitud { get => Naturalezas.Count(); }
     public IEnumerable<string> EnteDesignado {  get => new List<string>
         {
             $"Naturaleza: {Naturalezas.First().Naturaleza.Texto}",
@@ -18,33 +19,26 @@ public class Apariencia
         };
     }
 
-    private static readonly object _sync = new object();
-    private static readonly Random _random = new Random(); // No se puede usar Random.Shared porque la API no está disponible en netstandard2.1
+    private static readonly Random _random = new Random(); // La probabilidad que busco obtener no es crítica por lo que no importa manejar multiples hilos
 
     internal Apariencia(Designacion esencia, Nombre causa)
     {
         Id = Guid.NewGuid();
         Esencia = esencia;
-        Naturalezas = new List<Nombre> { causa };
+        _naturalezas = new List<Nombre> { causa };
     }
 
-    internal double Modular(Nombre nombreProyectado, double? frecuenciaArmonica = null)
+    internal double Modular(Nombre nombreProyectado, double? frecuenciaForzada = null)
     {
-        var validacionRandom = false;
-        lock (_sync)
+        if(frecuenciaForzada.HasValue || _random.NextDouble() < 0.1) // 10% de probabilidad de validar aunque no coincida el significado
         {
-            validacionRandom = _random.NextDouble() < 0.1; // 10% de probabilidad de validar aunque no coincida el significado            
-        }
-
-        if(frecuenciaArmonica.HasValue || validacionRandom) // modulación forzada
-        {
-            var nuevoNombre = Designacion.Imaginar(nombreProyectado.Naturaleza.Texto, 
-                nombreProyectado.Texto, 
+            var nuevoDesignacion = Designacion.Crear(Esencia.Nombre.Texto, 
                 Esencia.Texto,
-                frecuenciaArmonica ?? nombreProyectado.Causa.Frecuencia,
+                Esencia.Nombre.Naturaleza.Texto,
+                frecuenciaForzada ?? nombreProyectado.Causa.Frecuencia,
                 nombreProyectado.Naturaleza.Fase);
-            return Aparentar(nuevoNombre.Nombre);
-        }        
+            return Aparentar(nuevoDesignacion.Nombre);
+        }
 
         if(Naturalezas.Any(c => Math.Abs(nombreProyectado.Causa.Frecuencia - c.Causa.Frecuencia) <= 1))
         {
@@ -56,11 +50,12 @@ public class Apariencia
 
     private double Aparentar(Nombre nombreProyectado)
     {
-        if(!Naturalezas.Any(c => c.Id == nombreProyectado.Id))
+        if(!_naturalezas.Any(c => c.Id == nombreProyectado.Id))
         {
-            Naturalezas.Add(nombreProyectado);
+            _naturalezas.Add(nombreProyectado);
         }
 
+        //Modulación AM, simula la multiplicación de la función de onda portadora por el mensaje
         return Esencia.Frecuencia * (1 + nombreProyectado.Causa.Frecuencia);
     }
     public override string ToString()
