@@ -12,7 +12,7 @@ public class Nombre
     public double Posicion => Efecto
         .Amplitud;
     public double Direccion => Efecto
-        .Naturalezas
+        .Efectos
         .OrderByDescending(n => n.Causa.Apariencia.Amplitud)
         .First()
         .Naturaleza
@@ -22,8 +22,8 @@ public class Nombre
          get
          {
              var sumaDiferencias = Efecto
-                 .Naturalezas
-                 .Zip(Efecto.Naturalezas.Skip(1), (a, b) => Math.Abs(a.Causa.Frecuencia - b.Causa.Frecuencia))
+                 .Efectos
+                 .Zip(Efecto.Efectos.Skip(1), (a, b) => Math.Abs(a.Causa.Frecuencia - b.Causa.Frecuencia))
                  .Sum();
              var denominador = Math.Max(sumaDiferencias, double.Epsilon);
              return 1.0 / denominador;
@@ -59,11 +59,11 @@ public class Nombre
 
         //Modulación AM
         nuevaApariencia.Amplitud = designacion.Apariencia.Modular(this);
-        nuevaApariencia.Naturalezas = designacion.Apariencia.Naturalezas;
+        nuevaApariencia.Efectos = designacion.Apariencia.Efectos;
         //Modulación FM
-        nuevaApariencia.Esencia.Frecuencia = designacion.Modular(this, predicado);
+        nuevaApariencia.Naturaleza.Frecuencia = designacion.Modular(this, predicado);
         //Modulación PM
-        nuevaApariencia.Esencia.Nombre.Naturaleza.Fase = designacion.Nombre.Naturaleza.Modular(Naturaleza.Fase);
+        nuevaApariencia.Naturaleza.Nombre.Naturaleza.Fase = designacion.Nombre.Naturaleza.Modular(Naturaleza.Fase);
         
         return nuevaApariencia;
     }

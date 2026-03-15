@@ -35,7 +35,7 @@ public class Designacion
     {        
         //Modulación FM, simula la integral del mensaje instantáneo
         var frecuenciaModulada = Frecuencia;        
-        foreach (var naturaleza in Apariencia.Naturalezas)
+        foreach (var naturaleza in Apariencia.Efectos)
         {
             if(Math.Abs(significado.Causa.Frecuencia - naturaleza.Causa.Frecuencia) <= AnchoBanda)
             {
@@ -78,7 +78,7 @@ public class Designacion
     {
         var resultado = new StringBuilder();
         resultado.AppendLine("═══ Designación ═══");
-        foreach (var causa in Apariencia.Naturalezas)
+        foreach (var causa in Apariencia.Efectos)
         {
             if(causa.Causa.Frecuencia == 0)
             {

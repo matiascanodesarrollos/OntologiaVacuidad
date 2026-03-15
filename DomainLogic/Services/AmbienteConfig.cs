@@ -11,21 +11,21 @@ namespace DomainLogic.Services
             var tiempo = Designacion.Crear("Tiempo", "Estar", "Estado", frecuenciaMaxima, Math.PI / 2);
             var espacioTiempo = tiempo.Nombre.Mostrarse(espacio, "Parecer espacio-tiempo");
             var yo = Designacion.Crear("Yo", "Aparecer", "Aparente", 0, Math.PI);
-            var apariencia = yo.Nombre.Mostrarse(espacioTiempo.Esencia, "Ser Apariencia");
+            var apariencia = yo.Nombre.Mostrarse(espacioTiempo.Naturaleza, "Ser Apariencia");
 
             var elementoTierra = Designacion.Crear("Tierra", "Permanecer", "Sólida", 1000, Math.PI / 2);
-            var estadoSolido = elementoTierra.Nombre.Mostrarse(apariencia.Esencia, "Permanece líquida");
+            var estadoSolido = elementoTierra.Nombre.Mostrarse(apariencia.Naturaleza, "Permanece líquida");
             
             var elementoAire = Designacion.Crear("Aire", "Mover", "Gaseoso", 600, Math.PI);
-            var estadoGaseoso = elementoAire.Nombre.Mostrarse(estadoSolido.Esencia, "Mueve gas"); 
+            var estadoGaseoso = elementoAire.Nombre.Mostrarse(estadoSolido.Naturaleza, "Mueve gas"); 
 
             var elementoFuego = Designacion.Crear("Fuego", "Calentar", "Plasma", 100, 3 * Math.PI / 2);
-            var estadoPlasma = elementoFuego.Nombre.Mostrarse(estadoGaseoso.Esencia, "Calienta plasma");                        
+            var estadoPlasma = elementoFuego.Nombre.Mostrarse(estadoGaseoso.Naturaleza, "Calienta plasma");                        
             
             var elementoAgua = Designacion.Crear("Agua", "Fluir", "Líquida", 500, 0);
-            var estadoLiquido = elementoAgua.Nombre.Mostrarse(estadoPlasma.Esencia, "Fluye sólida");
+            var estadoLiquido = elementoAgua.Nombre.Mostrarse(estadoPlasma.Naturaleza, "Fluye sólida");
 
-            return estadoLiquido.Esencia;
+            return estadoLiquido.Naturaleza;
         }
     }
 }

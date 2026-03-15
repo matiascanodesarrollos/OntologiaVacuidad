@@ -23,11 +23,7 @@ namespace ConsoleApp
             var logger = serviceProvider.GetRequiredService<ILogger<Program>>();
             var mediator = serviceProvider.GetRequiredService<IMediator>();
             var designacionQueue = serviceProvider.GetRequiredService<IDesignacionQueue>();
-            var spaceRegistry = serviceProvider.GetRequiredService<INombreSpaceRegistry>();
             var designacion = AmbienteConfig.CrearAmbiente();
-            
-            // Registrar el nombre inicial en el espacio
-            spaceRegistry.Register(designacion.Nombre);
             
             logger.LogInformation("═══ INICIANDO VIBRACIÓN ═══\n");
             var pendientes = new List<Designacion> { designacion };
@@ -45,16 +41,16 @@ namespace ConsoleApp
                     pendientes.RemoveAt(pendientes.Count - 1);
                     logger.LogInformation($"[STACK] Iteration={iterationCount} | Designacion={designacionActual} | pendiente={pendientes.Count}");
 
-                    var causas = designacionActual.Apariencia.Naturalezas.ToList();
-                    for (int i = 0; i < causas.Count; i++)
+                    var efectos = designacionActual.Apariencia.Efectos.ToList();
+                    for (int i = 0; i < efectos.Count; i++)
                     {
-                        var causa = causas[i];
+                        var efecto = efectos[i];
                         logger.LogInformation(
-                            $"[PLASMA-VECTOR] {causa.Texto} | " +
-                            $"Posición={causa.Posicion:F3} | " +
-                            $"Dirección={causa.Direccion * (180 / Math.PI):F1}° | " +
-                            $"Velocidad={causa.Velocidad:F3}");
-                        await causa.VibrarComoPlasma(mediator, logger, interactionField);
+                            $"[PLASMA-VECTOR] {efecto.Texto} | " +
+                            $"Posición={efecto.Posicion:F3} | " +
+                            $"Dirección={efecto.Direccion * (180 / Math.PI):F1}° | " +
+                            $"Velocidad={efecto.Velocidad:F3}");
+                        await efecto.VibrarComoPlasma(mediator, logger, interactionField);
                     }
 
                     // Después de procesar TODAS las causas, agregar las nuevas designaciones encoladas

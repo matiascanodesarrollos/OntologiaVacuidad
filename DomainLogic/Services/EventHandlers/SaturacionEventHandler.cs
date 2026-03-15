@@ -33,9 +33,9 @@ namespace DomainLogic.Services.EventHandlers
             var nombreOriginal = notification.NombreOrigen;
             var nuevaDesignacionAux = Designacion.Crear(nombreOriginal.Texto, nombreOriginal.Causa.Texto, nombreOriginal.Naturaleza.Texto, nombreOriginal.Causa.Frecuencia, nombreOriginal.Naturaleza.Fase);
             var resultado = nombreOriginal.Mostrarse(nuevaDesignacionAux, $"Saturar {nombreOriginal.Texto}");
-            
-            await _mediator.Publish(new DesignacionEvent(resultado.Esencia, null), cancellationToken);
-            _logger.LogInformation($"[DESIGNACION-ENQUEUED] {resultado.Esencia.Texto} (de Saturación en {nombreOriginal.Texto})");
+
+            await _mediator.Publish(new DesignacionEvent(resultado.Naturaleza, null), cancellationToken);
+            _logger.LogInformation($"[DESIGNACION-ENQUEUED] {resultado.Naturaleza.Texto} (de Saturación en {nombreOriginal.Texto})");
         }
     }
 }

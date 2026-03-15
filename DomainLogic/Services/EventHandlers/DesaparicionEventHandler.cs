@@ -56,7 +56,7 @@ namespace DomainLogic.Services.EventHandlers
                     nombreCercano.Naturaleza.Fase);
                 
                 var resultado = nombreCercano.Mostrarse(nuevaDesignacionAux, $"Buscar {nombreOriginal.Texto}");
-                var nuevaDesignacion = resultado.Esencia;
+                var nuevaDesignacion = resultado.Naturaleza;
                 
                 await _mediator.Publish(new DesignacionEvent(nuevaDesignacion, null), cancellationToken);
                 _logger.LogInformation($"[DESIGNACION-BUSQUEDA] {nuevaDesignacion.Texto} (Matriz: {nombreCercano.Texto})");
