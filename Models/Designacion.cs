@@ -5,10 +5,11 @@ using System.Text;
 public class Designacion
 {
     public Guid Id { get; }    
-    public string Texto { get; }
+    public string Texto { get; internal set; }
     public Nombre Nombre { get; private set; }
     public Apariencia Apariencia { get; private set; }    
     public double Frecuencia { get; internal set; }
+    public double AnchoBanda { get; internal set; } = 5;
 
     private Designacion(string verbo, double frecuencia)
     {
@@ -16,30 +17,34 @@ public class Designacion
         Texto = verbo;        
         Frecuencia = frecuencia;
     }
+
+    private void Actualizar(string sujeto, string predicado, double frecuencia)
+    {
+        Frecuencia = frecuencia;        
+        var delimitador = ' ';
+        var predicadoArray = predicado.Split(delimitador);        
+        Texto = predicadoArray.First();
+        Nombre.Naturaleza.Texto = string.Join(delimitador, predicadoArray.Skip(1));
+        Nombre.Texto = sujeto;        
+    }
     
-    internal Apariencia Modular(
+    internal double Modular(
         Nombre significado, 
-        Apariencia apariencia, 
-        string sujeto,
         string predicado
     )
-    {
+    {        
         //Modulación FM, simula la integral del mensaje instantáneo
-        var frecuenciaModulada = significado.Causa.Frecuencia;
-        foreach (var frecuenciaNaturaleza in apariencia.Naturalezas.Select(c => c.Causa.Frecuencia))
+        var frecuenciaModulada = Frecuencia;        
+        foreach (var naturaleza in Apariencia.Naturalezas)
         {
-            if(Math.Abs(Frecuencia - frecuenciaNaturaleza) <= 1)
+            if(Math.Abs(significado.Causa.Frecuencia - naturaleza.Causa.Frecuencia) <= AnchoBanda)
             {
-                frecuenciaModulada = frecuenciaNaturaleza; 
+                frecuenciaModulada = naturaleza.Causa.Frecuencia;
+                naturaleza.Causa.Actualizar(significado.Texto, predicado, frecuenciaModulada);
             }
         }
-        
-        //Creo la nueva naturaleza
-        var caracterEspacio = ' ';
-        var predicadoArray = predicado.Split(caracterEspacio);
-        var verbo = predicadoArray.First();
-        var adjetivo = string.Join(caracterEspacio, predicadoArray.Skip(1));
-        return Crear(sujeto, verbo, adjetivo, frecuenciaModulada, significado.Naturaleza.Fase).Apariencia;
+        Actualizar(significado.Texto, predicado, frecuenciaModulada);
+        return Frecuencia;
     }
 
 
@@ -64,7 +69,7 @@ public class Designacion
         var designacion = new Designacion(verbo, frecuencia);
         var nuevaPalabra = new Palabra(adjetivo, fase);
         var nuevoNombre = new Nombre(sustantivo, nuevaPalabra);
-        designacion.Apariencia = nuevoNombre.Mostrarse(designacion);
+        designacion.Apariencia = nuevoNombre.Mostrarse(designacion, $"{verbo} {adjetivo}");
         designacion.Nombre = nuevoNombre;
         return designacion;
     }

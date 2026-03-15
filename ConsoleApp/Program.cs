@@ -23,7 +23,11 @@ namespace ConsoleApp
             var logger = serviceProvider.GetRequiredService<ILogger<Program>>();
             var mediator = serviceProvider.GetRequiredService<IMediator>();
             var designacionQueue = serviceProvider.GetRequiredService<IDesignacionQueue>();
+            var spaceRegistry = serviceProvider.GetRequiredService<INombreSpaceRegistry>();
             var designacion = AmbienteConfig.CrearAmbiente();
+            
+            // Registrar el nombre inicial en el espacio
+            spaceRegistry.Register(designacion.Nombre);
             
             logger.LogInformation("═══ INICIANDO VIBRACIÓN ═══\n");
             var pendientes = new List<Designacion> { designacion };
@@ -45,6 +49,11 @@ namespace ConsoleApp
                     for (int i = 0; i < causas.Count; i++)
                     {
                         var causa = causas[i];
+                        logger.LogInformation(
+                            $"[PLASMA-VECTOR] {causa.Texto} | " +
+                            $"Posición={causa.Posicion:F3} | " +
+                            $"Dirección={causa.Direccion * (180 / Math.PI):F1}° | " +
+                            $"Velocidad={causa.Velocidad:F3}");
                         await causa.VibrarComoPlasma(mediator, logger, interactionField);
                     }
 

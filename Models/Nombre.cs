@@ -7,21 +7,28 @@ public class Nombre
     public Palabra Naturaleza { get; }
     public Designacion Causa { get; private set; }
     public Apariencia Efecto { get; private set; }
-    public string Texto { get; }
+    public string Texto { get; internal set; }
 
     public double Posicion => Efecto
         .Amplitud;
     public double Direccion => Efecto
         .Naturalezas
-        .OrderByDescending(n => n.Causa.Frecuencia)
+        .OrderByDescending(n => n.Causa.Apariencia.Amplitud)
         .First()
-        .Efecto
-        .Amplitud; //Hacia la naturaleza con mayor frecuencia
-    public double Velocidad => 1.0 
-        / Efecto
-            .Naturalezas
-            .Zip(Efecto.Naturalezas.Skip(1), (a, b) => Math.Abs(a.Causa.Frecuencia - b.Causa.Frecuencia))
-            .Sum(); //Inversamente proporcional a la suma de las diferencias de frecuencia entre las naturalezas
+        .Naturaleza
+        .Fase; 
+    public double Velocidad
+     {
+         get
+         {
+             var sumaDiferencias = Efecto
+                 .Naturalezas
+                 .Zip(Efecto.Naturalezas.Skip(1), (a, b) => Math.Abs(a.Causa.Frecuencia - b.Causa.Frecuencia))
+                 .Sum();
+             var denominador = Math.Max(sumaDiferencias, double.Epsilon);
+             return 1.0 / denominador;
+         }
+     } //Inversamente proporcional a la suma de las diferencias de frecuencia entre las naturalezas
     
     internal Nombre(string sustantivo, Palabra naturaleza)
     {
@@ -38,29 +45,27 @@ public class Nombre
     /// y la fase del nuevo nombre.
     /// </summary>
     /// <param name="designacion">La designación proyectada</param>
-    /// <param name="frecuenciaForzada">La frecuencia frozada opcional</param>
-    /// <param name="faseForzada">La fase forzada opcional</param>
+    /// <param name="predicado">El predicado que se le asigna a la nueva apariencia</param>
     /// <returns>La apariencia resultante</returns>
-    public Apariencia Mostrarse(Designacion designacion, double? frecuenciaForzada = null, double? faseForzada = null)
-    {        
+    public Apariencia Mostrarse(Designacion designacion, string predicado)
+    {
+        var nuevaApariencia = new Apariencia(designacion, this);
         if(Efecto == null)
-        {
-            var nuevaApariencia = new Apariencia(designacion, this);       
+        {     
             Causa = designacion;
             Efecto = nuevaApariencia;
-            return nuevaApariencia;
+            return Efecto;
         }
-        
-        //Modulación FM
-        var nombreProyectado = designacion.Nombre;
-        var sujeto = nombreProyectado.Texto;
-        var predicado = $"{nombreProyectado.Causa.Texto} {nombreProyectado.Naturaleza.Texto}";
-        designacion.Modular(nombreProyectado, Efecto, sujeto, predicado);
+
         //Modulación AM
-        Efecto.Modular(nombreProyectado, frecuenciaForzada);
+        nuevaApariencia.Amplitud = designacion.Apariencia.Modular(this);
+        nuevaApariencia.Naturalezas = designacion.Apariencia.Naturalezas;
+        //Modulación FM
+        nuevaApariencia.Esencia.Frecuencia = designacion.Modular(this, predicado);
         //Modulación PM
-        Naturaleza.Modular(faseForzada ?? Naturaleza.Fase);
-        return Efecto;
+        nuevaApariencia.Esencia.Nombre.Naturaleza.Fase = designacion.Nombre.Naturaleza.Modular(Naturaleza.Fase);
+        
+        return nuevaApariencia;
     }
 
     public override string ToString()

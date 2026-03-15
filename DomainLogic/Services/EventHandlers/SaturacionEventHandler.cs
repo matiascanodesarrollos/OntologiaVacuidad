@@ -29,12 +29,13 @@ namespace DomainLogic.Services.EventHandlers
         {
             double delay = _config.MinDelaySeconds + _random.NextDouble() * (_config.MaxDelaySeconds - _config.MinDelaySeconds);
             await Task.Delay(TimeSpan.FromSeconds(delay), cancellationToken);
+
             var nombreOriginal = notification.NombreOrigen;
             var nuevaDesignacionAux = Designacion.Crear(nombreOriginal.Texto, nombreOriginal.Causa.Texto, nombreOriginal.Naturaleza.Texto, nombreOriginal.Causa.Frecuencia, nombreOriginal.Naturaleza.Fase);
-            var resultado = nombreOriginal.Mostrarse(nuevaDesignacionAux);
-            var nuevaDesignacion = resultado.Esencia;
-            await _mediator.Publish(new DesignacionEvent(nuevaDesignacion, null), cancellationToken);
-            _logger.LogInformation($"[DESIGNACION-ENQUEUED] {nuevaDesignacion.Texto} (de Saturación en {nombreOriginal.Texto})");
+            var resultado = nombreOriginal.Mostrarse(nuevaDesignacionAux, $"Saturar {nombreOriginal.Texto}");
+            
+            await _mediator.Publish(new DesignacionEvent(resultado.Esencia, null), cancellationToken);
+            _logger.LogInformation($"[DESIGNACION-ENQUEUED] {resultado.Esencia.Texto} (de Saturación en {nombreOriginal.Texto})");
         }
     }
 }

@@ -16,6 +16,7 @@ namespace DomainLogic.Services
             services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(ServiceCollectionExtensions).Assembly));
             services.AddSingleton<ServiceConfig>();
             services.AddSingleton<IDesignacionQueue, DesignacionQueue>();
+            services.AddSingleton<INombreSpaceRegistry, NombreSpaceRegistry>();
             return services;
         }
     }

@@ -2,8 +2,8 @@ using System;
 public class Palabra
 {
     public Guid Id { get; }
-    public double Fase { get; private set; }
-    public string Texto { get; }
+    public double Fase { get; internal set; }
+    public string Texto { get; internal set; }
 
     internal Palabra(string texto, double fase)
     {
@@ -22,8 +22,8 @@ public class Palabra
         return Fase;
     }
 
-    private double Normalizar(double fase)
+    public static double Normalizar(double fase)
     {
-        return fase % (2 * Math.PI);
+        return Math.Abs(fase) % (2 * Math.PI);
     }
 }
