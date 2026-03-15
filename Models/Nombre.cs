@@ -18,17 +18,19 @@ public class Nombre
         .Naturaleza
         .Fase; 
     public double Velocidad
-     {
-         get
-         {
-             var sumaDiferencias = Efecto
-                 .Efectos
-                 .Zip(Efecto.Efectos.Skip(1), (a, b) => Math.Abs(a.Causa.Frecuencia - b.Causa.Frecuencia))
-                 .Sum();
-             var denominador = Math.Max(sumaDiferencias, double.Epsilon);
-             return 1.0 / denominador;
-         }
-     } //Inversamente proporcional a la suma de las diferencias de frecuencia entre las naturalezas
+    {
+        get
+        {
+            var sumaDiferencias = Efecto
+                .Efectos
+                .Zip(Efecto.Efectos.Skip(1), (a, b) => Math.Abs(a.Causa.Frecuencia - b.Causa.Frecuencia))
+                .Sum();
+            var denominador = Math.Max(sumaDiferencias, double.Epsilon); //Inversamente proporcional a la suma de las diferencias de frecuencia entre las naturalezas
+            
+            return Efecto.Efectos.Count 
+                / denominador;
+        }
+    }
     
     internal Nombre(string sustantivo, Palabra naturaleza)
     {
