@@ -4,65 +4,42 @@ using System.Linq;
 public class Apariencia
 {
     public Guid Id { get; }
-    public Designacion Esencia { get; }
-    public List<Nombre> Naturalezas { get; }
-    public double Amplitud { get => Naturalezas.Count; }
+    public Designacion Naturaleza { get; }
+    public IList<Nombre> Efectos { get; internal set; }
+    public int Amplitud { get; internal set; } = 1;
     public IEnumerable<string> EnteDesignado {  get => new List<string>
         {
-            $"Naturaleza: {Naturalezas.First().Naturaleza.Texto}",
-            $"Causa: {Naturalezas.Last().Texto}",            
-            $"Frecuencia: {Esencia.Frecuencia:F2}",
-            $"Fase: {Naturalezas.Last().Naturaleza.Fase * (180 / Math.PI):F2}°",
-            $"Amplitud: {Amplitud:F2}",
-            $"Efecto: {Esencia.Texto}",
+            $"Naturaleza: {Efectos.First().Naturaleza.Texto}",
+            $"Causa: {Efectos.Last().Texto}",            
+            $"Frecuencia: {Naturaleza.Frecuencia:F2}",
+            $"Fase: {Efectos.Last().Naturaleza.Fase * (180 / Math.PI):F2}°",
+            $"Amplitud: {Amplitud}",
+            $"Efecto: {Naturaleza.Texto}",
         };
     }
-
-    private static readonly object _sync = new object();
-    private static readonly Random _random = new Random(); // No se puede usar Random.Shared porque la API no está disponible en netstandard2.1
 
     internal Apariencia(Designacion esencia, Nombre causa)
     {
         Id = Guid.NewGuid();
-        Esencia = esencia;
-        Naturalezas = new List<Nombre> { causa };
+        Naturaleza = esencia;
+        Efectos = new List<Nombre> { causa };
     }
 
-    internal double Modular(Nombre nombreProyectado, double? frecuenciaArmonica = null)
+    internal int Modular(Nombre nombreProyectado)
     {
-        var validacionRandom = false;
-        lock (_sync)
+        var frecuenciaMaxima = Efectos.Max(x => Math.Abs(x.Causa.Frecuencia));
+        if(Math.Abs(nombreProyectado.Causa.Frecuencia) <= frecuenciaMaxima)
         {
-            validacionRandom = _random.NextDouble() < 0.1; // 10% de probabilidad de validar aunque no coincida el significado            
-        }
-
-        if(frecuenciaArmonica.HasValue || validacionRandom) // modulación forzada
-        {
-            var nuevoNombre = Designacion.Imaginar(nombreProyectado.Naturaleza.Texto, 
-                nombreProyectado.Texto, 
-                Esencia.Texto,
-                frecuenciaArmonica ?? nombreProyectado.Causa.Frecuencia,
-                nombreProyectado.Naturaleza.Fase);
-            return Aparentar(nuevoNombre.Nombre);
-        }        
-
-        if(Naturalezas.Any(c => Math.Abs(nombreProyectado.Causa.Frecuencia - c.Causa.Frecuencia) <= 1))
-        {
-            return Aparentar(nombreProyectado);
-        }
-        
-        return 0.0; // No se valida el significado proyectado
+            if(!Efectos.Any(c => c.Id == nombreProyectado.Id))
+            {
+                Efectos.Add(nombreProyectado);
+            }
+            //Modulación AM, simula la multiplicación de la función de onda portadora por el mensaje
+            Amplitud *= 1 + nombreProyectado.Efecto.Amplitud;
+        } 
+        return Amplitud;
     }
 
-    private double Aparentar(Nombre nombreProyectado)
-    {
-        if(!Naturalezas.Any(c => c.Id == nombreProyectado.Id))
-        {
-            Naturalezas.Add(nombreProyectado);
-        }
-
-        return Esencia.Frecuencia * (1 + nombreProyectado.Causa.Frecuencia);
-    }
     public override string ToString()
     {
         return $"Apariencia: {string.Join(", ", EnteDesignado)}";
