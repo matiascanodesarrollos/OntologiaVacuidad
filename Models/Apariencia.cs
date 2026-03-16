@@ -6,14 +6,14 @@ public class Apariencia
     public Guid Id { get; }
     public Designacion Naturaleza { get; }
     public IList<Nombre> Efectos { get; internal set; }
-    public double Amplitud { get; internal set; } = 1;
+    public int Amplitud { get; internal set; } = 1;
     public IEnumerable<string> EnteDesignado {  get => new List<string>
         {
             $"Naturaleza: {Efectos.First().Naturaleza.Texto}",
             $"Causa: {Efectos.Last().Texto}",            
             $"Frecuencia: {Naturaleza.Frecuencia:F2}",
             $"Fase: {Efectos.Last().Naturaleza.Fase * (180 / Math.PI):F2}°",
-            $"Amplitud: {Amplitud:F2}",
+            $"Amplitud: {Amplitud}",
             $"Efecto: {Naturaleza.Texto}",
         };
     }
@@ -25,7 +25,7 @@ public class Apariencia
         Efectos = new List<Nombre> { causa };
     }
 
-    internal double Modular(Nombre nombreProyectado)
+    internal int Modular(Nombre nombreProyectado)
     {
         var frecuenciaMaxima = Efectos.Max(x => Math.Abs(x.Causa.Frecuencia));
         if(Math.Abs(nombreProyectado.Causa.Frecuencia) <= frecuenciaMaxima)

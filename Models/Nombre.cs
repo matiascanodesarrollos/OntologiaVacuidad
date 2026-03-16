@@ -9,15 +9,15 @@ public class Nombre
     public Apariencia Efecto { get; private set; }
     public string Texto { get; internal set; }
 
-    public double Posicion => Efecto
+    public virtual int Posicion => Efecto
         .Amplitud;
-    public double Direccion => Efecto
+    public virtual double Direccion => Efecto
         .Efectos
         .OrderByDescending(n => n.Causa.Apariencia.Amplitud)
         .First()
         .Naturaleza
         .Fase; 
-    public double Velocidad
+    public virtual double Velocidad
     {
         get
         {
@@ -37,6 +37,15 @@ public class Nombre
         Id = Guid.NewGuid();
         Naturaleza = naturaleza;
         Texto = sustantivo;
+    }
+
+    public Nombre(Nombre nombre)
+    {
+        Id = nombre.Id;
+        Naturaleza = nombre.Naturaleza;
+        Causa = nombre.Causa;
+        Efecto = nombre.Efecto;
+        Texto = nombre.Texto;
     }
 
     /// <summary>
