@@ -22,7 +22,18 @@ namespace ConsoleApp
 
         public void GenerarGifAnimado(List<Electron> electrons, Dictionary<Electron, List<Vector2D>> trayectorias, string rutaSalida)
         {
-            var colores = new[] { "#FF6B6B", "#4ECDC4", "#45B7D1", "#FFA07A", "#98D8C8", "#FFD93D", "#A8E6CF" };
+            // Mapeo directo de frecuencias a colores específicos
+            Func<double, SKColor> frecuenciaAColor = (freq) =>
+            {
+                return freq switch
+                {
+                    1000 => SKColor.Parse("#0066FF"), // Azul para 1000 Hz
+                    600 => SKColor.Parse("#00CC00"), // Verde para 600 Hz
+                    100 => SKColor.Parse("#FF0000"), // Rojo para 100 Hz
+                    500 => SKColor.Parse("#FFFF00"), // Amarillo para 500 Hz
+                    _ => SKColor.Parse("#808080") // Gris para frecuencias desconocidas
+                };
+            };
             
             // Calcular rango global
             var todasLasPosiciones = trayectorias.Values.SelectMany(t => t).ToList();
@@ -73,8 +84,7 @@ namespace ConsoleApp
                         {
                             if (trayectorias.TryGetValue(electron, out var puntos) && puntos.Count > 1)
                             {
-                                var colorHex = colores[colorIdx % colores.Length];
-                                var color = SKColor.Parse(colorHex);
+                                var color = frecuenciaAColor(electron.Causa.Frecuencia);
                                 var puntosHastaNow = puntos.Take(indice + 1).ToList();
 
                                 // Dibujar línea de trayectoria
