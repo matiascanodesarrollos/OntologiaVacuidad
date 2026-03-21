@@ -36,5 +36,5 @@ public class Vector2D
 
     public override int GetHashCode() => HashCode.Combine(X, Y);
 
-    public override string ToString() => $"({X:F2}, {Y:F2})";
+    public override string ToString() => $"({X}, {Y})";
 }

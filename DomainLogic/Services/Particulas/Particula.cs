@@ -4,9 +4,16 @@ namespace DomainLogic.Services.Particulas;
 
 public class Particula : Nombre
 {
-    public double Tiempo { get; protected set; }
+    public double Tiempo { get; protected set; } 
     public Vector2D Posicion2D { get; protected set; }
     public Vector2D Aceleracion { get; protected set; }
+
+    internal Particula(Nombre nombre) : base(nombre)
+    {
+        Posicion2D = new Vector2D(0, 0);
+        Aceleracion = new Vector2D(0, 0);
+        Tiempo = 0;
+    }
 
     // Velocidad 2D calculada basada en la Fase de la Naturaleza
     public virtual Vector2D Velocidad2D
@@ -20,15 +27,9 @@ public class Particula : Nombre
         }
     }
 
-    public Particula(Designacion designacion) : base(designacion.Nombre)
-    {
-        Tiempo = 0;
-        Posicion2D = new Vector2D(0, 0);
-        Aceleracion = new Vector2D(0, 0);
-    }
-
     public virtual double Carga => 0.0; // Carga por defecto, puede ser sobreescrita por partículas específicas
     public virtual double Masa => 1.0; // Masa por defecto, puede ser sobreescrita por partículas específicas
+    public virtual double Energia => Masa * Causa.Frecuencia; // E = h * f
 
     public virtual void Mover(double deltaTime)
     {
@@ -40,6 +41,16 @@ public class Particula : Nombre
         Posicion2D = Posicion2D.Suma(velocidadActualizada.Escala(deltaTime));
         
         Tiempo += deltaTime;
+    }
+
+    public override bool Equals(object obj)
+    {
+        return base.Equals(obj);
+    }
+
+    public override int GetHashCode()
+    {
+        return base.GetHashCode();
     }
 }
 

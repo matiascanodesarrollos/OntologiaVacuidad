@@ -12,7 +12,19 @@ public class Palabra
         Fase = Normalizar(fase);
     }
     
-    internal double Modular(double fase)
+    private double Normalizar(double fase)
+    {
+        return Math.Abs(fase) % (2 * Math.PI);
+    }
+    
+    /// <summary>
+    /// Cambia la fase de la palabra si la nueva fase es diferente de la actual.
+    /// Se produce algo similar a la modulación PM.
+    /// Sobreescribir para un comportamiento mas detallado.
+    /// </summary>
+    /// <param name="fase">La nueva fase que se utilizará para modular la palabra.</param>
+    /// <returns>La nueva fase de la palabra después de la modulación.</returns>
+    public virtual double Modular(double fase)
     {
         if(Fase != fase)
         {
@@ -20,10 +32,5 @@ public class Palabra
         }
         
         return Fase;
-    }
-
-    public static double Normalizar(double fase)
-    {
-        return Math.Abs(fase) % (2 * Math.PI);
     }
 }
