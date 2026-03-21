@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using System.Threading;
 using System;
 using Microsoft.Extensions.Logging;
+using System.Linq;
 
 namespace DomainLogic.Services.EventHandlers
 {
@@ -34,8 +35,8 @@ namespace DomainLogic.Services.EventHandlers
             var nuevaDesignacionAux = Designacion.Crear(nombreOriginal.Texto, nombreOriginal.Causa.Texto, nombreOriginal.Naturaleza.Texto, nombreOriginal.Causa.Frecuencia, nombreOriginal.Naturaleza.Fase);
             var resultado = nombreOriginal.Mostrarse(nuevaDesignacionAux, $"Saturar {nombreOriginal.Texto}");
 
-            await _mediator.Publish(new DesignacionEvent(resultado.Naturaleza, null), cancellationToken);
-            _logger.LogInformation($"[DESIGNACION-ENQUEUED] {resultado.Naturaleza.Texto} (de Saturación en {nombreOriginal.Texto})");
+            await _mediator.Publish(new DesignacionEvent(resultado.EfectoPrincipal.Causa, null), cancellationToken);
+            _logger.LogInformation($"[DESIGNACION-ENQUEUED] {resultado} (de Saturación en {nombreOriginal.Texto})");
         }
     }
 }

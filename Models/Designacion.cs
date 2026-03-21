@@ -6,15 +6,15 @@ public class Designacion
 {
     public Guid Id { get; }    
     public string Texto { get; internal set; }
-    public Nombre Nombre { get; private set; }
-    public Apariencia Apariencia { get; private set; }    
+    public Nombre Esencia { get; private set; }
+    public Apariencia Naturaleza { get; private set; }    
     public double Frecuencia { get; internal set; }
-    public double AnchoBanda { get; internal set; } = 5;
+    public double AnchoBanda { get; set; } = 2;
 
     private Designacion(string verbo, double frecuencia)
     {
         Id = Guid.NewGuid();
-        Texto = verbo;        
+        Texto = verbo;
         Frecuencia = frecuencia;
     }
 
@@ -24,29 +24,9 @@ public class Designacion
         var delimitador = ' ';
         var predicadoArray = predicado.Split(delimitador);        
         Texto = predicadoArray.First();
-        Nombre.Naturaleza.Texto = string.Join(delimitador, predicadoArray.Skip(1));
-        Nombre.Texto = sujeto;        
+        Esencia.Naturaleza.Texto = string.Join(delimitador, predicadoArray.Skip(1));
+        Esencia.Texto = sujeto;        
     }
-    
-    internal double Modular(
-        Nombre significado, 
-        string predicado
-    )
-    {        
-        //Modulación FM, simula la integral del mensaje instantáneo
-        var frecuenciaModulada = Frecuencia;        
-        foreach (var naturaleza in Apariencia.Efectos)
-        {
-            if(Math.Abs(significado.Causa.Frecuencia - naturaleza.Causa.Frecuencia) <= AnchoBanda)
-            {
-                frecuenciaModulada = naturaleza.Causa.Frecuencia;
-                naturaleza.Causa.Actualizar(significado.Texto, predicado, frecuenciaModulada);
-            }
-        }
-        Actualizar(significado.Texto, predicado, frecuenciaModulada);
-        return Frecuencia;
-    }
-
 
     /// <summary>
     /// Crea una esencia o nueva designación imaginando un nuevo significado para un adjetivo, un sustantivo y un verbo, junto con su fase y frecuencia.
@@ -69,16 +49,48 @@ public class Designacion
         var designacion = new Designacion(verbo, frecuencia);
         var nuevaPalabra = new Palabra(adjetivo, fase);
         var nuevoNombre = new Nombre(sustantivo, nuevaPalabra);
-        designacion.Apariencia = nuevoNombre.Mostrarse(designacion, $"{verbo} {adjetivo}");
-        designacion.Nombre = nuevoNombre;
+        designacion.Naturaleza = nuevoNombre.Mostrarse(designacion, $"{verbo} {adjetivo}");
+        designacion.Esencia = nuevoNombre;
         return designacion;
     }
+    
+    /// <summary>
+    /// Cambia la naturaleza de la designación si el nombre proyectado tiene una frecuencia que pueda incluirse dentro del ancho de banda.
+    /// Se produce algo similar a la modulación FM.
+    /// Sobreescribir para un comportamiento mas detallado.
+    /// </summary>
+    /// <param name="significado">El nombre proyectado que se utilizará para modular la designación.</param>
+    /// <param name="predicado">El predicado que se utilizará para actualizar la designación.</param>
+    /// <returns>La nueva frecuencia de la designación después de la modulación.</returns>
+    public virtual double Modular(
+        Nombre significado,
+        string predicado
+    )
+    {        
+        //Modulación FM, simula la integral del mensaje instantáneo
+        var frecuenciaModulada = Frecuencia;        
+        foreach (var naturaleza in Naturaleza.Efectos)
+        {
+            if(Math.Abs(significado.Causa.Frecuencia - naturaleza.Causa.Frecuencia) <= AnchoBanda)
+            {
+                frecuenciaModulada = naturaleza.Causa.Frecuencia;
+                naturaleza.Causa.Actualizar(significado.Texto, predicado, frecuenciaModulada);
+            }
+        }
+        Actualizar(significado.Texto, predicado, frecuenciaModulada);
+        return Frecuencia;
+    }    
 
+    /// <summary>
+    /// Sobreescribe ToString para mostrar una representación de la designación, incluyendo su naturaleza y esencia.
+    /// Se muestra la naturaleza como una lista de efectos, cada uno con su causa, frecuencia y fase.
+    /// </summary>
+    /// <returns>Una cadena que representa la designación.</returns>
     public override string ToString()
     {
         var resultado = new StringBuilder();
         resultado.AppendLine("═══ Designación ═══");
-        foreach (var causa in Apariencia.Efectos)
+        foreach (var causa in Naturaleza.Efectos)
         {
             if(causa.Causa.Frecuencia == 0)
             {

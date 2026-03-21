@@ -4,28 +4,28 @@ namespace DomainLogic.Services
 {
     public static class AmbienteConfig
     {
-        public static Designacion CrearAmbiente()
+        public static Apariencia CrearAmbiente()
         {
-            var frecuenciaMaxima = 1000000;
-            var espacio = Designacion.Crear("Espacio", "Ser", "Ente", frecuenciaMaxima, 0);
-            var tiempo = Designacion.Crear("Tiempo", "Estar", "Estado", frecuenciaMaxima, Math.PI / 2);
-            var espacioTiempo = tiempo.Nombre.Mostrarse(espacio, "Parecer espacio-tiempo");
-            var yo = Designacion.Crear("Yo", "Aparecer", "Aparente", 0, Math.PI);
-            var apariencia = yo.Nombre.Mostrarse(espacioTiempo.Naturaleza, "Ser Apariencia");
+            var frecuenciaMaxima = 10000;
+            var mente = Designacion.Crear("Mente", "Ser", "Luminosa", frecuenciaMaxima, 0);
+            var cuerpo = Designacion.Crear("Cuerpo", "Parecer", "Sonoro", frecuenciaMaxima, Math.PI / 2);            
+            var espacioTiempo = cuerpo.Esencia.Mostrarse(mente, "Está sólido");
+            var yo = Designacion.Crear("Yo", "Estar", "Unido", 0, Math.PI);
+            var apariencia = yo.Esencia.Mostrarse(espacioTiempo.NaturalezaAparente.Causa, "Mueve materia");
 
             var elementoTierra = Designacion.Crear("Tierra", "Permanecer", "Sólida", 1000, Math.PI / 2);
-            var estadoSolido = elementoTierra.Nombre.Mostrarse(apariencia.Naturaleza, "Permanece líquida");
+            var estadoSolido = elementoTierra.Esencia.Mostrarse(apariencia.NaturalezaAparente.Causa, "Permanece");
             
             var elementoAire = Designacion.Crear("Aire", "Mover", "Gaseoso", 600, Math.PI);
-            var estadoGaseoso = elementoAire.Nombre.Mostrarse(estadoSolido.Naturaleza, "Mueve gas"); 
+            var estadoGaseoso = elementoAire.Esencia.Mostrarse(estadoSolido.NaturalezaAparente.Causa, "Es materia");
 
-            var elementoFuego = Designacion.Crear("Fuego", "Calentar", "Plasma", 100, 3 * Math.PI / 2);
-            var estadoPlasma = elementoFuego.Nombre.Mostrarse(estadoGaseoso.Naturaleza, "Calienta plasma");                        
-            
+            var elementoFuego = Designacion.Crear("Fuego", "Calentar", "Eléctrico", 100, 3 * Math.PI / 2);
+            var estadoPlasma = elementoFuego.Esencia.Mostrarse(estadoGaseoso.NaturalezaAparente.Causa, "Calienta");
+              
             var elementoAgua = Designacion.Crear("Agua", "Fluir", "Líquida", 500, 0);
-            var estadoLiquido = elementoAgua.Nombre.Mostrarse(estadoPlasma.Naturaleza, "Fluye sólida");
-
-            return estadoLiquido.Naturaleza;
+            var estadoLiquido = elementoAgua.Esencia.Mostrarse(estadoPlasma.NaturalezaAparente.Causa, "Fluye materia");
+            
+            return estadoLiquido;
         }
     }
 }
