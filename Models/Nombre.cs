@@ -1,39 +1,23 @@
 using System;
 using System.Linq;
 
-public class Nombre
+public class Nombre : Palabra
 {
-    public Guid Id { get; }
-    public Palabra Naturaleza { get; }
-    public Designacion Causa { get; private set; }
-    public Apariencia Efecto { get; private set; }
-    public string Texto { get; internal set; }    
-    public virtual double Posicion => Efecto
-        .Amplitud;
-    public virtual double Direccion => Efecto
-        .EfectoPrincipal
-        .Naturaleza
-        .Fase; 
-    public virtual double Velocidad
-    {
-        get
-        {
-            var sumaDiferencias = Efecto
-                .Efectos
-                .Zip(Efecto.Efectos.Skip(1), (a, b) => Math.Abs(a.Causa.Frecuencia - b.Causa.Frecuencia))
-                .Sum();
-            var denominador = Math.Max(sumaDiferencias, double.Epsilon); //Inversamente proporcional a la suma de las diferencias de frecuencia entre las naturalezas
-            
-            return Efecto.Efectos.Count 
-                / denominador;
-        }
-    }
-    
-    internal Nombre(string sustantivo, Palabra naturaleza)
+    public override Guid Id { get; }
+    public double Frecuencia { get; internal set; }
+    public Apariencia Efecto { get; internal set; }
+    public Designacion Esencia { get; internal set; }
+
+    internal Nombre(string texto, 
+        double fase, 
+        double frecuencia,
+        Designacion esencia) 
+        : base(texto, fase)
     {
         Id = Guid.NewGuid();
-        Naturaleza = naturaleza;
-        Texto = sustantivo;
+        Efecto = new Apariencia(this);
+        Frecuencia = frecuencia;
+        Esencia = esencia;
     }
 
     /// <summary>
@@ -41,61 +25,51 @@ public class Nombre
     /// Para crear el original usar el metodo estático Crear de Designacion.
     /// </summary>
     /// <param name="nombre">El nombre del cual se copiarán las propiedades.</param>
-    public Nombre(Nombre nombre)
+    public Nombre(Nombre nombre) 
+        : base(nombre.Texto, 
+            nombre.Fase)
     {
         Id = nombre.Id;
-        Naturaleza = nombre.Naturaleza;
-        Causa = nombre.Causa;
         Efecto = nombre.Efecto;
-        Texto = nombre.Texto;
+        Frecuencia = nombre.Frecuencia;
+        Esencia = nombre.Esencia;
     }
 
     /// <summary>
-    /// Muestra una apariencia dependiendo de la designación proyectada.
-    /// Se produce algo similar a la modulación AM, FM y PM en secuencia.
-    /// La designación proyectada crea una nueva apariencia modulada que depende principalmente del efecto de este nombre, 
-    /// a su vez esta modula la frecuencia de la nueva designación 
-    /// y la fase del nuevo nombre.
-    /// Sobreescribir los métodos Modular de Apariencia, Palabra y Designacion para un comportamiento mas detallado.
+    /// Se muestra como el nombre proyectado, afectando la apariencia .
+    /// Se produce algo similar a la modulación QAM (PM + AM) y FM en secuencia sobre la instancia.
+    /// Sobreescribir los metodos Modular de Palabra y Apariencia para un comportamiento mas detallado.
+    /// Los mismo se llaman en esa secuencia.
     /// </summary>
-    /// <param name="designacion">La designación proyectada</param>
-    /// <param name="predicado">El predicado que se le asigna a la nueva apariencia</param>
+    /// <param name="designacionProyectada">La designación que se utilizará para mostrar la apariencia.</param>
     /// <returns>La apariencia resultante</returns>
-    public Apariencia Mostrarse(Designacion designacion, string predicado)
+    public Designacion Mostrarse(Designacion designacionProyectada)
     {
-        var nuevaApariencia = new Apariencia(this);
-        if(Efecto == null)
-        {     
-            Causa = designacion;
-            Efecto = nuevaApariencia;
-            return Efecto;
-        }
-
-        //Modulación QAM (similar a OFDM)
-        nuevaApariencia.Amplitud = designacion.Naturaleza.Modular(this);
-        nuevaApariencia.Efectos = designacion.Naturaleza.Efectos;
+        //Modulación PM
+        Modular(designacionProyectada.Causa);
         //Modulación FM
-        designacion.Modular(this, predicado);
-        return nuevaApariencia;
+        var nombrePrincipal = designacionProyectada
+            .Nombres
+            .OrderByDescending(n => n.Efecto.Amplitud)
+            .First();
+        Esencia.Modular(nombrePrincipal);
+        //Modulación AM
+        Efecto.Modular(designacionProyectada);
+
+        return designacionProyectada;
     }
 
     /// <summary>
     /// Retorna una representación del nombre.
     /// </summary>
     /// <returns>Naturaleza, fase y frecuencia.</returns>
-    public override string ToString()
-    {
-        return $"Nombre: {Texto}, Naturaleza: {Naturaleza.Texto}, Fase: {Naturaleza.Fase * (180 / Math.PI):F2}º, Frecuencia: {Causa.Frecuencia:F2} Hz";
-    }
-    
+    public override string ToString() => $"Naturaleza: {Texto}, Fase: {Fase * (180 / Math.PI):F2}º, Frecuencia: {Frecuencia:F2} Hz, Amplitud: {Efecto.Amplitud:F2}";
+        
     /// <summary>
     /// Sobreescribe GetHashCode para comparar nombres por su Id.
     /// </summary>
     /// <returns>El hash code del nombre.</returns>
-    public override int GetHashCode()
-    {
-        return Id.GetHashCode();
-    }
+    public override int GetHashCode() => Id.GetHashCode();
 
     /// <summary>
     /// Sobreescribe Equals para comparar nombres por su Id.

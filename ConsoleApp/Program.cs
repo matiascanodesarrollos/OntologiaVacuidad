@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -19,22 +18,40 @@ namespace ConsoleApp
             services.AddDharmaServices();
             var serviceProvider = services.BuildServiceProvider();
             var logger = serviceProvider.GetRequiredService<ILogger<Program>>();
-            var ambiente = AmbienteConfig.CrearAmbiente();
             
             logger.LogInformation("═══ INICIANDO VIBRACIÓN DE PARTÍCULAS ═══\n");
             
             try
             {
-                logger.LogInformation($"[ESPACIO] Creado para: {ambiente.NaturalezaAparente.Causa}\n");                
-                var espacio = Espacio.Crear(ambiente.NaturalezaAparente.Causa);
-                                
-                var directorioSalida = Directory.GetCurrentDirectory();
-                var paths = espacio.GenerarFramesPng(directorioSalida, 4, 500);
+                var ambiente = AmbienteConfig.CrearAmbiente();
+                
+                logger.LogInformation($"[ESPACIO basado en amplitud (apariencia)] Creado para: {ambiente}\n");
+                var espacio = Espacio.Crear(ambiente);
+                
+                var framesDir = Path.Combine(Directory.GetCurrentDirectory(), "frames");
+                var directorioSalida = Path.Combine(framesDir, "Amplitud");
+                var paths = espacio.GenerarFramesPng(directorioSalida, 6, 200, FrameGenerator.FuncionAmplitudAColor);
                 foreach (var path in paths)
                 {
                     logger.LogInformation($"Frame generado: {path}");
                 }
                 logger.LogInformation($"Espacio contiene {espacio.Particulas.Count} posiciones ocupadas");
+
+                if(args.Length > 0)
+                {
+                    ambiente = AmbienteConfig.CrearAmbiente(string.Join(' ', args));
+                    logger.LogInformation($"[ESPACIO basado en frecuencia (texto)] Creado para: {ambiente}\n");
+                    espacio = Espacio.Crear(ambiente);
+
+                    directorioSalida = Path.Combine(framesDir, "Frecuencia");
+                    paths = espacio.GenerarFramesPng(directorioSalida, 10, 250, FrameGenerator.FuncionFrecuenciaAColor);
+                    foreach (var path in paths)
+                    {
+                        logger.LogInformation($"Frame generado: {path}");
+                    }
+                    logger.LogInformation($"Espacio contiene {espacio.Particulas.Count} posiciones ocupadas");
+                }
+
                 logger.LogInformation("\n✓ Simulación completada exitosamente");
             }
             catch (Exception ex)

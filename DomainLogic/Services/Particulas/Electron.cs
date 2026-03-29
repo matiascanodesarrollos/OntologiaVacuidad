@@ -5,7 +5,7 @@ public class Electron : Particula
     /// <summary>
     /// Crea un electron asociado a un efecto específico
     /// </summary>
-    internal Electron(Apariencia efecto) : base(efecto.NaturalezaAparente)
+    internal Electron(Nombre efecto) : base(efecto)
     {
         
     }

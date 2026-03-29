@@ -1,0 +1,9 @@
+{
+  "$schema": "http://json.schemastore.org/launchsettings.json",
+  "profiles": {
+    "ConsoleApp": {
+      "commandName": "Project",
+      "commandLineArgs": "Ser mente.Calentar fuego.Vibrar gas.Fluir líquido.Permanecer tierra."
+    }
+  }
+}

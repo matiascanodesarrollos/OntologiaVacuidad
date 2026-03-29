@@ -7,13 +7,13 @@ public class Espacio : Nombre
 {
     public Dictionary<Vector2D, List<Particula>> Particulas { get; private set; }
 
-    internal Espacio(Designacion designacion) : base(designacion.Esencia)
+    internal Espacio(Designacion designacion) : base(designacion.Causa)
     {
         Particulas = new Dictionary<Vector2D, List<Particula>>();
-        foreach (var efecto in designacion.Naturaleza.Efectos)
+        AgregarParticula(new Foton(designacion.Nombres.First()));
+        foreach (var efecto in designacion.Nombres)
         {
-            AgregarParticula(new Foton(efecto.Causa));
-            AgregarParticula(new Electron(efecto.Efecto));
+            AgregarParticula(new Electron(efecto));
         }
     }
 
@@ -28,11 +28,6 @@ public class Espacio : Nombre
         if (Particulas.ContainsKey(posicion))
         {
             Particulas[posicion].Add(particula);
-
-            if(!Particulas[posicion].Any(x => x as Foton != null))
-            {
-                Particulas[posicion].Add(new Foton(Causa));
-            }
             return;
         }
         
@@ -54,6 +49,8 @@ public class Espacio : Nombre
 
         Particulas = new Dictionary<Vector2D, List<Particula>>();
         var nuevasApariencias = new List<Apariencia>();
+        const int maxNuevasParticulas = 20; // Limitar crecimiento exponencial
+        
         foreach (var posicion in posiciones)
         {
             if (Particulas.ContainsKey(posicion.NuevaPosicion))
@@ -63,19 +60,18 @@ public class Espacio : Nombre
                 var interaccionCompleja = lista
                         .Where(p => p.Carga != 0)
                         .ToList();
-                if(interaccionCompleja.Count > 1)
+                        
+                // Solo crear apariencias si no hay demasiadas partículas ya
+                if(interaccionCompleja.Count > 1 && nuevasApariencias.Count < maxNuevasParticulas)
                 {
-                    nuevasApariencias.AddRange(
-                        interaccionCompleja.Zip(interaccionCompleja.Skip(1), (a, b) => a.Mostrarse(b.Causa, $"{a.Causa.Texto} {b.Naturaleza.Texto}"))
-                        .ToList());
+                    var nuevas = interaccionCompleja.Zip(interaccionCompleja.Skip(1), (a, b) => a.Mostrarse(b.Esencia))
+                        .ToList();
+                    // Limitar la cantidad añadida en este frame
+                    var cantidadAAnadir = System.Math.Min(nuevas.Count, maxNuevasParticulas - nuevasApariencias.Count);
+                    nuevasApariencias.AddRange(nuevas.Take(cantidadAAnadir));
                 }
 
-                lista.Add(posicion.Particula);
-                if(!lista.Any(x => x as Foton != null))
-                {
-                    lista.Add(new Foton(Causa)); //Simula el hecho de que desde el punto de vista del foton, el espacio se encuentra en todas partes y por lo tanto siempre hay un foton presente para mediar las interacciones.
-                }
-                
+                lista.Add(posicion.Particula);                
                 continue;
             }
             
@@ -84,7 +80,7 @@ public class Espacio : Nombre
 
         foreach (var apariencia in nuevasApariencias)
         {
-            AgregarParticula(new Electron(apariencia));
+            AgregarParticula(new Electron(apariencia.Causa));
         }
     }
 }

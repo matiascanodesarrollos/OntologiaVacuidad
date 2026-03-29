@@ -1,67 +1,42 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+
 public class Apariencia
 {
-    public Guid Id { get; }
-    public double Amplitud { get; internal set; } = 1;
-    public IEnumerable<string> EnteDesignado 
-    {  
-        get
-        {
-            var efectoPrincipal = EfectoPrincipal;
-            return new List<string>
-            {
-                $"Naturaleza: {NaturalezaAparente.Naturaleza.Texto}",
-                $"Causa: {efectoPrincipal.Texto}",            
-                $"Frecuencia: {efectoPrincipal.Causa.Frecuencia:F2}",
-                $"Fase: {efectoPrincipal.Naturaleza.Fase:F2}°",
-                $"Amplitud: {Amplitud}",
-                $"Efecto: {efectoPrincipal.Naturaleza.Texto}",
-            };
-        }
-    }
-    public Nombre NaturalezaAparente => Efectos.First();
-    public Nombre EfectoPrincipal => Efectos.OrderByDescending(e => e.Efecto.Amplitud).First();
-    public IList<Nombre> Efectos { get; set; }
-    
+    public virtual Guid Id { get; }
+    public double Amplitud { get; internal set; }
+    public Nombre Causa { get; internal set; }
+
     internal Apariencia(Nombre causa)
     {
         Id = Guid.NewGuid();
-        Efectos = new List<Nombre> { causa };
+        Amplitud = 1.0;
+        Causa = causa;
     }
 
     /// <summary>
-    /// Añade un efecto a la apariencia si designación proyectada esta dentro del rango de frecuencia.
-    /// Se produce algo similar a la modulación QAM simplificada (OFDM).
+    /// Modula la amplitud de la apariencia basada en el efecto del nombre proyectado.
+    /// Se produce algo similar a la modulación AM, donde la amplitud de la apariencia se ajusta en función del efecto del nombre proyectado.
     /// Sobreescribir para un comportamiento mas detallado.
     /// </summary>
-    /// <param name="nombreProyectado">El nombre proyectado que se utilizará para modular la apariencia.</param>
-    /// <returns>La nueva amplitud de la apariencia después de la modulación.</returns>
-    public virtual double Modular(Nombre nombreProyectado)
+    /// <param name="designacionProyectada">La designación que se utilizará para modular la apariencia.</param>
+    public virtual void Modular(Designacion designacionProyectada)
     {
-        var frecuenciaMaxima = Efectos.Max(x => Math.Abs(x.Causa.Frecuencia));
-        if(Math.Abs(nombreProyectado.Causa.Frecuencia) <= frecuenciaMaxima)
-        {
-            if(!Efectos.Any(c => c.Id == nombreProyectado.Id))
-            {
-                Efectos.Add(nombreProyectado);
-                //Modulación PM
-                EfectoPrincipal.Naturaleza.Modular(nombreProyectado.Naturaleza.Fase);
-            }
-            
-            //Modulación AM, simula la multiplicación de la función de onda portadora por el mensaje
-            Amplitud *= 1 + nombreProyectado.Efecto.Amplitud;
-        } 
-        return Amplitud;
+        Amplitud *= 1 + designacionProyectada.Nombres.Sum(n => n.Efecto.Amplitud);
     }
 
     /// <summary>
-    /// Sobreescribe ToString para mostrar una representación de la apariencia.
+    /// Crea una nueva designación a partir de una lista de predicados, donde cada predicado se convierte en un nombre con un efecto asociado a esta designación.
+    /// La frecuencia de cada nombre se determina por la cantidad de nombres que comparten el mismo verbo núcleo.
+    /// La amplitud se determina por la cantidad de complementos del sujeto que comparten.
+    /// La fase se asigna de manera equidistante dentro del ciclo de la función de onda para los nombres que comparten la misma frecuencia, creando así una distribución uniforme en el espacio de fases.
     /// </summary>
-    /// <returns>Una cadena que representa la apariencia.</returns>
-    public override string ToString()
+    /// <param name="predicados">Los predicados que se utilizarán para crear la designación.</param>
+    public Designacion Aparecer(List<string> predicados)
     {
-        return $"Apariencia: {string.Join(", ", EnteDesignado)}";
+        var designacion = new Designacion(predicados);
+        Causa = designacion.Nombres.FirstOrDefault();
+        return designacion;
     }
 }

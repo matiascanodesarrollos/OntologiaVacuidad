@@ -13,8 +13,6 @@ namespace DomainLogic.Services
                 configure.AddConsole();
                 configure.AddFile($"Logs/{DateTime.Now:yyyyMMdd_HHmmss}-vibracion.log");
             });
-            services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(ServiceCollectionExtensions).Assembly));
-            services.AddSingleton<ServiceConfig>();
             return services;
         }
     }

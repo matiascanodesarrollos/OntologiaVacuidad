@@ -14,25 +14,33 @@ namespace ConsoleApp
         private const int ALTO = 900;
         private const int CENTROY = 450;
         private const int PADDING = 20;
-        public static List<string> GenerarFramesPng(this Espacio espacio, string rutaSalida, int cantidadFrames, double deltaTimePorFrame)
+
+        public static Func<Particula, SKColor> FuncionFrecuenciaAColor = (part) =>
         {
-            var framePaths = new List<string>();
-            // Mapeo directo de frecuencias a colores específicos
-            Func<double, SKColor> frecuenciaAColor = (freq) =>
+            return part.Frecuencia switch
             {
-                return freq switch
+                1 => SKColor.Parse("#FF0000"),
+                2 => SKColor.Parse("#FFFF00"),
+                3 => SKColor.Parse("#00CC00"),
+                _ => SKColor.Parse("#FFFFFF"),
+            };
+        };
+
+        public static Func<Particula, SKColor> FuncionAmplitudAColor = (part) =>
+            {
+                return part.Efecto.Amplitud switch
                 {
-                    1000 => SKColor.Parse("#0066FF"), // Azul para 1000 Hz
-                    600 => SKColor.Parse("#00CC00"), // Verde para 600 Hz
-                    100 => SKColor.Parse("#FF0000"), // Rojo para 100 Hz
-                    500 => SKColor.Parse("#FFFF00"), // Amarillo para 500 Hz
-                    _ => SKColor.Parse("#808080") // Gris para frecuencias desconocidas
+                    1 => SKColor.Parse("#FF0000"), 
+                    4 => SKColor.Parse("#FFFF00"),
+                    5 => SKColor.Parse("#00CC00"),
+                    6 => SKColor.Parse("#0066FF"),
+                    _ => SKColor.Parse("#FFFFFF")
                 };
             };
-            
-            var framesDir = Path.Combine(Path.GetDirectoryName(rutaSalida), "frames");
-            Directory.CreateDirectory(framesDir);
-
+        public static List<string> GenerarFramesPng(this Espacio espacio, string rutaSalida, int cantidadFrames, double deltaTimePorFrame, Func<Particula, SKColor> funcionAColor)
+        {
+            var framePaths = new List<string>();
+            Directory.CreateDirectory(rutaSalida);
             try
             {
                 // Generar frames como PNG
@@ -42,7 +50,7 @@ namespace ConsoleApp
                     
                     using (var canvas = new SKCanvas(bitmap))
                     {
-                        canvas.Clear(SKColors.White);
+                        canvas.Clear(SKColors.LightGray);
 
                         // Grid
                         using (var paint = new SKPaint { Color = new SKColor(224, 224, 224), StrokeWidth = 0.5f })
@@ -85,7 +93,7 @@ namespace ConsoleApp
                             
                             foreach (var foton in fotones)
                             {
-                                var color = frecuenciaAColor(foton.Causa.Frecuencia);
+                                var color = funcionAColor(foton);
                                 var colorConAlpha = new SKColor(color.Red, color.Green, color.Blue, 50); // Semi-transparente
                                 
                                 // Posición del fotón en el canvas
@@ -121,13 +129,13 @@ namespace ConsoleApp
                                 }
                             }
                         }
-                        
+
                         // Luego dibujar partículas con carga
                         foreach (var grupoParticulas in espacio.Particulas.Values)
                         {
                             foreach (var particula in grupoParticulas.Where(p => p.Carga != 0)) // Solo dibujar partículas con carga
                             {
-                                var color = frecuenciaAColor(particula.Causa.Frecuencia);                                            
+                                var color = funcionAColor(particula);                     
                                 var x = CENTROX + (float) particula.Posicion2D.X;
                                 var y = CENTROY - (float) particula.Posicion2D.Y;
                                 
@@ -136,24 +144,81 @@ namespace ConsoleApp
                                 {
                                     canvas.DrawCircle(x, y, 6f, paint); // Escalar el tamaño del círculo
                                 }
-                                
-                                // Dibujar nombre de la partícula
-                                var xText = x + 10;
-                                var yText = y - 5;
-                                var textoExistente = posicionesTexto.Any(pt => Math.Abs(pt.x - xText) < 50 && Math.Abs(pt.y - yText) < 20);
-                                if (!textoExistente)
+
+                                if(frameIdx < 4)
                                 {
-                                    using (var typeface = SKTypeface.FromFamilyName("Arial", SKFontStyle.Normal))
-                                    using (var font = new SKFont(typeface, 12f))
-                                    using (var paint = new SKPaint { Color = SKColors.Black, IsAntialias = true })
+                                    // Dibujar nombre de la partícula
+                                    double xText = x + 10;
+                                    double yText = y - 5;
+                                    
+                                    // Buscar posición sin solapamientos con mejor detección
+                                    bool hayEspacio = false;
+                                    const int offsetTexto = 25;
+                                    const int thresholdX = 80;
+                                    const int thresholdY = 26;
+
+                                    // Primero intentar la posición original
+                                    if (!posicionesTexto.Any(pt => Math.Abs(pt.x - xText) < thresholdX && Math.Abs(pt.y - yText) < thresholdY))
                                     {
-                                        var predicado = $"{particula.Causa.Texto} {particula.Naturaleza.Texto}";
-                                        if(frameIdx > 1) // Mostrar detalles de frecuencia y amplitud después de algunos frames para evitar saturar la imagen inicialmente
+                                        hayEspacio = true;
+                                    }
+                                    else
+                                    {
+                                        // Buscar hacia arriba
+                                        for (int i = 1; i <= 10; i++)
                                         {
-                                            predicado += $" ({particula.Causa.Frecuencia:F2} Hz, {particula.Efecto.Amplitud:F2} A)";
+                                            double yTest = y - 5 - (offsetTexto * i);
+                                            if (!posicionesTexto.Any(pt => Math.Abs(pt.x - xText) < thresholdX && Math.Abs(pt.y - yTest) < thresholdY))
+                                            {
+                                                yText = yTest;
+                                                hayEspacio = true;
+                                                break;
+                                            }
                                         }
-                                        canvas.DrawText(predicado, xText, yText, font, paint);
-                                        posicionesTexto.Add((xText, yText, particula));
+                                        
+                                        // Si no encontró arriba, buscar hacia abajo
+                                        if (!hayEspacio)
+                                        {
+                                            for (int i = 1; i <= 10; i++)
+                                            {
+                                                double yTest = y - 5 + (offsetTexto * i);
+                                                if (!posicionesTexto.Any(pt => Math.Abs(pt.x - xText) < thresholdX && Math.Abs(pt.y - yTest) < thresholdY))
+                                                {
+                                                    yText = yTest;
+                                                    hayEspacio = true;
+                                                    break;
+                                                }
+                                            }
+                                        }
+                                        
+                                        // Si sigue sin encontrar, buscar también a los lados
+                                        if (!hayEspacio)
+                                        {
+                                            for (int i = 1; i <= 5; i++)
+                                            {
+                                                double xTest = x + 10 + (30 * i);
+                                                double yTest = y - 5;
+                                                if (!posicionesTexto.Any(pt => Math.Abs(pt.x - xTest) < thresholdX && Math.Abs(pt.y - yTest) < thresholdY))
+                                                {
+                                                    xText = xTest;
+                                                    yText = yTest;
+                                                    hayEspacio = true;
+                                                    break;
+                                                }
+                                            }
+                                        }
+                                    }
+                                    
+                                    if (hayEspacio)
+                                    {
+                                        using (var typeface = SKTypeface.FromFamilyName("Arial", SKFontStyle.Normal))
+                                        using (var font = new SKFont(typeface, 12f))
+                                        using (var paint = new SKPaint { Color = SKColors.Black, IsAntialias = true })
+                                        {
+                                            var predicado = $"{particula.Texto} ({particula.Frecuencia:F2} Hz, {particula.Efecto.Amplitud:F2} A)";                                        
+                                            canvas.DrawText(predicado, (float)xText, (float)yText, font, paint);
+                                            posicionesTexto.Add((xText, yText, particula));
+                                        }
                                     }
                                 }
                                 
@@ -180,7 +245,7 @@ namespace ConsoleApp
                     }
 
                     // Guardar frame como PNG
-                    var framePath = Path.Combine(framesDir, $"frame_{frameIdx:D3}.png");
+                    var framePath = Path.Combine(rutaSalida, $"frame_{frameIdx:D3}.png");
                     framePaths.Add(framePath);
                     using (var image = SKImage.FromBitmap(bitmap))
                     using (var encoded = image.Encode(SKEncodedImageFormat.Png, 100))

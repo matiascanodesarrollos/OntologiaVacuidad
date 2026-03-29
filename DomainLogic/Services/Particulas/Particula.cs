@@ -20,16 +20,17 @@ public class Particula : Nombre
     {
         get
         {
-            var vx = Velocidad * Math.Cos(Naturaleza.Fase);
-            var vy = Velocidad * Math.Sin(Naturaleza.Fase);
+            var vx = Velocidad * Math.Cos(Fase);
+            var vy = Velocidad * Math.Sin(Fase);
             
             return new Vector2D(vx, vy);
         }
     }
 
-    public virtual double Carga => 0.0; // Carga por defecto, puede ser sobreescrita por partículas específicas
-    public virtual double Masa => 1.0; // Masa por defecto, puede ser sobreescrita por partículas específicas
-    public virtual double Energia => Masa * Causa.Frecuencia; // E = h * f
+    public virtual double Carga => 0.0;
+    public virtual double Masa => 1.0;
+    public virtual double Energia => Masa * Frecuencia; // E = h * f
+    public virtual double Velocidad => 1.0;
 
     public virtual void Mover(double deltaTime)
     {
