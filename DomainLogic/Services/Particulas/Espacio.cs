@@ -64,7 +64,7 @@ public class Espacio : Nombre
                 // Solo crear apariencias si no hay demasiadas partículas ya
                 if(interaccionCompleja.Count > 1 && nuevasApariencias.Count < maxNuevasParticulas)
                 {
-                    var nuevas = interaccionCompleja.Zip(interaccionCompleja.Skip(1), (a, b) => a.Mostrarse(b.Esencia))
+                    var nuevas = interaccionCompleja.Zip(interaccionCompleja.Skip(1), (a, b) => Designacion.Designar(b, a.Esencia))
                         .ToList();
                     // Limitar la cantidad añadida en este frame
                     var cantidadAAnadir = System.Math.Min(nuevas.Count, maxNuevasParticulas - nuevasApariencias.Count);

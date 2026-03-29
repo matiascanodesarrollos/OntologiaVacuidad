@@ -1,5 +1,5 @@
 using System;
-using System.Linq;
+using System.Text;
 
 public class Nombre : Palabra
 {
@@ -15,14 +15,17 @@ public class Nombre : Palabra
         : base(texto, fase)
     {
         Id = Guid.NewGuid();
-        Efecto = new Apariencia(this);
-        Frecuencia = frecuencia;
         Esencia = esencia;
+        Efecto = new Apariencia(this)
+        {
+            Causa = this,
+        };
+        Frecuencia = frecuencia;
     }
 
     /// <summary>
     /// Permite la herencia al copiar las propiedades de otro nombre.
-    /// Para crear el original usar el metodo estático Crear de Designacion.
+    /// Para crear el original usar el metodo estático Designar de Designacion.
     /// </summary>
     /// <param name="nombre">El nombre del cual se copiarán las propiedades.</param>
     public Nombre(Nombre nombre) 
@@ -35,41 +38,23 @@ public class Nombre : Palabra
         Esencia = nombre.Esencia;
     }
 
-    /// <summary>
-    /// Se muestra como el nombre proyectado, afectando la apariencia .
-    /// Se produce algo similar a la modulación QAM (PM + AM) y FM en secuencia sobre la instancia.
-    /// Sobreescribir los metodos Modular de Palabra y Apariencia para un comportamiento mas detallado.
-    /// Los mismo se llaman en esa secuencia.
-    /// </summary>
-    /// <param name="designacionProyectada">La designación que se utilizará para mostrar la apariencia.</param>
-    /// <returns>La apariencia resultante</returns>
-    public Designacion Mostrarse(Designacion designacionProyectada)
+    internal Designacion Mostrarse(Nombre nombreProyectado)
     {
         //Modulación PM
-        Modular(designacionProyectada.Causa);
+        Modular(nombreProyectado);
         //Modulación FM
-        var nombrePrincipal = designacionProyectada
-            .Nombres
-            .OrderByDescending(n => n.Efecto.Amplitud)
-            .First();
-        Esencia.Modular(nombrePrincipal);
+        Esencia.Modular(nombreProyectado);
         //Modulación AM
-        Efecto.Modular(designacionProyectada);
+        Efecto.Modular(nombreProyectado.Esencia);
 
-        return designacionProyectada;
+        return Esencia;
     }
 
     /// <summary>
     /// Retorna una representación del nombre.
     /// </summary>
     /// <returns>Naturaleza, fase y frecuencia.</returns>
-    public override string ToString() => $"Naturaleza: {Texto}, Fase: {Fase * (180 / Math.PI):F2}º, Frecuencia: {Frecuencia:F2} Hz, Amplitud: {Efecto.Amplitud:F2}";
-        
-    /// <summary>
-    /// Sobreescribe GetHashCode para comparar nombres por su Id.
-    /// </summary>
-    /// <returns>El hash code del nombre.</returns>
-    public override int GetHashCode() => Id.GetHashCode();
+    public override string ToString() => $"Naturaleza: {(Texto.Length > 20 ? Convert.ToBase64String(Encoding.UTF8.GetBytes(Texto)) : Texto)}, Fase: {Fase * (180 / Math.PI):F2}º, Frecuencia: {Frecuencia:F2} Hz, Amplitud: {Efecto.Amplitud:F2}";
 
     /// <summary>
     /// Sobreescribe Equals para comparar nombres por su Id.
@@ -83,4 +68,10 @@ public class Nombre : Palabra
         }
         return false;
     }
+
+    /// <summary>
+    /// Sobreescribe GetHashCode para comparar nombres por su Id.
+    /// </summary>
+    /// <returns>El hash code del nombre.</returns>
+    public override int GetHashCode() => Id.GetHashCode();
 }

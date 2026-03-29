@@ -17,26 +17,30 @@ namespace ConsoleApp
 
         public static Func<Particula, SKColor> FuncionFrecuenciaAColor = (part) =>
         {
+            if(part.Texto == "Vacuidad")
+            {
+                return SKColor.Parse("#0066ff28");
+            }
+
             return part.Frecuencia switch
             {
                 1 => SKColor.Parse("#FF0000"),
-                2 => SKColor.Parse("#FFFF00"),
-                3 => SKColor.Parse("#00CC00"),
-                _ => SKColor.Parse("#FFFFFF"),
+                2 => SKColor.Parse("#00CC00"),
+                3 => SKColor.Parse("#0066FF"),
+                _ => SKColor.Parse("#FFFF00"),
             };
         };
 
         public static Func<Particula, SKColor> FuncionAmplitudAColor = (part) =>
+        {
+            return part.Efecto.Amplitud switch
             {
-                return part.Efecto.Amplitud switch
-                {
-                    1 => SKColor.Parse("#FF0000"), 
-                    4 => SKColor.Parse("#FFFF00"),
-                    5 => SKColor.Parse("#00CC00"),
-                    6 => SKColor.Parse("#0066FF"),
-                    _ => SKColor.Parse("#FFFFFF")
-                };
+                1 => SKColor.Parse("#FF0000"), 
+                4 => SKColor.Parse("#FFFF00"),
+                6 => SKColor.Parse("#00CC00"),
+                _ => SKColor.Parse("#FFFFFF")
             };
+        };
         public static List<string> GenerarFramesPng(this Espacio espacio, string rutaSalida, int cantidadFrames, double deltaTimePorFrame, Func<Particula, SKColor> funcionAColor)
         {
             var framePaths = new List<string>();

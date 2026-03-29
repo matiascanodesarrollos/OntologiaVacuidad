@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -7,33 +8,19 @@ namespace DomainLogic.Services
     {
         public static Designacion CrearAmbiente(string texto = null)
         {
+            var frecuenciaBase = 1000;
             if (!string.IsNullOrEmpty(texto))
             {
-                var oraciones = texto.Split('.').ToList();
-                var designaciones = oraciones                    
-                    .Select(p => new Designacion(new List<string> { p }))
+                var oraciones = texto
+                    .Split('.')
+                    .Select(t => t.Trim())
+                    .Where(t => !string.IsNullOrEmpty(t))
                     .ToList();
-                var resultado = designaciones.First();
-                foreach(var oracion in designaciones.Skip(1))
-                {
-                    resultado.Causa.Mostrarse(oracion);
-                }
-                return resultado;
+                return Designacion.Designar(oraciones, frecuenciaBase);
             }
             
-            var designacion = new Designacion(new List<string>())
-                .Aparecer(new List<string> { 
-                    "Ser mente luminosa",
-                    "Parecer vasto espacio",
-                    "Estar",
-                    "Mostrar apariencia" });
-            var apariencia = designacion
-                .Aparecer(new List<string> {
-                    "Aparecer agua pura", 
-                    "Aparecer tierra pura y sólida",
-                    "Aparecer aire vibración pura",
-                    "Aparecer fuego",
-            });
+            var designacion = Designacion.Designar(new List<string>(), frecuenciaBase);
+            var apariencia = designacion.Aparecer();
             return apariencia;
         }
     }

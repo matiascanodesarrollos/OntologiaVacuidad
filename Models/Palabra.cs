@@ -2,9 +2,9 @@ using System;
 public class Palabra
 {
     public virtual Guid Id { get; }
-    public virtual double Fase { get; private set; }
+    public virtual double Fase { get; internal set; }
     public virtual string Texto { get; }
-    private static Func<double, double> Normalizar => fase => Math.Abs(fase) % (2 * Math.PI);
+    private Func<double, double> Normalizar => fase => Math.Abs(fase) % (2 * Math.PI);
 
     internal Palabra(string texto, double fase)
     {
@@ -23,9 +23,27 @@ public class Palabra
     {
         if(Fase == 0 && palabraProyectada.Fase == 0)
         {
-            palabraProyectada.Fase = Math.PI / 2; //Si ambas palabras aparentar ser las iniciales la original empuja la otra al plano imaginario.
-            return;
+            palabraProyectada.Fase = Math.PI / 2; //Si ambas palabras aparentar ser las iniciales la original empuja la otra al plano imaginario.            
         }
         Fase = Normalizar(Fase + palabraProyectada.Fase); // Modulación PM, simula la suma de fases en la función de onda portadora        
+    }
+
+    /// <summary>
+    /// Sobreescribe GetHashCode para comparar palabras por su Id.
+    /// </summary>
+    /// <returns>El hash code de la palabra.</returns>
+    public override int GetHashCode() => Id.GetHashCode();
+
+    /// <summary>
+    /// Sobreescribe Equals para comparar palabras por su Id.
+    /// </summary>
+    /// <returns>True si las palabras son iguales, false en caso contrario.</returns>
+    public override bool Equals(object obj)
+    {
+        if (obj is Palabra other)
+        {
+            return Id == other.Id;
+        }
+        return false;
     }
 }

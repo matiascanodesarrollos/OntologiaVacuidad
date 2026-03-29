@@ -3,7 +3,7 @@
   "profiles": {
     "ConsoleApp": {
       "commandName": "Project",
-      "commandLineArgs": "Ser mente.Calentar fuego.Vibrar gas.Fluir líquido.Permanecer tierra."
+      "commandLineArgs": "Fluir líquido.Permanecer tierra.Vibrar gas.Calentar fuego."
     }
   }
 }
