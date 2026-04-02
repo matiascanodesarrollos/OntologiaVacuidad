@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 
 namespace DomainLogic.Services.Particulas;
 
@@ -6,25 +7,17 @@ public class Particula : Nombre
 {
     public double Tiempo { get; protected set; } 
     public Vector2D Posicion2D { get; protected set; }
+    public virtual Vector2D Velocidad2D { get; protected set; }
     public Vector2D Aceleracion { get; protected set; }
 
     internal Particula(Nombre nombre) : base(nombre)
     {
+        var designacion = nombre.Efecto as Designacion;
         Posicion2D = new Vector2D(0, 0);
+        var primeraVelocidad = designacion?.Velocidad.FirstOrDefault();
+        Velocidad2D = new Vector2D(primeraVelocidad?.x ?? 0, primeraVelocidad?.y ?? 0);
         Aceleracion = new Vector2D(0, 0);
         Tiempo = 0;
-    }
-
-    // Velocidad 2D calculada basada en la Fase de la Naturaleza
-    public virtual Vector2D Velocidad2D
-    {
-        get
-        {
-            var vx = Velocidad * Math.Cos(Fase);
-            var vy = Velocidad * Math.Sin(Fase);
-            
-            return new Vector2D(vx, vy);
-        }
     }
 
     public virtual double Carga => 0.0;

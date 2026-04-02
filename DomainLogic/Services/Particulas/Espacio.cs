@@ -10,7 +10,7 @@ public class Espacio : Nombre
     internal Espacio(Designacion designacion) : base(designacion.Causa)
     {
         Particulas = new Dictionary<Vector2D, List<Particula>>();
-        AgregarParticula(new Foton(designacion.Nombres.First()));
+        AgregarParticula(new Foton(designacion.Causa));
         foreach (var efecto in designacion.Nombres)
         {
             AgregarParticula(new Electron(efecto));
@@ -64,7 +64,7 @@ public class Espacio : Nombre
                 // Solo crear apariencias si no hay demasiadas partículas ya
                 if(interaccionCompleja.Count > 1 && nuevasApariencias.Count < maxNuevasParticulas)
                 {
-                    var nuevas = interaccionCompleja.Zip(interaccionCompleja.Skip(1), (a, b) => Designacion.Designar(b, a.Esencia))
+                    var nuevas = interaccionCompleja.Zip(interaccionCompleja.Skip(1), (a, b) => Designacion.Designar(b, a.Efecto))
                         .ToList();
                     // Limitar la cantidad añadida en este frame
                     var cantidadAAnadir = System.Math.Min(nuevas.Count, maxNuevasParticulas - nuevasApariencias.Count);

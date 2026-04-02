@@ -28,7 +28,7 @@ public class Vector2D
 
     public double ProductoPunto(Vector2D otro) => X * otro.X + Y * otro.Y;
 
-    public override bool Equals(object? obj)
+    public override bool Equals(object obj)
     {
         if (obj is not Vector2D other) return false;
         return X == other.X && Y == other.Y;

@@ -15,33 +15,20 @@ namespace ConsoleApp
         private const int CENTROY = 450;
         private const int PADDING = 20;
 
-        public static Func<Particula, SKColor> FuncionFrecuenciaAColor = (part) =>
-        {
-            if(part.Texto == "Vacuidad")
-            {
-                return SKColor.Parse("#0066ff28");
-            }
-
-            return part.Frecuencia switch
-            {
-                1 => SKColor.Parse("#FF0000"),
-                2 => SKColor.Parse("#00CC00"),
-                3 => SKColor.Parse("#0066FF"),
-                _ => SKColor.Parse("#FFFF00"),
-            };
-        };
-
         public static Func<Particula, SKColor> FuncionAmplitudAColor = (part) =>
         {
+            // STFT: Amplitud a color (paleta plasma)
             return part.Efecto.Amplitud switch
             {
-                1 => SKColor.Parse("#FF0000"), 
-                4 => SKColor.Parse("#FFFF00"),
-                6 => SKColor.Parse("#00CC00"),
+                <= 1 => SKColor.Parse("#0011ff"),
+                <= 2 => SKColor.Parse("#00cc00"), //Cambio por violeta para mas contraste
+                <= 3 => SKColor.Parse("#cc0000"),
+                <= 4 => SKColor.Parse("#ff640a"),
+                <= 5 => SKColor.Parse("#ffe60a"),
                 _ => SKColor.Parse("#FFFFFF")
             };
         };
-        public static List<string> GenerarFramesPng(this Espacio espacio, string rutaSalida, int cantidadFrames, double deltaTimePorFrame, Func<Particula, SKColor> funcionAColor)
+        public static List<string> GenerarFramesPng(this Espacio espacio, string rutaSalida, int cantidadFrames, double deltaTimePorFrame)
         {
             var framePaths = new List<string>();
             Directory.CreateDirectory(rutaSalida);
@@ -97,7 +84,7 @@ namespace ConsoleApp
                             
                             foreach (var foton in fotones)
                             {
-                                var color = funcionAColor(foton);
+                                var color = FuncionAmplitudAColor(foton);
                                 var colorConAlpha = new SKColor(color.Red, color.Green, color.Blue, 50); // Semi-transparente
                                 
                                 // Posición del fotón en el canvas
@@ -137,9 +124,9 @@ namespace ConsoleApp
                         // Luego dibujar partículas con carga
                         foreach (var grupoParticulas in espacio.Particulas.Values)
                         {
-                            foreach (var particula in grupoParticulas.Where(p => p.Carga != 0)) // Solo dibujar partículas con carga
+                            foreach (var particula in grupoParticulas.Where((p, i) => p.Carga != 0)) // Solo dibujar partículas con carga
                             {
-                                var color = funcionAColor(particula);                     
+                                var color = FuncionAmplitudAColor(particula);                     
                                 var x = CENTROX + (float) particula.Posicion2D.X;
                                 var y = CENTROY - (float) particula.Posicion2D.Y;
                                 
@@ -149,80 +136,23 @@ namespace ConsoleApp
                                     canvas.DrawCircle(x, y, 6f, paint); // Escalar el tamaño del círculo
                                 }
 
-                                if(frameIdx < 4)
-                                {
-                                    // Dibujar nombre de la partícula
-                                    double xText = x + 10;
-                                    double yText = y - 5;
-                                    
-                                    // Buscar posición sin solapamientos con mejor detección
-                                    bool hayEspacio = false;
-                                    const int offsetTexto = 25;
-                                    const int thresholdX = 80;
-                                    const int thresholdY = 26;
+                                // Dibujar nombre de la partícula
+                                double xText = x - 120;
+                                double yText = y - 20;
+                                
+                                // Buscar posición sin solapamientos con mejor detección
+                                bool hayEspacio = !posicionesTexto.Any(pt => 
+                                    pt.p.Fase == particula.Fase);
 
-                                    // Primero intentar la posición original
-                                    if (!posicionesTexto.Any(pt => Math.Abs(pt.x - xText) < thresholdX && Math.Abs(pt.y - yText) < thresholdY))
+                                if (hayEspacio)
+                                {
+                                    using (var typeface = SKTypeface.FromFamilyName("Arial", SKFontStyle.Normal))
+                                    using (var font = new SKFont(typeface, 12f))
+                                    using (var paint = new SKPaint { Color = SKColors.Black, IsAntialias = true })
                                     {
-                                        hayEspacio = true;
-                                    }
-                                    else
-                                    {
-                                        // Buscar hacia arriba
-                                        for (int i = 1; i <= 10; i++)
-                                        {
-                                            double yTest = y - 5 - (offsetTexto * i);
-                                            if (!posicionesTexto.Any(pt => Math.Abs(pt.x - xText) < thresholdX && Math.Abs(pt.y - yTest) < thresholdY))
-                                            {
-                                                yText = yTest;
-                                                hayEspacio = true;
-                                                break;
-                                            }
-                                        }
-                                        
-                                        // Si no encontró arriba, buscar hacia abajo
-                                        if (!hayEspacio)
-                                        {
-                                            for (int i = 1; i <= 10; i++)
-                                            {
-                                                double yTest = y - 5 + (offsetTexto * i);
-                                                if (!posicionesTexto.Any(pt => Math.Abs(pt.x - xText) < thresholdX && Math.Abs(pt.y - yTest) < thresholdY))
-                                                {
-                                                    yText = yTest;
-                                                    hayEspacio = true;
-                                                    break;
-                                                }
-                                            }
-                                        }
-                                        
-                                        // Si sigue sin encontrar, buscar también a los lados
-                                        if (!hayEspacio)
-                                        {
-                                            for (int i = 1; i <= 5; i++)
-                                            {
-                                                double xTest = x + 10 + (30 * i);
-                                                double yTest = y - 5;
-                                                if (!posicionesTexto.Any(pt => Math.Abs(pt.x - xTest) < thresholdX && Math.Abs(pt.y - yTest) < thresholdY))
-                                                {
-                                                    xText = xTest;
-                                                    yText = yTest;
-                                                    hayEspacio = true;
-                                                    break;
-                                                }
-                                            }
-                                        }
-                                    }
-                                    
-                                    if (hayEspacio)
-                                    {
-                                        using (var typeface = SKTypeface.FromFamilyName("Arial", SKFontStyle.Normal))
-                                        using (var font = new SKFont(typeface, 12f))
-                                        using (var paint = new SKPaint { Color = SKColors.Black, IsAntialias = true })
-                                        {
-                                            var predicado = $"{particula.Texto} ({particula.Frecuencia:F2} Hz, {particula.Efecto.Amplitud:F2} A)";                                        
-                                            canvas.DrawText(predicado, (float)xText, (float)yText, font, paint);
-                                            posicionesTexto.Add((xText, yText, particula));
-                                        }
+                                        var predicado = particula.ToString();                                        
+                                        canvas.DrawText(predicado, (float)xText, (float)yText, font, paint);
+                                        posicionesTexto.Add((xText, yText, particula));
                                     }
                                 }
                                 

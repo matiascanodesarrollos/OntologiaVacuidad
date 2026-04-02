@@ -23,34 +23,19 @@ namespace ConsoleApp
             
             try
             {
-                var ambiente = AmbienteConfig.CrearAmbiente();
+                var ambiente = AmbienteConfig.CrearAmbiente(string.Join(' ', args));
                 
                 logger.LogInformation($"[ESPACIO basado en amplitud (apariencia)] Creado para: {ambiente}\n");
                 var espacio = Espacio.Crear(ambiente);
                 
                 var framesDir = Path.Combine(Directory.GetCurrentDirectory(), "frames");
                 var directorioSalida = Path.Combine(framesDir, "Amplitud");
-                var paths = espacio.GenerarFramesPng(directorioSalida, 4, 200, FrameGenerator.FuncionAmplitudAColor);
+                var paths = espacio.GenerarFramesPng(directorioSalida, 6, 100);
                 foreach (var path in paths)
                 {
                     logger.LogInformation($"Frame generado: {path}");
                 }
                 logger.LogInformation($"Espacio contiene {espacio.Particulas.Count} posiciones ocupadas");
-
-                if(args.Length > 0)
-                {
-                    ambiente = AmbienteConfig.CrearAmbiente(string.Join(' ', args));
-                    logger.LogInformation($"[ESPACIO basado en frecuencia (texto)] Creado para: {ambiente}\n");
-                    espacio = Espacio.Crear(ambiente);
-
-                    directorioSalida = Path.Combine(framesDir, "Frecuencia");
-                    paths = espacio.GenerarFramesPng(directorioSalida, 4, 200, FrameGenerator.FuncionFrecuenciaAColor);
-                    foreach (var path in paths)
-                    {
-                        logger.LogInformation($"Frame generado: {path}");
-                    }
-                    logger.LogInformation($"Espacio contiene {espacio.Particulas.Count} posiciones ocupadas");
-                }
 
                 logger.LogInformation("\n✓ Simulación completada exitosamente");
             }

@@ -3,7 +3,7 @@
   "profiles": {
     "ConsoleApp": {
       "commandName": "Project",
-      "commandLineArgs": "Fluir líquido.Permanecer tierra.Vibrar gas.Calentar fuego."
+      "commandLineArgs": "Aparecer tierra sólida pura y muy vasta. Aparecer fuego puro. Aparecer gas puro. Agua."
     }
   }
 }

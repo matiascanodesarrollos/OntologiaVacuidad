@@ -6,76 +6,49 @@ using System.Text;
 public class Designacion : Apariencia
 {
     public override Guid Id { get; }
-    public List<Nombre> Nombres { get; }
+    public List<(double x, double y)> Velocidad => 
+        Nombres
+        .Zip(Nombres.Skip(1), (a, b) => (Math.Cos(a.Fase), Math.Cos(b.Fase)))
+        .ToList();
+    public List<Nombre> Nombres { get; internal set; }
 
-    internal Designacion(List<string> predicados)
-        : base(new Nombre(null, 0, 0, null))
+
+    internal Designacion(List<Nombre> nombres)
+        : base(nombres.First())
     {
         Id = Guid.NewGuid();
-        if(predicados == null || predicados.Count == 0)
-        {            
-            Nombres = new List<Nombre>();
-            return;
-        }
-
-        var deltaFase = 2 * Math.PI / predicados.Count;
-        var frecuenciaOraciones = predicados.Count;
-        var nombres = predicados
-            .Select((p, i) => new Nombre(
-                p.Trim(), i * deltaFase, 
-                frecuenciaOraciones - i, 
-                this))
-            .ToList();
         Nombres = nombres;
-        Nombres.ForEach(n => n.Esencia = this);
-        Causa.Esencia = this;
     }
 
     /// <summary>
-    /// Proyeccion de un Nombre sobre una Apariencia que la modula (AM, FM, PM).
+    /// Proyeccion de un Nombre sobre una Apariencia que la modula.
+    /// Por defecto agrega el nombre a la lista de efectos si tiene una frecuencia menor a la maxima.
     /// </summary>
     /// <param name="nombre">El nombre proyectado.</param>
     /// <param name="apariencia">La apariencia sobre la que se proyectará el nombre.</param>
+    /// <param name="funcionProyeccion">Una función opcional para personalizar la proyección del nombre sobre la apariencia.</param>
     /// <returns>La designación resultante de la proyección.</returns>
-    public static Designacion Designar(Nombre nombre, Apariencia apariencia) 
+    public static Designacion Designar(Nombre nombre, Apariencia apariencia, Func<Apariencia, Nombre, Designacion> funcionProyeccion = null)
     {
-        return apariencia.Causa.Mostrarse(nombre);
-    }
-
-    /// <summary>
-    /// Proyeccion de un Nombre sobre una Apariencia que la modula (AM, FM, PM).
-    /// </summary>
-    /// <param name="nombre">El nombre proyectado.</param>
-    /// <param name="frecuenciaBase">La frecuencia base para la creación de la designación.</param>
-    /// <returns>La designación resultante de la proyección.</returns>
-    public static Designacion Designar(List<string> predicados, double frecuenciaBase) 
-    {
-        var aparienciaMente = new Apariencia(
-            new Nombre("Ser mente luminosa", 0, frecuenciaBase, null));
-        var designacion = aparienciaMente.Aparecer(new List<string> { 
-            "Vacuidad",
-        });
-
-        if(predicados == null || predicados.Count == 0)
+        if(funcionProyeccion != null)
         {
-            return designacion;
+            return funcionProyeccion(apariencia, nombre);
         }
-        return Designar(designacion.Nombres.Last(), new Designacion(predicados));
-    }
-
-     /// <summary>
-    /// Agrega un nuevo efecto a la designacion si la frecuencia proyectada es mayor o igual a la frecuencia máxima de los efectos actuales.
-    /// Se produce algo similar a la modulación FM.
-    /// Sobreescribir para un comportamiento mas detallado.
-    /// </summary>
-    /// <param name="efectoProyectado">El nombre proyectado que se utilizará para modular la designación.</param>
-    public virtual void Modular(Nombre efectoProyectado)
-    {
-        var frecuenciaMaxima = Nombres.Max(s => Math.Abs(s.Frecuencia));
-        if(efectoProyectado.Frecuencia <= frecuenciaMaxima)
+    
+        var designacion = apariencia as Designacion;
+        if(designacion == null)
         {
-            Nombres.Add(efectoProyectado);
+            return new Designacion(new List<Nombre> { apariencia.Causa, nombre });
         }
+
+        var faseCompartida = designacion
+            .Nombres
+            .FirstOrDefault(n => Math.Abs(n.Fase - nombre.Fase) < 0.01);
+        if (faseCompartida == null)
+        {
+            designacion.Nombres.Add(nombre);
+        }
+        return designacion;
     }
 
     /// <summary>
