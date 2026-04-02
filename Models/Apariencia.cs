@@ -64,12 +64,12 @@ public class Apariencia
             .GroupBy(p => p)
             .ToDictionary(g => g.Key, g => Math.Max(1,g.Count()));
 
-        for(var i = 0; i < predicados.Count; i++)
+        for(var i = 1; i <= predicados.Count; i++)
         {
-            var verboNucleo = predicados[i].Split(' ').First();
+            var verboNucleo = predicados[i - 1].Split(' ').First();
             designacion.Nombres[i].Frecuencia *= diccionarioVerbos[verboNucleo];
 
-            var complementosDelSujeto = predicados[i].Split(' ').Skip(1).ToList();
+            var complementosDelSujeto = predicados[i - 1].Split(' ').Skip(1).ToList();
             designacion.Nombres[i].Efecto.Amplitud = complementosDelSujeto
                 .Sum(c => diccionarioComplementos[c]);
         }

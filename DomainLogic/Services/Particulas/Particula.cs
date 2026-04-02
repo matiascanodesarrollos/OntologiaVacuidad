@@ -1,6 +1,3 @@
-using System;
-using System.Linq;
-
 namespace DomainLogic.Services.Particulas;
 
 public class Particula : Nombre
@@ -14,8 +11,7 @@ public class Particula : Nombre
     {
         var designacion = nombre.Efecto as Designacion;
         Posicion2D = new Vector2D(0, 0);
-        var primeraVelocidad = designacion?.Velocidad.FirstOrDefault();
-        Velocidad2D = new Vector2D(primeraVelocidad?.x ?? 0, primeraVelocidad?.y ?? 0);
+        Velocidad2D = new Vector2D(designacion.Velocidad.X, designacion.Velocidad.Y);
         Aceleracion = new Vector2D(0, 0);
         Tiempo = 0;
     }
@@ -23,7 +19,6 @@ public class Particula : Nombre
     public virtual double Carga => 0.0;
     public virtual double Masa => 1.0;
     public virtual double Energia => Masa * Frecuencia; // E = h * f
-    public virtual double Velocidad => 1.0;
 
     public virtual void Mover(double deltaTime)
     {

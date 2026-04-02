@@ -9,7 +9,6 @@ public class Electron : Particula
     {
         
     }
-
-    public override double Velocidad => 0.25; // Velocidad del electrón normalizada
+    
     public override double Carga => -1.0;
 }

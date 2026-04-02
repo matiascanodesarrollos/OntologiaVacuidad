@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -58,7 +59,6 @@ public class Espacio : Nombre
                 var lista = Particulas[posicion.NuevaPosicion];
                 
                 var interaccionCompleja = lista
-                        .Where(p => p.Carga != 0)
                         .ToList();
                         
                 // Solo crear apariencias si no hay demasiadas partículas ya
@@ -67,7 +67,7 @@ public class Espacio : Nombre
                     var nuevas = interaccionCompleja.Zip(interaccionCompleja.Skip(1), (a, b) => Designacion.Designar(b, a.Efecto))
                         .ToList();
                     // Limitar la cantidad añadida en este frame
-                    var cantidadAAnadir = System.Math.Min(nuevas.Count, maxNuevasParticulas - nuevasApariencias.Count);
+                    var cantidadAAnadir = Math.Min(nuevas.Count, maxNuevasParticulas - nuevasApariencias.Count);
                     nuevasApariencias.AddRange(nuevas.Take(cantidadAAnadir));
                 }
 

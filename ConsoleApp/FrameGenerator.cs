@@ -21,10 +21,9 @@ namespace ConsoleApp
             return part.Efecto.Amplitud switch
             {
                 <= 1 => SKColor.Parse("#0011ff"),
-                <= 2 => SKColor.Parse("#00cc00"), //Cambio por violeta para mas contraste
+                <= 2 => SKColor.Parse("#036603"), //Cambio por violeta para mas contraste
                 <= 3 => SKColor.Parse("#cc0000"),
-                <= 4 => SKColor.Parse("#ff640a"),
-                <= 5 => SKColor.Parse("#ffe60a"),
+                <= 4 => SKColor.Parse("#ffe60a"),
                 _ => SKColor.Parse("#FFFFFF")
             };
         };
@@ -75,7 +74,11 @@ namespace ConsoleApp
                         var posicionesTexto = new List<(double x, double y, Particula p)>();
                         
                         // Primero dibujar fotones como haz de luz irradiado
-                        var fotones = espacio.Particulas.Values.SelectMany(g => g.Where(p => p.Carga == 0)).ToList();
+                        var fotones = espacio
+                            .Particulas
+                            .Values
+                            .SelectMany(g => g.Where(p => p.Carga == 0))
+                            .ToList();
                         if (fotones.Any())
                         {
                             // Dibujar rayos de luz desde la posición de cada fotón
@@ -121,41 +124,39 @@ namespace ConsoleApp
                             }
                         }
 
+                        var particulasConCarga = espacio
+                            .Particulas
+                            .Values
+                            .SelectMany(g => g.Where(p => p.Carga != 0))
+                            .OrderByDescending(p => p.Efecto.Amplitud)
+                            .GroupBy(p => p.Fase)
+                            .Select(g => g.First())
+                            .ToList();
                         // Luego dibujar partículas con carga
-                        foreach (var grupoParticulas in espacio.Particulas.Values)
+                        foreach (var particula in particulasConCarga)
                         {
-                            foreach (var particula in grupoParticulas.Where((p, i) => p.Carga != 0)) // Solo dibujar partículas con carga
+                            var color = FuncionAmplitudAColor(particula);                     
+                            var x = CENTROX + (float) particula.Posicion2D.X;
+                            var y = CENTROY - (float) particula.Posicion2D.Y;
+                            
+                            // Dibujar círculo
+                            using (var paint = new SKPaint { Color = color, IsAntialias = true })
                             {
-                                var color = FuncionAmplitudAColor(particula);                     
-                                var x = CENTROX + (float) particula.Posicion2D.X;
-                                var y = CENTROY - (float) particula.Posicion2D.Y;
-                                
-                                // Dibujar círculo
-                                using (var paint = new SKPaint { Color = color, IsAntialias = true })
-                                {
-                                    canvas.DrawCircle(x, y, 6f, paint); // Escalar el tamaño del círculo
-                                }
+                                canvas.DrawCircle(x, y, 6f, paint); // Escalar el tamaño del círculo
+                            }
 
-                                // Dibujar nombre de la partícula
-                                double xText = x - 120;
-                                double yText = y - 20;
-                                
-                                // Buscar posición sin solapamientos con mejor detección
-                                bool hayEspacio = !posicionesTexto.Any(pt => 
-                                    pt.p.Fase == particula.Fase);
-
-                                if (hayEspacio)
-                                {
-                                    using (var typeface = SKTypeface.FromFamilyName("Arial", SKFontStyle.Normal))
-                                    using (var font = new SKFont(typeface, 12f))
-                                    using (var paint = new SKPaint { Color = SKColors.Black, IsAntialias = true })
-                                    {
-                                        var predicado = particula.ToString();                                        
-                                        canvas.DrawText(predicado, (float)xText, (float)yText, font, paint);
-                                        posicionesTexto.Add((xText, yText, particula));
-                                    }
-                                }
-                                
+                            // Dibujar nombre de la partícula
+                            double xText = x - 120;
+                            double yText = y - 20;
+                            
+                            // Buscar posición sin solapamientos con mejor detección
+                            using (var typeface = SKTypeface.FromFamilyName("Arial", SKFontStyle.Normal))
+                            using (var font = new SKFont(typeface, 12f))
+                            using (var paint = new SKPaint { Color = SKColors.Black, IsAntialias = true })
+                            {
+                                var predicado = particula.ToString();                                        
+                                canvas.DrawText(predicado, (float)xText, (float)yText, font, paint);
+                                posicionesTexto.Add((xText, yText, particula));
                             }
                         }
 

@@ -6,10 +6,20 @@ using System.Text;
 public class Designacion : Apariencia
 {
     public override Guid Id { get; }
-    public List<(double x, double y)> Velocidad => 
-        Nombres
-        .Zip(Nombres.Skip(1), (a, b) => (Math.Cos(a.Fase), Math.Cos(b.Fase)))
-        .ToList();
+    public (double X, double Y) Velocidad
+    {
+        get
+        {
+            if(Nombres.Count == 1)
+            {
+                return (Math.Cos(Nombres[0].Fase), Math.Sin(Nombres[0].Fase));
+            }
+
+            var nombresOrdenados = Nombres.OrderByDescending(n => n.Efecto.Amplitud).ToList();
+            return (Math.Cos(nombresOrdenados[0].Fase), Math.Sin(nombresOrdenados[1].Fase));
+        }
+    }
+
     public List<Nombre> Nombres { get; internal set; }
 
 
@@ -41,11 +51,12 @@ public class Designacion : Apariencia
             return new Designacion(new List<Nombre> { apariencia.Causa, nombre });
         }
 
-        var faseCompartida = designacion
+        var frecuenciaMaxima = designacion
             .Nombres
-            .FirstOrDefault(n => Math.Abs(n.Fase - nombre.Fase) < 0.01);
-        if (faseCompartida == null)
+            .Max(n => Math.Abs(n.Frecuencia));
+        if (frecuenciaMaxima < nombre.Frecuencia)
         {
+            designacion.Nombres.ForEach(n => n.Efecto.Amplitud *= 1 + nombre.Efecto.Amplitud);
             designacion.Nombres.Add(nombre);
         }
         return designacion;

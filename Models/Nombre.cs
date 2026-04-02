@@ -1,7 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 public class Nombre : Palabra
 {
@@ -37,7 +35,7 @@ public class Nombre : Palabra
     /// Retorna una representación del nombre.
     /// </summary>
     /// <returns>Naturaleza, fase y frecuencia.</returns>
-    public override string ToString() => $"{Texto}, ({Fase * (180 / Math.PI):F2}º, {Frecuencia:F2} Hz, {Efecto.Amplitud:F2} A, {string.Join(", ", (Efecto as Designacion).Velocidad.Select(v => $"({v.x:F2}, {v.y:F2})"))} m/s)";
+    public override string ToString() => $"{Texto} ({Fase * (180 / Math.PI):F2}º, {Frecuencia:F2} Hz, {Efecto.Amplitud:F2} A)";
 
     /// <summary>
     /// Sobreescribe Equals para comparar nombres por su Id.

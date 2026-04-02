@@ -3,7 +3,7 @@
   "profiles": {
     "ConsoleApp": {
       "commandName": "Project",
-      "commandLineArgs": "Aparecer tierra sólida pura y muy vasta. Aparecer fuego puro. Aparecer gas puro. Agua."
+      "commandLineArgs": "Tierra vasta, vibrante y pura. Agua líquida. Gas puro. Fuego caliente puro."
     }
   }
 }
