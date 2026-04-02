@@ -1,85 +1,66 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-public class Designacion
+public class Designacion : Apariencia
 {
-    public Guid Id { get; }    
-    public string Texto { get; internal set; }
-    public Nombre Esencia { get; private set; }
-    public Apariencia Naturaleza { get; private set; }    
-    public double Frecuencia { get; internal set; }
-    public double AnchoBanda { get; set; } = 2;
+    public override Guid Id { get; }
+    public (double X, double Y) Velocidad
+    {
+        get
+        {
+            if(Nombres.Count == 1)
+            {
+                return (Math.Cos(Nombres[0].Fase), Math.Sin(Nombres[0].Fase));
+            }
 
-    private Designacion(string verbo, double frecuencia)
+            var nombresOrdenados = Nombres.OrderByDescending(n => n.Efecto.Amplitud).ToList();
+            return (Math.Cos(nombresOrdenados[0].Fase), Math.Sin(nombresOrdenados[1].Fase));
+        }
+    }
+
+    public List<Nombre> Nombres { get; internal set; }
+
+
+    internal Designacion(List<Nombre> nombres)
+        : base(nombres.First())
     {
         Id = Guid.NewGuid();
-        Texto = verbo;
-        Frecuencia = frecuencia;
-    }
-
-    private void Actualizar(string sujeto, string predicado, double frecuencia)
-    {
-        Frecuencia = frecuencia;        
-        var delimitador = ' ';
-        var predicadoArray = predicado.Split(delimitador);        
-        Texto = predicadoArray.First();
-        Esencia.Naturaleza.Texto = string.Join(delimitador, predicadoArray.Skip(1));
-        Esencia.Texto = sujeto;        
+        Nombres = nombres;
     }
 
     /// <summary>
-    /// Crea una esencia o nueva designación imaginando un nuevo significado para un adjetivo, un sustantivo y un verbo, junto con su fase y frecuencia.
-    /// De esta manera se crea una onda portadora que puede ser modulada posteriormente para crear nuevas designaciones a partir de esta.
-    /// Se asemeja a la modulación PM [s(φ)=p(φ+m(φ))] en el sentido de crear un "foton" de frecuencia y fase, que luego puede ser modulado por otras designaciones para generar nuevos significados.
+    /// Proyeccion de un Nombre sobre una Apariencia que la modula.
+    /// Por defecto agrega el nombre a la lista de efectos si tiene una frecuencia menor a la maxima.
     /// </summary>
-    /// <param name="sustantivo">Permite derivar la frecuencia</param>
-    /// <param name="verbo">Permite derivar la amplitud</param>
-    /// <param name="adjetivo">Permite derivar la fase</param>
-    /// <param name="frecuencia">Permite controlar la interacción con otras ondas y por lo tanto el significado</param>
-    /// <param name="fase">Permite elegir la función de la onda portadora (ej: cos(φ)=sen(φ+90º))</param>
-    /// <returns>La nueva designación creada (con su Nombre/Palabra y su Apariencia).</returns>
-    public static Designacion Crear(
-        string sustantivo, 
-        string verbo, 
-        string adjetivo,
-        double frecuencia,
-        double fase)
+    /// <param name="nombre">El nombre proyectado.</param>
+    /// <param name="apariencia">La apariencia sobre la que se proyectará el nombre.</param>
+    /// <param name="funcionProyeccion">Una función opcional para personalizar la proyección del nombre sobre la apariencia.</param>
+    /// <returns>La designación resultante de la proyección.</returns>
+    public static Designacion Designar(Nombre nombre, Apariencia apariencia, Func<Apariencia, Nombre, Designacion> funcionProyeccion = null)
     {
-        var designacion = new Designacion(verbo, frecuencia);
-        var nuevaPalabra = new Palabra(adjetivo, fase);
-        var nuevoNombre = new Nombre(sustantivo, nuevaPalabra);
-        designacion.Naturaleza = nuevoNombre.Mostrarse(designacion, $"{verbo} {adjetivo}");
-        designacion.Esencia = nuevoNombre;
+        if(funcionProyeccion != null)
+        {
+            return funcionProyeccion(apariencia, nombre);
+        }
+    
+        var designacion = apariencia as Designacion;
+        if(designacion == null)
+        {
+            return new Designacion(new List<Nombre> { apariencia.Causa, nombre });
+        }
+
+        var frecuenciaMaxima = designacion
+            .Nombres
+            .Max(n => Math.Abs(n.Frecuencia));
+        if (frecuenciaMaxima < nombre.Frecuencia)
+        {
+            designacion.Nombres.ForEach(n => n.Efecto.Amplitud *= 1 + nombre.Efecto.Amplitud);
+            designacion.Nombres.Add(nombre);
+        }
         return designacion;
     }
-    
-    /// <summary>
-    /// Cambia la naturaleza de la designación si el nombre proyectado tiene una frecuencia que pueda incluirse dentro del ancho de banda.
-    /// Se produce algo similar a la modulación FM.
-    /// Sobreescribir para un comportamiento mas detallado.
-    /// </summary>
-    /// <param name="significado">El nombre proyectado que se utilizará para modular la designación.</param>
-    /// <param name="predicado">El predicado que se utilizará para actualizar la designación.</param>
-    /// <returns>La nueva frecuencia de la designación después de la modulación.</returns>
-    public virtual double Modular(
-        Nombre significado,
-        string predicado
-    )
-    {        
-        //Modulación FM, simula la integral del mensaje instantáneo
-        var frecuenciaModulada = Frecuencia;        
-        foreach (var naturaleza in Naturaleza.Efectos)
-        {
-            if(Math.Abs(significado.Causa.Frecuencia - naturaleza.Causa.Frecuencia) <= AnchoBanda)
-            {
-                frecuenciaModulada = naturaleza.Causa.Frecuencia;
-                naturaleza.Causa.Actualizar(significado.Texto, predicado, frecuenciaModulada);
-            }
-        }
-        Actualizar(significado.Texto, predicado, frecuenciaModulada);
-        return Frecuencia;
-    }    
 
     /// <summary>
     /// Sobreescribe ToString para mostrar una representación de la designación, incluyendo su naturaleza y esencia.
@@ -90,16 +71,34 @@ public class Designacion
     {
         var resultado = new StringBuilder();
         resultado.AppendLine("═══ Designación ═══");
-        foreach (var causa in Naturaleza.Efectos)
+        foreach (var efecto in Nombres)
         {
-            if(causa.Causa.Frecuencia == 0)
+            if(efecto.Frecuencia == 0)
             {
                 break;
             }
-            resultado.AppendLine(causa.ToString());
+            resultado.AppendLine(efecto.ToString());
         }
         resultado.AppendLine("═══ Fin ═══");
         return resultado.ToString();
     }
 
+    /// <summary>
+    /// Sobreescribe Equals para comparar designaciones por su Id.
+    /// </summary>
+    /// <returns>True si las designaciones son iguales, false en caso contrario.</returns>
+    public override bool Equals(object obj)
+    {
+        if (obj is Designacion other)
+        {
+            return Id == other.Id;
+        }
+        return false;
+    }
+
+    /// <summary>
+    /// Sobreescribe GetHashCode para comparar designaciones por su Id.
+    /// </summary>
+    /// <returns>El hash code de la designación.</returns>
+    public override int GetHashCode() => Id.GetHashCode();
 }

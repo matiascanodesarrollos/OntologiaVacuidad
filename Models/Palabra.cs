@@ -1,9 +1,10 @@
 using System;
 public class Palabra
 {
-    public Guid Id { get; }
-    public double Fase { get; internal set; }
-    public string Texto { get; internal set; }
+    public virtual Guid Id { get; }
+    public virtual double Fase { get; internal set; }
+    public virtual string Texto { get; }
+    private Func<double, double> Normalizar => fase => Math.Abs(fase) % (2 * Math.PI);
 
     internal Palabra(string texto, double fase)
     {
@@ -11,26 +12,23 @@ public class Palabra
         Texto = texto;
         Fase = Normalizar(fase);
     }
-    
-    private double Normalizar(double fase)
-    {
-        return Math.Abs(fase) % (2 * Math.PI);
-    }
-    
+
     /// <summary>
-    /// Cambia la fase de la palabra si la nueva fase es diferente de la actual.
-    /// Se produce algo similar a la modulación PM.
-    /// Sobreescribir para un comportamiento mas detallado.
+    /// Sobreescribe GetHashCode para comparar palabras por su Id.
     /// </summary>
-    /// <param name="fase">La nueva fase que se utilizará para modular la palabra.</param>
-    /// <returns>La nueva fase de la palabra después de la modulación.</returns>
-    public virtual double Modular(double fase)
+    /// <returns>El hash code de la palabra.</returns>
+    public override int GetHashCode() => Id.GetHashCode();
+
+    /// <summary>
+    /// Sobreescribe Equals para comparar palabras por su Id.
+    /// </summary>
+    /// <returns>True si las palabras son iguales, false en caso contrario.</returns>
+    public override bool Equals(object obj)
     {
-        if(Fase != fase)
+        if (obj is Palabra other)
         {
-            Fase = Normalizar(Fase + fase); // Modulación PM, simula la suma de fases en la función de onda portadora
+            return Id == other.Id;
         }
-        
-        return Fase;
+        return false;
     }
 }

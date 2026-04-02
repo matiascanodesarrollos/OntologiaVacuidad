@@ -1,67 +1,98 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+
 public class Apariencia
 {
-    public Guid Id { get; }
-    public double Amplitud { get; internal set; } = 1;
-    public IEnumerable<string> EnteDesignado 
-    {  
-        get
-        {
-            var efectoPrincipal = EfectoPrincipal;
-            return new List<string>
-            {
-                $"Naturaleza: {NaturalezaAparente.Naturaleza.Texto}",
-                $"Causa: {efectoPrincipal.Texto}",            
-                $"Frecuencia: {efectoPrincipal.Causa.Frecuencia:F2}",
-                $"Fase: {efectoPrincipal.Naturaleza.Fase:F2}°",
-                $"Amplitud: {Amplitud}",
-                $"Efecto: {efectoPrincipal.Naturaleza.Texto}",
-            };
-        }
-    }
-    public Nombre NaturalezaAparente => Efectos.First();
-    public Nombre EfectoPrincipal => Efectos.OrderByDescending(e => e.Efecto.Amplitud).First();
-    public IList<Nombre> Efectos { get; set; }
-    
+    public virtual Guid Id { get; }
+    public double Amplitud { get; internal set; }
+    public Nombre Causa { get; internal set; }
+
     internal Apariencia(Nombre causa)
     {
         Id = Guid.NewGuid();
-        Efectos = new List<Nombre> { causa };
+        Amplitud = 1.0;
+        Causa = causa;
     }
 
     /// <summary>
-    /// Añade un efecto a la apariencia si designación proyectada esta dentro del rango de frecuencia.
-    /// Se produce algo similar a la modulación QAM simplificada (OFDM).
-    /// Sobreescribir para un comportamiento mas detallado.
+    /// Crea una nueva designación a partir de una lista de predicados, donde cada predicado se convierte en un nombre con un efecto asociado a esta designación.
+    /// Por defecto, la frecuencia de cada nombre se determina por la cantidad de nombres que comparten el mismo verbo núcleo.
+    /// La amplitud se determina por la cantidad de complementos del sujeto que comparten.
+    /// La fase se asigna de manera equidistante dentro del ciclo de la función de onda para los nombres que comparten la misma frecuencia, creando así una distribución uniforme en el espacio de fases.
+    /// Se puede pasar otra funcion de mapeo.
     /// </summary>
-    /// <param name="nombreProyectado">El nombre proyectado que se utilizará para modular la apariencia.</param>
-    /// <returns>La nueva amplitud de la apariencia después de la modulación.</returns>
-    public virtual double Modular(Nombre nombreProyectado)
+    /// <param name="predicados">Los predicados que se utilizarán para crear la designación.</param>
+    /// <param name="funcionMapeo">Una función opcional para mapear los predicados a sus respectivas fases, frecuencias y amplitudes. Si no se proporciona, se utilizará el mapeo predeterminado basado en la estructura de los predicados.</param>
+    public static Apariencia Aparecer(List<string> predicados, 
+        Func<string, (double fase, double frecuencia, double amplitud)> funcionMapeo = null)
     {
-        var frecuenciaMaxima = Efectos.Max(x => Math.Abs(x.Causa.Frecuencia));
-        if(Math.Abs(nombreProyectado.Causa.Frecuencia) <= frecuenciaMaxima)
+        var designacion = new Designacion(
+            new List<Nombre>() 
+            { 
+                new Nombre(null, 0, 0)
+            } 
+        );
+        
+        if(funcionMapeo != null)
         {
-            if(!Efectos.Any(c => c.Id == nombreProyectado.Id))
+            for(var i = 0; i < predicados.Count; i++)
             {
-                Efectos.Add(nombreProyectado);
-                //Modulación PM
-                EfectoPrincipal.Naturaleza.Modular(nombreProyectado.Naturaleza.Fase);
+                var (fase, frecuencia, amplitud) = funcionMapeo(predicados[i]);
+                var nombre = new Nombre(predicados[i], fase, frecuencia);
+                nombre.Efecto.Amplitud = amplitud;
+                designacion.Nombres.Add(nombre);
             }
-            
-            //Modulación AM, simula la multiplicación de la función de onda portadora por el mensaje
-            Amplitud *= 1 + nombreProyectado.Efecto.Amplitud;
-        } 
-        return Amplitud;
+
+            return designacion;
+        }
+        
+        var deltaFasePredicados = 2 * Math.PI / predicados.Count;
+        var frecuenciaOraciones = predicados.Count;
+        designacion.Nombres.AddRange(predicados
+            .Select((p, i) => new Nombre(
+                p.Trim(), 
+                i * deltaFasePredicados, 
+                frecuenciaOraciones - i))
+            .ToList());
+
+        var diccionarioVerbos = predicados
+            .GroupBy(p => p.Split(' ').First())
+            .ToDictionary(g => g.Key, g => g.Count());
+        var diccionarioComplementos = predicados
+            .SelectMany(p => p.Split(' ').Skip(1))
+            .GroupBy(p => p)
+            .ToDictionary(g => g.Key, g => Math.Max(1,g.Count()));
+
+        for(var i = 1; i <= predicados.Count; i++)
+        {
+            var verboNucleo = predicados[i - 1].Split(' ').First();
+            designacion.Nombres[i].Frecuencia *= diccionarioVerbos[verboNucleo];
+
+            var complementosDelSujeto = predicados[i - 1].Split(' ').Skip(1).ToList();
+            designacion.Nombres[i].Efecto.Amplitud = complementosDelSujeto
+                .Sum(c => diccionarioComplementos[c]);
+        }
+        
+        return designacion;
     }
 
     /// <summary>
-    /// Sobreescribe ToString para mostrar una representación de la apariencia.
+    /// Sobreescribe GetHashCode para comparar apariencias por su Id.
     /// </summary>
-    /// <returns>Una cadena que representa la apariencia.</returns>
-    public override string ToString()
+    /// <returns>El hash code de la apariencia.</returns>
+    public override int GetHashCode() => Id.GetHashCode();
+
+    /// <summary>
+    /// Sobreescribe Equals para comparar apariencias por su Id.
+    /// </summary>
+    /// <returns>True si las apariencias son iguales, false en caso contrario.</returns>
+    public override bool Equals(object obj)
     {
-        return $"Apariencia: {string.Join(", ", EnteDesignado)}";
+        if (obj is Apariencia other)
+        {
+            return Id == other.Id;
+        }
+        return false;
     }
 }
