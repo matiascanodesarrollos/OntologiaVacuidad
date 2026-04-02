@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 namespace DomainLogic.Services.Particulas;
@@ -11,6 +12,11 @@ public class Espacio : Nombre
     internal Espacio(Designacion designacion) : base(designacion.Causa)
     {
         Particulas = new Dictionary<Vector2D, List<Particula>>();
+        AgregarParticulasDesignacion(designacion);
+    }
+
+    private void AgregarParticulasDesignacion(Designacion designacion)
+    {
         AgregarParticula(new Foton(designacion.Causa));
         foreach (var efecto in designacion.Nombres)
         {
@@ -49,38 +55,23 @@ public class Espacio : Nombre
         }
 
         Particulas = new Dictionary<Vector2D, List<Particula>>();
-        var nuevasApariencias = new List<Apariencia>();
-        const int maxNuevasParticulas = 20; // Limitar crecimiento exponencial
-        
         foreach (var posicion in posiciones)
         {
             if (Particulas.ContainsKey(posicion.NuevaPosicion))
             {
                 var lista = Particulas[posicion.NuevaPosicion];
-                
-                var interaccionCompleja = lista
-                        .ToList();
-                        
-                // Solo crear apariencias si no hay demasiadas partículas ya
-                if(interaccionCompleja.Count > 1 && nuevasApariencias.Count < maxNuevasParticulas)
-                {
-                    var nuevas = interaccionCompleja.Zip(interaccionCompleja.Skip(1), (a, b) => Designacion.Designar(b, a.Efecto))
-                        .ToList();
-                    // Limitar la cantidad añadida en este frame
-                    var cantidadAAnadir = Math.Min(nuevas.Count, maxNuevasParticulas - nuevasApariencias.Count);
-                    nuevasApariencias.AddRange(nuevas.Take(cantidadAAnadir));
-                }
-
-                lista.Add(posicion.Particula);                
+                var nuevaDesignacion = Apariencia.Aparecer(
+                    new List<string>() { posicion.Particula.Texto },
+                    x => (posicion.Particula.Fase, 
+                        posicion.Particula.Frecuencia, 
+                        posicion.Particula.Efecto.Amplitud)) as Designacion;
+                lista.ForEach(p => Designacion.Designar(p, nuevaDesignacion));
+                AgregarParticulasDesignacion(nuevaDesignacion);
+                lista.Add(posicion.Particula);
                 continue;
             }
             
             Particulas[posicion.NuevaPosicion] = new List<Particula> { posicion.Particula };
-        }
-
-        foreach (var apariencia in nuevasApariencias)
-        {
-            AgregarParticula(new Electron(apariencia.Causa));
         }
     }
 }

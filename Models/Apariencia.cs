@@ -25,7 +25,7 @@ public class Apariencia
     /// <param name="predicados">Los predicados que se utilizarán para crear la designación.</param>
     /// <param name="funcionMapeo">Una función opcional para mapear los predicados a sus respectivas fases, frecuencias y amplitudes. Si no se proporciona, se utilizará el mapeo predeterminado basado en la estructura de los predicados.</param>
     public static Apariencia Aparecer(List<string> predicados, 
-        Func<List<string>, List<(double fase, double frecuencia, double amplitud)>> funcionMapeo = null)
+        Func<string, (double fase, double frecuencia, double amplitud)> funcionMapeo = null)
     {
         var designacion = new Designacion(
             new List<Nombre>() 
@@ -36,11 +36,11 @@ public class Apariencia
         
         if(funcionMapeo != null)
         {
-            var parametros = funcionMapeo(predicados);
             for(var i = 0; i < predicados.Count; i++)
             {
-                var (fase, frecuencia, amplitud) = parametros[i];
-                var nombre = new Nombre(predicados[i].Trim(), fase, frecuencia);
+                var (fase, frecuencia, amplitud) = funcionMapeo(predicados[i]);
+                var nombre = new Nombre(predicados[i], fase, frecuencia);
+                nombre.Efecto.Amplitud = amplitud;
                 designacion.Nombres.Add(nombre);
             }
 
