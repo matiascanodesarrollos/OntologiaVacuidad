@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 public class Nombre : Palabra
 {
@@ -32,15 +33,19 @@ public class Nombre : Palabra
     }
 
     /// <summary>
-    /// Permite mostrar la designación en un espacio de apariencia, proyectando sus propiedades en ese espacio.
+    /// Modula la apariencia agregandose a si mismo a la lista de efectos.
+    /// Ademas crea una nueva designación y proyectando los nombres recientes según la ventana especificada.    
     /// </summary>
-    /// <param name="espacio">El espacio de apariencia donde se mostrará la designación.</param>
-    /// <param name="funcionProyeccion">Función opcional para proyectar la designación en el espacio.</param>
-    /// <returns>La designación proyectada en el espacio.</returns>
-    public Designacion Mostrarse(Designacion espacio)
+    /// <param name="apariencia">La designación que funciona como espacio.</param>
+    /// <param name="ventana">El número de nombres recientes a considerar en la proyección.</param>
+    /// <returns>Nueva designación.</returns>
+    public Designacion Mostrarse(Designacion apariencia, int ventana)
     {
-        espacio.Nombres.Add(this);
-        var designacion = new Designacion(espacio.Nombres);
+        apariencia.Nombres.Add(this);
+
+        var proyeccion = apariencia.Nombres.TakeLast(ventana).ToList();
+        var designacion = new Designacion(proyeccion);
+        
         return designacion;
     }
 

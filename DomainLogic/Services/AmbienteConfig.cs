@@ -8,6 +8,8 @@ namespace DomainLogic.Services
         /// <summary>
         /// Se divide el texto en oraciones utilizando el punto como delimitador. 
         /// Cada oración se considera un predicado que se convertirá en un nombre dentro de la designación del ambiente.
+        /// Se asume que el verbo núcleo de cada oración es la primera palabra, 
+        /// y los complementos del sujeto son las palabras restantes.
         /// La frecuencia de cada nombre se determina por la cantidad de nombres que comparten el mismo verbo núcleo.
         /// La amplitud se determina por la cantidad de complementos del sujeto que comparten.
         /// La fase se asigna de manera equidistante.
@@ -36,14 +38,15 @@ namespace DomainLogic.Services
             return Apariencia
                     .Aparecer(oraciones, oracion =>
                     {
-                        var verboNucleo = oracion.Split(' ').First();
-                        var complementosDelSujeto = oracion.Split(' ').Skip(1).ToList();
+                        var palabras = oracion.Split(' ');
+                        var verboNucleo = palabras.First();
+                        var complementosDelSujeto = palabras.Skip(1).ToList();
                         var resultado = (i * deltaFasePredicados, 
                             diccionarioVerbos[verboNucleo],
                             complementosDelSujeto.Sum(c => diccionarioComplementos[c]));
                         i++;
                         return resultado;
-                    });
+                    }) as Designacion;
         }
     }
 

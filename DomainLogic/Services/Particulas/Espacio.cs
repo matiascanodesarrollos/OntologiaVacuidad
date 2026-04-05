@@ -48,8 +48,8 @@ public class Espacio : Nombre
                 lista.Select(p => p.Texto).ToList(),
                 x => (lista.First(p => p.Texto == x).Fase, 
                     lista.First(p => p.Texto == x).Frecuencia, 
-                    lista.Sum(p => p.Efecto.Amplitud)));
-            lista.ForEach(p => p.Mostrarse(nuevaDesignacion));
+                    lista.Sum(p => p.Efecto.Amplitud))) as Designacion;
+            lista.ForEach(p => p.Mostrarse(nuevaDesignacion, 4));
             AgregarParticulasDesignacion(nuevaDesignacion);
         }
     }
