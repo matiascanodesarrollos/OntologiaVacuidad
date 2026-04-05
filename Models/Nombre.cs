@@ -32,6 +32,19 @@ public class Nombre : Palabra
     }
 
     /// <summary>
+    /// Permite mostrar la designación en un espacio de apariencia, proyectando sus propiedades en ese espacio.
+    /// </summary>
+    /// <param name="espacio">El espacio de apariencia donde se mostrará la designación.</param>
+    /// <param name="funcionProyeccion">Función opcional para proyectar la designación en el espacio.</param>
+    /// <returns>La designación proyectada en el espacio.</returns>
+    public Designacion Mostrarse(Designacion espacio)
+    {
+        espacio.Nombres.Add(this);
+        var designacion = new Designacion(espacio.Nombres);
+        return designacion;
+    }
+
+    /// <summary>
     /// Retorna una representación del nombre.
     /// </summary>
     /// <returns>Naturaleza, fase y frecuencia.</returns>

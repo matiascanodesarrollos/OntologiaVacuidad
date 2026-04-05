@@ -16,64 +16,30 @@ public class Apariencia
     }
 
     /// <summary>
-    /// Crea una nueva designación a partir de una lista de predicados, donde cada predicado se convierte en un nombre con un efecto asociado a esta designación.
-    /// Por defecto, la frecuencia de cada nombre se determina por la cantidad de nombres que comparten el mismo verbo núcleo.
-    /// La amplitud se determina por la cantidad de complementos del sujeto que comparten.
-    /// La fase se asigna de manera equidistante dentro del ciclo de la función de onda para los nombres que comparten la misma frecuencia, creando así una distribución uniforme en el espacio de fases.
-    /// Se puede pasar otra funcion de mapeo.
+    /// Crea una nueva designación a partir de una lista de predicados 
+    /// y una función de mapeo de texto a (fase,frecuencia,amplitud).
     /// </summary>
     /// <param name="predicados">Los predicados que se utilizarán para crear la designación.</param>
     /// <param name="funcionMapeo">Una función opcional para mapear los predicados a sus respectivas fases, frecuencias y amplitudes. Si no se proporciona, se utilizará el mapeo predeterminado basado en la estructura de los predicados.</param>
-    public static Apariencia Aparecer(List<string> predicados, 
-        Func<string, (double fase, double frecuencia, double amplitud)> funcionMapeo = null)
+    public static Designacion Aparecer(List<string> predicados, 
+        Func<string, (double fase, double frecuencia, double amplitud)> funcionMapeo)
     {
         var designacion = new Designacion(
             new List<Nombre>() 
             { 
-                new Nombre(null, 0, 0)
-            } 
+                new Nombre(null, 0, 0),
+            }
         );
         
-        if(funcionMapeo != null)
+        for(var i = 0; i < predicados.Count; i++)
         {
-            for(var i = 0; i < predicados.Count; i++)
-            {
-                var (fase, frecuencia, amplitud) = funcionMapeo(predicados[i]);
-                var nombre = new Nombre(predicados[i], fase, frecuencia);
-                nombre.Efecto.Amplitud = amplitud;
-                designacion.Nombres.Add(nombre);
-            }
-
-            return designacion;
+            var (fase, frecuencia, amplitud) = funcionMapeo(predicados[i]);
+            var nombre = new Nombre(predicados[i], fase, frecuencia);
+            nombre.Efecto.Amplitud = amplitud;
+            designacion.Nombres.Add(nombre);
         }
-        
-        var deltaFasePredicados = 2 * Math.PI / predicados.Count;
-        var frecuenciaOraciones = predicados.Count;
-        designacion.Nombres.AddRange(predicados
-            .Select((p, i) => new Nombre(
-                p.Trim(), 
-                i * deltaFasePredicados, 
-                frecuenciaOraciones - i))
-            .ToList());
 
-        var diccionarioVerbos = predicados
-            .GroupBy(p => p.Split(' ').First())
-            .ToDictionary(g => g.Key, g => g.Count());
-        var diccionarioComplementos = predicados
-            .SelectMany(p => p.Split(' ').Skip(1))
-            .GroupBy(p => p)
-            .ToDictionary(g => g.Key, g => Math.Max(1,g.Count()));
-
-        for(var i = 1; i <= predicados.Count; i++)
-        {
-            var verboNucleo = predicados[i - 1].Split(' ').First();
-            designacion.Nombres[i].Frecuencia *= diccionarioVerbos[verboNucleo];
-
-            var complementosDelSujeto = predicados[i - 1].Split(' ').Skip(1).ToList();
-            designacion.Nombres[i].Efecto.Amplitud = complementosDelSujeto
-                .Sum(c => diccionarioComplementos[c]);
-        }
-        
+        designacion.Amplitud = designacion.Nombres.Sum(n => n.Efecto.Amplitud);
         return designacion;
     }
 

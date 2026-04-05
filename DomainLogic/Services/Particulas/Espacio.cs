@@ -1,26 +1,23 @@
-using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 
 namespace DomainLogic.Services.Particulas;
 
 public class Espacio : Nombre
 {
-    public Dictionary<Vector2D, List<Particula>> Particulas { get; private set; }
+    public List<Particula> Particulas { get; private set; }
 
     internal Espacio(Designacion designacion) : base(designacion.Causa)
     {
-        Particulas = new Dictionary<Vector2D, List<Particula>>();
+        Particulas = new List<Particula>();
         AgregarParticulasDesignacion(designacion);
     }
 
     private void AgregarParticulasDesignacion(Designacion designacion)
     {
-        AgregarParticula(new Foton(designacion.Causa));
         foreach (var efecto in designacion.Nombres)
         {
-            AgregarParticula(new Electron(efecto));
+            Particulas.Add(new Particula(efecto));
         }
     }
 
@@ -29,49 +26,31 @@ public class Espacio : Nombre
         return new Espacio(designacion);
     }
 
-    public void AgregarParticula(Particula particula)
-    {
-        var posicion = particula.Posicion2D;
-        if (Particulas.ContainsKey(posicion))
-        {
-            Particulas[posicion].Add(particula);
-            return;
-        }
-        
-        Particulas[posicion] = new List<Particula> { particula };
-    }
-
     public void MoverParticulas(double deltaTime)
     {
-        var posiciones = new List<(Vector2D UltimaPosicion, Vector2D NuevaPosicion, Particula Particula)>();
-        foreach (var particulaList in Particulas.Values)
+        foreach (var particula in Particulas)
         {
-            foreach (var particula in particulaList)
-            {
-                var ultimaPosicion = particula.Posicion2D;
-                particula.Mover(deltaTime);
-                posiciones.Add((ultimaPosicion, particula.Posicion2D, particula));
-            }
+            particula.Mover(deltaTime);
         }
 
-        Particulas = new Dictionary<Vector2D, List<Particula>>();
-        foreach (var posicion in posiciones)
+        foreach (var grupo in Particulas
+            .GroupBy(p => p.Posicion2D))
         {
-            if (Particulas.ContainsKey(posicion.NuevaPosicion))
+            if(grupo.Count() == 1)
             {
-                var lista = Particulas[posicion.NuevaPosicion];
-                var nuevaDesignacion = Apariencia.Aparecer(
-                    new List<string>() { posicion.Particula.Texto },
-                    x => (posicion.Particula.Fase, 
-                        posicion.Particula.Frecuencia, 
-                        posicion.Particula.Efecto.Amplitud)) as Designacion;
-                lista.ForEach(p => Designacion.Designar(p, nuevaDesignacion));
-                AgregarParticulasDesignacion(nuevaDesignacion);
-                lista.Add(posicion.Particula);
                 continue;
             }
-            
-            Particulas[posicion.NuevaPosicion] = new List<Particula> { posicion.Particula };
+
+            var lista = grupo
+                    .OrderByDescending(p => p.Efecto.Amplitud)
+                    .ToList();
+            var nuevaDesignacion = Apariencia.Aparecer(
+                lista.Select(p => p.Texto).ToList(),
+                x => (lista.First(p => p.Texto == x).Fase, 
+                    lista.First(p => p.Texto == x).Frecuencia, 
+                    lista.Sum(p => p.Efecto.Amplitud)));
+            lista.ForEach(p => p.Mostrarse(nuevaDesignacion));
+            AgregarParticulasDesignacion(nuevaDesignacion);
         }
     }
 }

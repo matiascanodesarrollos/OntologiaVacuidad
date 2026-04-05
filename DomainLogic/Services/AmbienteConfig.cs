@@ -1,9 +1,19 @@
+using System;
 using System.Linq;
 
 namespace DomainLogic.Services
 {
     public static class AmbienteConfig
     {
+        /// <summary>
+        /// Se divide el texto en oraciones utilizando el punto como delimitador. 
+        /// Cada oración se considera un predicado que se convertirá en un nombre dentro de la designación del ambiente.
+        /// La frecuencia de cada nombre se determina por la cantidad de nombres que comparten el mismo verbo núcleo.
+        /// La amplitud se determina por la cantidad de complementos del sujeto que comparten.
+        /// La fase se asigna de manera equidistante.
+        /// </summary>
+        /// <param name="texto">El texto que se utilizará para crear la designación del ambiente.</param>
+        /// <returns>Una designación que representa el ambiente creado a partir del texto.</returns>
         public static Designacion CrearAmbiente(string texto)
         {
             var oraciones = texto
@@ -11,10 +21,31 @@ namespace DomainLogic.Services
                     .Select(t => t.Trim())
                     .Where(t => !string.IsNullOrEmpty(t))
                     .ToList();
+
+            var deltaFasePredicados = 2 * Math.PI / oraciones.Count;
+            var frecuenciaOraciones = oraciones.Count;
+            var diccionarioVerbos = oraciones
+                .GroupBy(p => p.Split(' ').First())
+                .ToDictionary(g => g.Key, g => g.Count());
+            var diccionarioComplementos = oraciones
+                .SelectMany(p => p.Split(' ').Skip(1))
+                .GroupBy(p => p)
+                .ToDictionary(g => g.Key, g => Math.Max(1,g.Count()));
+            var i = 0;
                 
-                return Apariencia
-                    .Aparecer(oraciones)
-                    as Designacion;
+            return Apariencia
+                    .Aparecer(oraciones, oracion =>
+                    {
+                        var verboNucleo = oracion.Split(' ').First();
+                        var complementosDelSujeto = oracion.Split(' ').Skip(1).ToList();
+                        var resultado = (i * deltaFasePredicados, 
+                            diccionarioVerbos[verboNucleo],
+                            complementosDelSujeto.Sum(c => diccionarioComplementos[c]));
+                        i++;
+                        return resultado;
+                    });
         }
     }
+
+    
 }
