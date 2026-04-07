@@ -35,7 +35,7 @@ public class Nombre : Palabra
     /// <summary>
     /// Modula la apariencia agregandose a si mismo a la lista de efectos.
     /// Ademas crea una nueva designación con los nombres según la ventana especificada.
-    /// La velocidad de grupo de la nueva designación se determina por la cantidad de nombres no proyectados que comparten la misma frecuencia.    
+    /// La velocidad de grupo se determina por la cantidad de nombres no proyectados que comparten la misma frecuencia.    
     /// </summary>
     /// <param name="apariencia">La designación que funciona como espacio.</param>
     /// <param name="ventana">Función que determina si un nombre debe ser incluido en la nueva designación.</param>
