@@ -16,9 +16,8 @@ public class Apariencia
     }
 
     /// <summary>
-    /// Crea una nueva designación a partir de una lista de predicados 
-    /// y una función de mapeo de texto a (fase,frecuencia,amplitud).
-    /// La función de mapeo permite personalizar cómo se asignan las propiedades de cada nombre en la designación,
+    /// Crea una nueva designación a partir de una lista de predicados y una función de mapeo de texto a (fase,frecuencia,amplitud).
+    /// La misma permite personalizar cómo se asignan las propiedades de cada nombre en la designación,
     /// basándose en el texto del predicado.
     /// La designación resultante tendrá una amplitud total que es la suma de las amplitudes de los nombres individuales.
     /// </summary>
@@ -39,7 +38,7 @@ public class Apariencia
             var (fase, frecuencia, amplitud) = funcionMapeo(predicados[i]);
             var nombre = new Nombre(predicados[i], fase, frecuencia);
             nombre.Efecto.Amplitud = amplitud;
-            designacion.Nombres.Add(nombre);
+            designacion._nombres.Add(nombre);
         }
         designacion.Amplitud = designacion.Nombres.Sum(n => n.Efecto.Amplitud);
         

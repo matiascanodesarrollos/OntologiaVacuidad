@@ -6,8 +6,7 @@
     <RootNamespace>DomainLogic</RootNamespace>
   </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="MediatR" Version="14.1.0" />	
+  <ItemGroup>	
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="10.0.3" />
     <PackageReference Include="Serilog.Extensions.Logging.File" Version="3.0.0" />
   </ItemGroup>

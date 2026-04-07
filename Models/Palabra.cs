@@ -4,13 +4,12 @@ public class Palabra
     public virtual Guid Id { get; }
     public virtual double Fase { get; internal set; }
     public virtual string Texto { get; }
-    private Func<double, double> Normalizar => fase => Math.Abs(fase) % (2 * Math.PI);
 
     internal Palabra(string texto, double fase)
     {
         Id = Guid.NewGuid();
         Texto = texto;
-        Fase = Normalizar(fase);
+        Fase = Math.Abs(fase) % (2 * Math.PI);
     }
 
     /// <summary>

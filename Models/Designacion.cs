@@ -6,27 +6,17 @@ using System.Text;
 public class Designacion : Apariencia
 {
     public override Guid Id { get; }
-    public (double X, double Y) Velocidad
-    {
-        get
-        {
-            if(Nombres.Count == 1)
-            {
-                return (Math.Cos(Nombres[0].Fase), Math.Sin(Nombres[0].Fase));
-            }
+    public Func<double, double> VelocidadGrupo { get; internal set; }
 
-            var nombresOrdenados = Nombres.OrderByDescending(n => n.Efecto.Amplitud).ToList();
-            return (Math.Cos(nombresOrdenados[0].Fase), Math.Sin(nombresOrdenados[1].Fase));
-        }
-    }
-
-    public List<Nombre> Nombres { get; internal set; }
+    internal List<Nombre> _nombres { get; set; }
+    public IEnumerable<Nombre> Nombres => _nombres.AsReadOnly();
 
     internal Designacion(List<Nombre> nombres)
         : base(nombres.First())
     {
         Id = Guid.NewGuid();
-        Nombres = nombres;
+        _nombres = nombres;
+        VelocidadGrupo = frecuencia => 1.0;
     }
 
     /// <summary>
