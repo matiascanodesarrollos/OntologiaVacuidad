@@ -6,60 +6,17 @@ using System.Text;
 public class Designacion : Apariencia
 {
     public override Guid Id { get; }
-    public (double X, double Y) Velocidad
-    {
-        get
-        {
-            if(Nombres.Count == 1)
-            {
-                return (Math.Cos(Nombres[0].Fase), Math.Sin(Nombres[0].Fase));
-            }
+    public Func<double, double> VelocidadGrupo { get; internal set; }
 
-            var nombresOrdenados = Nombres.OrderByDescending(n => n.Efecto.Amplitud).ToList();
-            return (Math.Cos(nombresOrdenados[0].Fase), Math.Sin(nombresOrdenados[1].Fase));
-        }
-    }
-
-    public List<Nombre> Nombres { get; internal set; }
-
+    internal List<Nombre> _nombres { get; set; }
+    public IEnumerable<Nombre> Nombres => _nombres.AsReadOnly();
 
     internal Designacion(List<Nombre> nombres)
         : base(nombres.First())
     {
         Id = Guid.NewGuid();
-        Nombres = nombres;
-    }
-
-    /// <summary>
-    /// Proyeccion de un Nombre sobre una Apariencia que la modula.
-    /// Por defecto agrega el nombre a la lista de efectos si tiene una frecuencia menor a la maxima.
-    /// </summary>
-    /// <param name="nombre">El nombre proyectado.</param>
-    /// <param name="apariencia">La apariencia sobre la que se proyectará el nombre.</param>
-    /// <param name="funcionProyeccion">Una función opcional para personalizar la proyección del nombre sobre la apariencia.</param>
-    /// <returns>La designación resultante de la proyección.</returns>
-    public static Designacion Designar(Nombre nombre, Apariencia apariencia, Func<Apariencia, Nombre, Designacion> funcionProyeccion = null)
-    {
-        if(funcionProyeccion != null)
-        {
-            return funcionProyeccion(apariencia, nombre);
-        }
-    
-        var designacion = apariencia as Designacion;
-        if(designacion == null)
-        {
-            return new Designacion(new List<Nombre> { apariencia.Causa, nombre });
-        }
-
-        var frecuenciaMaxima = designacion
-            .Nombres
-            .Max(n => Math.Abs(n.Frecuencia));
-        if (frecuenciaMaxima < nombre.Frecuencia)
-        {
-            designacion.Nombres.ForEach(n => n.Efecto.Amplitud *= 1 + nombre.Efecto.Amplitud);
-            designacion.Nombres.Add(nombre);
-        }
-        return designacion;
+        _nombres = nombres;
+        VelocidadGrupo = frecuencia => 1.0;
     }
 
     /// <summary>

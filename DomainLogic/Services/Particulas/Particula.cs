@@ -1,3 +1,5 @@
+using System;
+
 namespace DomainLogic.Services.Particulas;
 
 public class Particula : Nombre
@@ -5,29 +7,24 @@ public class Particula : Nombre
     public double Tiempo { get; protected set; } 
     public Vector2D Posicion2D { get; protected set; }
     public virtual Vector2D Velocidad2D { get; protected set; }
-    public Vector2D Aceleracion { get; protected set; }
+    public virtual Vector2D Aceleracion2D { get; protected set; }
 
     internal Particula(Nombre nombre) : base(nombre)
     {
         var designacion = nombre.Efecto as Designacion;
         Posicion2D = new Vector2D(0, 0);
-        Velocidad2D = new Vector2D(designacion.Velocidad.X, designacion.Velocidad.Y);
-        Aceleracion = new Vector2D(0, 0);
+        Velocidad2D = new Vector2D(Math.Cos(nombre.Fase), Math.Sin(nombre.Fase));
+        Aceleracion2D = new Vector2D(designacion.VelocidadGrupo(0), designacion.VelocidadGrupo(nombre.Frecuencia));
         Tiempo = 0;
     }
 
-    public virtual double Carga => 0.0;
-    public virtual double Masa => 1.0;
-    public virtual double Energia => Masa * Frecuencia; // E = h * f
-
     public virtual void Mover(double deltaTime)
     {
-        // Integración usando método de Euler (2D)
-        // v = v + a*dt (la velocidad se recalcula automáticamente desde Fase)
-        var velocidadActualizada = Velocidad2D.Suma(Aceleracion.Escala(deltaTime));
+        // v = v + a*dt
+        Velocidad2D = Velocidad2D.Suma(Aceleracion2D.Escala(deltaTime));
         
         // p = p + v*dt
-        Posicion2D = Posicion2D.Suma(velocidadActualizada.Escala(deltaTime));
+        Posicion2D = Posicion2D.Suma(Velocidad2D.Escala(deltaTime));
         
         Tiempo += deltaTime;
     }

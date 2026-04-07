@@ -17,11 +17,10 @@ namespace ConsoleApp
 
         public static Func<Particula, SKColor> FuncionAmplitudAColor = (part) =>
         {
-            // STFT: Amplitud a color (paleta plasma)
             return part.Efecto.Amplitud switch
             {
                 <= 1 => SKColor.Parse("#0011ff"),
-                <= 2 => SKColor.Parse("#036603"), //Cambio por violeta para mas contraste
+                <= 2 => SKColor.Parse("#036603"),
                 <= 3 => SKColor.Parse("#cc0000"),
                 <= 4 => SKColor.Parse("#ffe60a"),
                 _ => SKColor.Parse("#FFFFFF")
@@ -71,93 +70,66 @@ namespace ConsoleApp
                             canvas.DrawText("Y", PADDING + 30, PADDING - 30, font, paint);
                         }
 
-                        var posicionesTexto = new List<(double x, double y, Particula p)>();
-                        
-                        // Primero dibujar fotones como haz de luz irradiado
-                        var fotones = espacio
+                        var posicionesTexto = new List<(double x, double y, Particula p)>();                        
+                        const int cantidadRayos = 36;
+                        const float radioMaximo = 200f;
+                        var particulas = espacio
                             .Particulas
-                            .Values
-                            .SelectMany(g => g.Where(p => p.Carga == 0))
-                            .ToList();
-                        if (fotones.Any())
-                        {
-                            // Dibujar rayos de luz desde la posición de cada fotón
-                            const int cantidadRayos = 36;
-                            const float radioMaximo = 200f;
-                            
-                            foreach (var foton in fotones)
-                            {
-                                var color = FuncionAmplitudAColor(foton);
-                                var colorConAlpha = new SKColor(color.Red, color.Green, color.Blue, 50); // Semi-transparente
-                                
-                                // Posición del fotón en el canvas
-                                float xFoton = CENTROX + (float)foton.Posicion2D.X;
-                                float yFoton = CENTROY - (float)foton.Posicion2D.Y;
-                                
-                                // Dibujar múltiples rayos irradiados desde la posición del fotón
-                                for (int i = 0; i < cantidadRayos; i++)
-                                {
-                                    float angulo = (float)(2 * Math.PI * i / cantidadRayos);
-                                    float x1 = xFoton + radioMaximo * (float)Math.Cos(angulo);
-                                    float y1 = yFoton - radioMaximo * (float)Math.Sin(angulo);
-                                    
-                                    using (var paint = new SKPaint 
-                                    { 
-                                        Color = colorConAlpha, 
-                                        StrokeWidth = 2f,
-                                        IsAntialias = true 
-                                    })
-                                    {
-                                        canvas.DrawLine(xFoton, yFoton, x1, y1, paint);
-                                    }
-                                }
-                                
-                                // Dibujar círculo de luz en la posición del fotón
-                                using (var paint = new SKPaint 
-                                { 
-                                    Color = new SKColor(color.Red, color.Green, color.Blue, 150),
-                                    IsAntialias = true 
-                                })
-                                {
-                                    canvas.DrawCircle(xFoton, yFoton, 12f, paint);
-                                }
-                            }
-                        }
-
-                        var particulasConCarga = espacio
-                            .Particulas
-                            .Values
-                            .SelectMany(g => g.Where(p => p.Carga != 0))
                             .OrderByDescending(p => p.Efecto.Amplitud)
-                            .GroupBy(p => p.Fase)
+                            .GroupBy(p => p.Posicion2D)
                             .Select(g => g.First())
                             .ToList();
-                        // Luego dibujar partículas con carga
-                        foreach (var particula in particulasConCarga)
-                        {
+                        var fasesEncontradas = new List<double>();
+
+                        foreach (var particula in particulas)
+                        {                            
                             var color = FuncionAmplitudAColor(particula);                     
                             var x = CENTROX + (float) particula.Posicion2D.X;
                             var y = CENTROY - (float) particula.Posicion2D.Y;
-                            
+
                             // Dibujar círculo
                             using (var paint = new SKPaint { Color = color, IsAntialias = true })
                             {
                                 canvas.DrawCircle(x, y, 6f, paint); // Escalar el tamaño del círculo
                             }
 
-                            // Dibujar nombre de la partícula
-                            double xText = x - 120;
-                            double yText = y - 20;
-                            
-                            // Buscar posición sin solapamientos con mejor detección
-                            using (var typeface = SKTypeface.FromFamilyName("Arial", SKFontStyle.Normal))
-                            using (var font = new SKFont(typeface, 12f))
-                            using (var paint = new SKPaint { Color = SKColors.Black, IsAntialias = true })
+                            // Dibujar múltiples rayos irradiados desde la posición de la partícula
+                            for (int i = 0; i < cantidadRayos; i++)
                             {
-                                var predicado = particula.ToString();                                        
-                                canvas.DrawText(predicado, (float)xText, (float)yText, font, paint);
-                                posicionesTexto.Add((xText, yText, particula));
+                                float angulo = (float)(2 * Math.PI * i / cantidadRayos);
+                                float x1 = x + radioMaximo * (float)Math.Cos(angulo);
+                                float y1 = y - radioMaximo * (float)Math.Sin(angulo);
+                                
+                                using (var paint = new SKPaint 
+                                { 
+                                    Color = new SKColor(color.Red, color.Green, color.Blue, 50),
+                                    StrokeWidth = 2f,
+                                    IsAntialias = true 
+                                })
+                                {
+                                    canvas.DrawLine(x, y, x1, y1, paint);
+                                }
                             }
+
+                            if(!fasesEncontradas.Any(f => Math.Abs(f - particula.Fase) < 0.01))
+                            {
+                                // Dibujar nombre de la partícula
+                                double xText = x - 120;
+                                double yText = y - 20;
+                                
+                                // Buscar posición sin solapamientos con mejor detección
+                                using (var typeface = SKTypeface.FromFamilyName("Arial", SKFontStyle.Bold))
+                                using (var font = new SKFont(typeface, 12f))
+                                using (var paint = new SKPaint { Color = SKColors.Black, IsAntialias = true })
+                                {
+                                    var predicado = particula.ToString();                                        
+                                    canvas.DrawText(predicado, (float)xText, (float)yText, font, paint);
+                                    posicionesTexto.Add((xText, yText, particula));
+                                }
+
+                                fasesEncontradas.Add(particula.Fase);
+                                continue;
+                            }                
                         }
 
                         // Tiempo simulado en negrita
@@ -169,13 +141,12 @@ namespace ConsoleApp
                         }
 
                         // Debug: mostrar info de partículas
-                        int totalParticulas = espacio.Particulas.Values.Sum(l => l.Count);
-                        int electrons = espacio.Particulas.Values.Sum(l => l.Count(p => p as Electron != null));
+                        int totalParticulas = espacio.Particulas.Count;
                         using (var typeface = SKTypeface.FromFamilyName("Arial", SKFontStyle.Normal))
                         using (var font = new SKFont(typeface, 12f))
                         using (var paint = new SKPaint { Color = SKColors.Blue, IsAntialias = true })
                         {
-                            canvas.DrawText($"Total: {totalParticulas}, Fotones: {fotones.Count}, Electrons: {electrons}", 30, 80, font, paint);
+                            canvas.DrawText($"Cantidad de partículas: {totalParticulas}.", 30, 80, font, paint);
                         }
                     }
 
