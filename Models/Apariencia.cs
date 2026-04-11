@@ -8,11 +8,11 @@ public class Apariencia
     public double Amplitud { get; internal set; }
     public Nombre Causa { get; internal set; }
 
-    internal Apariencia(Nombre causa)
+    internal Apariencia(Nombre causa, double amplitud)
     {
         Id = Guid.NewGuid();
-        Amplitud = 1.0;
         Causa = causa;
+        Amplitud = amplitud;
     }
 
     /// <summary>
@@ -29,18 +29,24 @@ public class Apariencia
         var designacion = new Designacion(
             new List<Nombre>() 
             { 
-                new Nombre(null, 0, 0),
+                new Nombre(null, 0),
             }
         );
         
         for(var i = 0; i < predicados.Count; i++)
         {
             var (fase, frecuencia, amplitud) = funcionMapeo(predicados[i]);
-            var nombre = new Nombre(predicados[i], fase, frecuencia);
-            nombre.Efecto.Amplitud = amplitud;
+            var nombre = new Nombre(predicados[i], fase);
+            if(!nombre.Efecto.ContainsKey(frecuencia))
+            {
+                nombre.Efecto[frecuencia] = new List<Apariencia>();
+            }
+            nombre.Efecto[frecuencia].Add(new Apariencia(nombre, amplitud));            
             designacion._nombres.Add(nombre);
         }
-        designacion.Amplitud = designacion.Nombres.Sum(n => n.Efecto.Amplitud);
+        designacion.Amplitud = designacion
+            .Nombres
+            .Sum(n => n.Amplitud);
         
         return designacion;
     }

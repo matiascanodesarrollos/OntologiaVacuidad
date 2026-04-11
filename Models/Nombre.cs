@@ -5,17 +5,18 @@ using System.Linq;
 public class Nombre : Palabra
 {
     public override Guid Id { get; }
-    public double Frecuencia { get; internal set; }
-    public Apariencia Efecto { get; internal set; }
+    public Dictionary<double, List<Apariencia>> Efecto { get; internal set; }
+    public double Amplitud => Efecto.Sum(a => a.Value.Sum(e => e.Amplitud));
 
     internal Nombre(string texto, 
-        double fase, 
-        double frecuencia) 
+        double fase) 
         : base(texto, fase)
     {
         Id = Guid.NewGuid();
-        Efecto = new Designacion(new List<Nombre>(){ this, });
-        Frecuencia = frecuencia;
+        Efecto = new Dictionary<double, List<Apariencia>>
+        {
+            { 0, new List<Apariencia> { new Apariencia(this, 0.0) } }
+        };
     }
 
     /// <summary>
@@ -29,45 +30,31 @@ public class Nombre : Palabra
     {
         Id = nombre.Id;
         Efecto = nombre.Efecto;
-        Frecuencia = nombre.Frecuencia;
     }
 
     /// <summary>
-    /// Modula la apariencia agregandose a si mismo a la lista de efectos.
-    /// Ademas crea una nueva designación con los nombres según la ventana especificada.
-    /// La velocidad de grupo se determina por la cantidad de nombres no proyectados que comparten la misma frecuencia.    
+    /// Crea una nueva designación con los nombres seleccionados del espacios según la ventana especificada.
+    /// La velocidad de grupo se determina promediando las velocidades de grupo de las apariencias proyectadas.
+    /// El espacio designa el nombre tomando la nueva designación como apariencia.
     /// </summary>
-    /// <param name="apariencia">La designación que funciona como espacio.</param>
-    /// <param name="ventana">Función que determina si un nombre debe ser incluido en la nueva designación.</param>
-    /// <returns>Nueva designación.</returns>
-    public Designacion Mostrarse(Designacion apariencia, Func<Nombre, bool> ventana)
+    /// <param name="apariencia">La apariencia que funciona como espacio.</param>
+    public Designacion Mostrarse(Apariencia apariencia)
     {
-        apariencia._nombres.Add(this);
-
-        var nombresNoProyectados = apariencia
-            .Nombres
-            .Where(n => !ventana(n))
-            .GroupBy(n => n.Frecuencia)
-            .ToDictionary(n => n.Key, n => n.Distinct());
-        var proyeccion = apariencia
-            .Nombres
-            .Where(ventana)
-            .ToList();        
-        var designacion = new Designacion(proyeccion)
+        var nuevaFrecuencia = Efecto.Keys.Max() + 1;
+        Efecto.Add(nuevaFrecuencia, new List<Apariencia> { apariencia });
+        var designacion = apariencia as Designacion;
+        if (designacion != null)
         {
-            VelocidadGrupo = frecuencia => 
-                nombresNoProyectados.ContainsKey(frecuencia) 
-                    ? nombresNoProyectados[frecuencia].Count()
-                    : 1.0,
-        };
-        return designacion;
+            return designacion.Designar(apariencia, this);
+        }
+        return new Designacion(new List<Nombre> { this });
     }
 
     /// <summary>
     /// Retorna una representación del nombre.
     /// </summary>
     /// <returns>Naturaleza, fase y frecuencia.</returns>
-    public override string ToString() => $"{Texto} ({Fase * (180 / Math.PI):F2}º, {Frecuencia:F2} Hz, {Efecto.Amplitud:F2} A)";
+    public override string ToString() => $"{Texto} ({Fase * (180 / Math.PI):F2}º, {Amplitud:F2} A)";
 
     /// <summary>
     /// Sobreescribe Equals para comparar nombres por su Id.

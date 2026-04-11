@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -42,15 +43,11 @@ public class Espacio : Nombre
             }
 
             var lista = grupo
-                    .OrderByDescending(p => p.Efecto.Amplitud)
+                    .OrderByDescending(p => p.Amplitud)
                     .ToList();
-            var nuevaDesignacion = Apariencia.Aparecer(
-                lista.Select(p => p.Texto).ToList(),
-                x => (lista.First(p => p.Texto == x).Fase, 
-                    lista.First(p => p.Texto == x).Frecuencia, 
-                    lista.Sum(p => p.Efecto.Amplitud))) as Designacion;
-            lista.ForEach(p => p.Mostrarse(nuevaDesignacion, n => true));
-            AgregarParticulasDesignacion(nuevaDesignacion);
+            var apariencia = Apariencia.Aparecer(new List<string>(), null);
+            lista.ForEach(p => p.Mostrarse(apariencia));
+            AgregarParticulasDesignacion(apariencia as Designacion);
         }
     }
 }

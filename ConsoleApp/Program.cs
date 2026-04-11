@@ -30,7 +30,7 @@ namespace ConsoleApp
                 
                 var framesDir = Path.Combine(Directory.GetCurrentDirectory(), "frames");
                 var directorioSalida = Path.Combine(framesDir, "Amplitud");
-                var paths = espacio.GenerarFramesPng(directorioSalida, 4, 10);
+                var paths = espacio.GenerarFramesPng(directorioSalida, 4, 5);
                 foreach (var path in paths)
                 {
                     logger.LogInformation($"Frame generado: {path}");
