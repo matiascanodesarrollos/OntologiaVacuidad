@@ -69,10 +69,6 @@ public class Designacion : Apariencia
         resultado.AppendLine("═══ Designación ═══");
         foreach (var nombre in Nombres)
         {
-            if(nombre.Amplitud == 0)
-            {
-                break;
-            }
             resultado.AppendLine(nombre.ToString());
         }
         resultado.AppendLine("═══ Fin ═══");
