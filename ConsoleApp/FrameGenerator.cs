@@ -17,7 +17,7 @@ namespace ConsoleApp
 
         public static Func<Particula, SKColor> FuncionAmplitudAColor = (part) =>
         {
-            return part.Efecto.Amplitud switch
+            return part.Amplitud switch
             {
                 <= 1 => SKColor.Parse("#0011ff"),
                 <= 2 => SKColor.Parse("#036603"),
@@ -70,12 +70,12 @@ namespace ConsoleApp
                             canvas.DrawText("Y", PADDING + 30, PADDING - 30, font, paint);
                         }
 
-                        var posicionesTexto = new List<(double x, double y, Particula p)>();                        
+                        var posicionesTexto = new List<(float x, float y, string texto)>();
                         const int cantidadRayos = 36;
                         const float radioMaximo = 200f;
                         var particulas = espacio
                             .Particulas
-                            .OrderByDescending(p => p.Efecto.Amplitud)
+                            .OrderByDescending(p => p.Amplitud)
                             .GroupBy(p => p.Posicion2D)
                             .Select(g => g.First())
                             .ToList();
@@ -90,7 +90,7 @@ namespace ConsoleApp
                             // Dibujar círculo
                             using (var paint = new SKPaint { Color = color, IsAntialias = true })
                             {
-                                canvas.DrawCircle(x, y, 6f, paint); // Escalar el tamaño del círculo
+                                canvas.DrawCircle(x, y, 6f, paint);
                             }
 
                             // Dibujar múltiples rayos irradiados desde la posición de la partícula
@@ -114,22 +114,43 @@ namespace ConsoleApp
                             if(!fasesEncontradas.Any(f => Math.Abs(f - particula.Fase) < 0.01))
                             {
                                 // Dibujar nombre de la partícula
-                                double xText = x - 120;
-                                double yText = y - 20;
+                                float xText = x;
+                                float yText = y - 20;
+                                var predicado = particula.ToString();
                                 
-                                // Buscar posición sin solapamientos con mejor detección
-                                using (var typeface = SKTypeface.FromFamilyName("Arial", SKFontStyle.Bold))
-                                using (var font = new SKFont(typeface, 12f))
-                                using (var paint = new SKPaint { Color = SKColors.Black, IsAntialias = true })
-                                {
-                                    var predicado = particula.ToString();                                        
-                                    canvas.DrawText(predicado, (float)xText, (float)yText, font, paint);
-                                    posicionesTexto.Add((xText, yText, particula));
-                                }
-
+                                posicionesTexto.Add((xText, yText, predicado));
                                 fasesEncontradas.Add(particula.Fase);
                                 continue;
                             }                
+                        }
+
+                        var textosAgrupados = posicionesTexto
+                            .GroupBy(t => (int) t.y)
+                            .Where(g => g.Count() > 1)
+                            .ToList();
+                        
+                        foreach (var grupo in textosAgrupados)
+                        {
+                            var textos = grupo.OrderBy(t => t.x).ToList();
+                            var separacion = 350 / textos.Count;
+                            var primerX = textos.First().x - 200;
+                            for (int i = 0; i < textos.Count; i++)
+                            {
+                                var (x, y, texto) = textos[i];
+                                int idx = posicionesTexto.FindIndex(t => t.x == x && t.y == y && t.texto == texto);
+                                posicionesTexto[idx] = (separacion * (i + 1) + primerX, y, texto);
+                            }
+                        }
+
+                        // Dibujar los textos
+                        using (var typeface = SKTypeface.FromFamilyName("Arial", SKFontStyle.Bold))
+                        using (var font = new SKFont(typeface, 12f))
+                        using (var paint = new SKPaint { Color = SKColors.Black, IsAntialias = true })
+                        {
+                            foreach (var (x, y, texto) in posicionesTexto)
+                            {
+                                canvas.DrawText(texto, x, y, font, paint);
+                            }
                         }
 
                         // Tiempo simulado en negrita
@@ -170,6 +191,15 @@ namespace ConsoleApp
             {
                 throw new Exception($"Error generando frames: {ex.Message}", ex);
             }
+        }
+
+        private static bool RectsOverlap(SKRect rect1, SKRect rect2)
+        {
+            const float margen = 5f;
+            return !(rect1.Right + margen < rect2.Left || 
+                     rect1.Left - margen > rect2.Right || 
+                     rect1.Bottom + margen < rect2.Top || 
+                     rect1.Top - margen > rect2.Bottom);
         }
     }
 }

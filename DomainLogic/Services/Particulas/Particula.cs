@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 
 namespace DomainLogic.Services.Particulas;
 
@@ -11,10 +12,14 @@ public class Particula : Nombre
 
     internal Particula(Nombre nombre) : base(nombre)
     {
-        var designacion = nombre.Efecto as Designacion;
+        var designacion = new Designacion(nombre
+            .Efecto
+            .SelectMany(e => e.Value)
+            .Select(a => a.Causa)
+            .ToList());
         Posicion2D = new Vector2D(0, 0);
         Velocidad2D = new Vector2D(Math.Cos(nombre.Fase), Math.Sin(nombre.Fase));
-        Aceleracion2D = new Vector2D(designacion.VelocidadGrupo(0), designacion.VelocidadGrupo(nombre.Frecuencia));
+        Aceleracion2D = new Vector2D(designacion.VelocidadGrupo(0), designacion.VelocidadGrupo(1));
         Tiempo = 0;
     }
 

@@ -6,17 +6,53 @@ using System.Text;
 public class Designacion : Apariencia
 {
     public override Guid Id { get; }
+    /// <summary>
+    /// Función que determina la velocidad de grupo dada una frecuencia.
+    /// </summary>
     public Func<double, double> VelocidadGrupo { get; internal set; }
 
     internal List<Nombre> _nombres { get; set; }
     public IEnumerable<Nombre> Nombres => _nombres.AsReadOnly();
 
-    internal Designacion(List<Nombre> nombres)
-        : base(nombres.First())
+    public Designacion(List<Nombre> nombres)
+        : base(nombres.First(), 1.0)
     {
         Id = Guid.NewGuid();
         _nombres = nombres;
         VelocidadGrupo = frecuencia => 1.0;
+    }
+
+    /// <summary>
+    /// Crea una nueva designación al proyectar el nombre sobre la apariencia, al mostrarse con una ventana Gaussiana.
+    /// </summary>
+    /// <param name="apariencia">La apariencia sobre la cual proyectar el nombre.</param>
+    /// <param name="nombre">El nombre a proyectar.</param>
+    /// <param name="ventana">La función que define que nombres se incluyen en la nueva designación, si se omite se incluyen aquellos que estan incluidos en las frecuencias del nombre proyectado.</param>
+    /// <returns>La nueva designación creada.</returns>
+    public Designacion Designar(Apariencia apariencia, 
+        Nombre nombre,
+        Func<Nombre, bool> ventana = null)
+    {
+        var nuevaDesignacion = new Designacion(new List<Nombre> { nombre });
+
+        var designacion = apariencia as Designacion;
+        if (designacion == null)
+        {
+            return nuevaDesignacion;
+        }
+        designacion._nombres.Add(nombre);
+        
+        var frecuenciaMaxima = nombre.Efecto.Keys.Max(k => Math.Abs(k));
+        if(ventana == null)
+        {
+            ventana = n => frecuenciaMaxima >= 
+                n.Efecto.Keys.Max(k => Math.Abs(k));
+        }
+        nuevaDesignacion
+            ._nombres
+            .AddRange(designacion.Nombres.Where(n => ventana(n)));
+        
+        return nuevaDesignacion;
     }
 
     /// <summary>
@@ -28,13 +64,9 @@ public class Designacion : Apariencia
     {
         var resultado = new StringBuilder();
         resultado.AppendLine("═══ Designación ═══");
-        foreach (var efecto in Nombres)
+        foreach (var nombre in Nombres)
         {
-            if(efecto.Frecuencia == 0)
-            {
-                break;
-            }
-            resultado.AppendLine(efecto.ToString());
+            resultado.AppendLine(nombre.ToString());
         }
         resultado.AppendLine("═══ Fin ═══");
         return resultado.ToString();
