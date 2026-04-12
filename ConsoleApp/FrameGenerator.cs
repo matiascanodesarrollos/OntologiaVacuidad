@@ -17,7 +17,7 @@ namespace ConsoleApp
 
         public static Func<Particula, SKColor> FuncionAmplitudAColor = (part) =>
         {
-            return part.Amplitud switch
+            return part.ObtenerAmplitudTotal() switch
             {
                 <= 1 => SKColor.Parse("#0011ff"),
                 <= 2 => SKColor.Parse("#036603"),
@@ -75,7 +75,7 @@ namespace ConsoleApp
                         const float radioMaximo = 200f;
                         var particulas = espacio
                             .Particulas
-                            .OrderByDescending(p => p.Amplitud)
+                            .OrderByDescending(p => p.ObtenerAmplitudTotal())
                             .GroupBy(p => p.Posicion2D)
                             .Select(g => g.First())
                             .ToList();

@@ -46,7 +46,7 @@ public class Apariencia
         }
         designacion.Amplitud = designacion
             .Nombres
-            .Sum(n => n.Amplitud);
+            .Sum(n => n.ObtenerAmplitudTotal());
         
         return designacion;
     }
