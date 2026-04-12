@@ -27,7 +27,7 @@ public class Designacion : Apariencia
     /// </summary>
     /// <param name="apariencia">La apariencia sobre la cual proyectar el nombre.</param>
     /// <param name="nombre">El nombre a proyectar.</param>
-    /// <param name="ventana">La función que define la ventana Gaussiana para la proyección.</param>
+    /// <param name="ventana">La función que define que nombres se incluyen en la nueva designación, si se omite se incluyen aquellos que estan incluidos en las frecuencias del nombre proyectado.</param>
     /// <returns>La nueva designación creada.</returns>
     public Designacion Designar(Apariencia apariencia, 
         Nombre nombre,
@@ -40,16 +40,13 @@ public class Designacion : Apariencia
         {
             return nuevaDesignacion;
         }
-
         designacion._nombres.Add(nombre);
-
+        
+        var frecuenciaMaxima = nombre.Efecto.Keys.Max(k => Math.Abs(k));
         if(ventana == null)
         {
-            // Similar a Gaussiana
-            ventana = n => nombre
-                .Efecto
-                .Keys
-                .Any(f => f >= n.Efecto.Keys.Min() && f <= n.Efecto.Keys.Max());
+            ventana = n => frecuenciaMaxima >= 
+                n.Efecto.Keys.Max(k => Math.Abs(k));
         }
         nuevaDesignacion
             ._nombres
