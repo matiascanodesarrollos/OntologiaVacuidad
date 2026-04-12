@@ -6,7 +6,7 @@ public class Nombre : Palabra
 {
     public override Guid Id { get; }
     public Dictionary<double, List<Apariencia>> Efecto { get; internal set; }
-    public double Amplitud => Efecto.Sum(a => a.Value.Sum(e => e.Amplitud));
+    public double Frecuencia => Efecto.Keys.Max(k => Math.Abs(k));
 
     internal Nombre(string texto, 
         double fase) 
@@ -33,6 +33,31 @@ public class Nombre : Palabra
     }
 
     /// <summary>
+    /// Retorna la amplitud total del nombre para una frecuencia dada, sumando las amplitudes de todas las apariencias asociadas a esa frecuencia.
+    /// </summary>
+    /// <param name="frecuencia">La frecuencia para la cual se desea obtener la amplitud.</param>
+    /// <returns>La amplitud total del nombre para la frecuencia especificada.</returns>
+    public (double Amplitud, double Fase) ObtenerValor(double frecuencia)
+    {
+        if (Efecto.TryGetValue(frecuencia, out var apariencias))
+        {
+            var amplitud = apariencias.Sum(a => a.Amplitud);
+            return (amplitud, Fase);
+        }
+
+        return (0, Fase);
+    }
+
+    /// <summary>
+    /// Suma las amplitudes de cada frecuencia.
+    /// </summary>
+    /// <returns>La amplitud total del nombre.</returns>
+    public double ObtenerAmplitudTotal()
+    {
+        return Efecto.Values.Sum(apariencias => apariencias.Sum(a => a.Amplitud));
+    }
+
+    /// <summary>
     /// Crea una nueva designación con los nombres seleccionados del espacios según la ventana especificada.
     /// La velocidad de grupo se determina promediando las velocidades de grupo de las apariencias proyectadas.
     /// El espacio designa el nombre tomando la nueva designación como apariencia.
@@ -54,7 +79,7 @@ public class Nombre : Palabra
     /// Retorna una representación del nombre.
     /// </summary>
     /// <returns>Naturaleza, fase y frecuencia.</returns>
-    public override string ToString() => $"{Texto} ({Fase * (180 / Math.PI):F2}º, {Amplitud:F2} A)";
+    public override string ToString() => $"{Texto} ({Fase * (180 / Math.PI):F2}º, {ObtenerValor(Frecuencia).Amplitud:F2} A)";
 
     /// <summary>
     /// Sobreescribe Equals para comparar nombres por su Id.

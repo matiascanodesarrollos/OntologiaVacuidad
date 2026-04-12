@@ -43,7 +43,7 @@ public class Espacio : Nombre
             }
 
             var lista = grupo
-                    .OrderByDescending(p => p.Amplitud)
+                    .OrderByDescending(p => p.ObtenerValor(p.Frecuencia).Amplitud)
                     .ToList();
             var apariencia = Apariencia.Aparecer(new List<string>(), null);
             lista.ForEach(p => p.Mostrarse(apariencia));
