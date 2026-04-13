@@ -16,7 +16,7 @@ public class AparienciaTests
             });
 
         var designacion = Assert.IsType<Designacion>(apariencia);
-        var nombres = designacion.Nombres.Skip(1).ToList();
+        var nombres = designacion.Apariencias.Skip(1).ToList();
 
         Assert.Equal(4.0, designacion.Amplitud);
         Assert.Equal(2, nombres.Count);
@@ -30,13 +30,13 @@ public class AparienciaTests
     public void Designar_ConAparienciaMockeada_NoModificaLaFuenteYRetornaSoloElNombreProyectado()
     {
         var nombre = ((Designacion)Apariencia.Aparecer(new List<string> { "decir verdad" }, _ => (0d, 1d, 3d)))
-            .Nombres
+            .Apariencias
             .Last();
         var apariencia = new Mock<Apariencia>(nombre, 1d) { CallBase = true };
 
         var resultado = new Designacion(new List<Nombre> { nombre }).Designar(apariencia.Object, nombre);
 
-        var nombres = resultado.Nombres.ToList();
+        var nombres = resultado.Apariencias.ToList();
         Assert.Single(nombres);
         Assert.Same(nombre, nombres[0]);
     }

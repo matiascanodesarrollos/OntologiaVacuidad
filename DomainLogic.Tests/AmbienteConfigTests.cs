@@ -6,7 +6,7 @@ public class AmbienteConfigTests
     public void CrearAmbiente_GeneraFrecuenciasFasesYAmplitudesEsperadas()
     {
         var ambiente = AmbienteConfig.CrearAmbiente("ser humano. ser lenguaje. pensar humano.");
-        var nombres = ambiente.Nombres.Skip(1).ToList();
+        var nombres = ambiente.Apariencias.Skip(1).ToList();
 
         Assert.Equal(3, nombres.Count);
         Assert.Equal(0, nombres[0].Fase);

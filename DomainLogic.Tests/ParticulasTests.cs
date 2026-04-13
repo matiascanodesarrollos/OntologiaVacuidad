@@ -19,7 +19,7 @@ public class ParticulasTests
     public void MoverParticulas_LlamaMoverEnCadaParticula()
     {
         var designacion = (Designacion)Apariencia.Aparecer(new List<string> { "ser humano" }, _ => (0d, 1d, 1d));
-        var nombre = designacion.Nombres.Last();
+        var nombre = designacion.Apariencias.Last();
         var espacio = Espacio.Crear(designacion);
         espacio.Particulas.Clear();
 

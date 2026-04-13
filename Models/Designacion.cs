@@ -1,25 +1,33 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 public class Designacion : Apariencia
 {
     public override Guid Id { get; }
-    /// <summary>
-    /// Función que determina la velocidad de grupo dada una frecuencia.
-    /// </summary>
-    public Func<double, double> VelocidadGrupo { get; internal set; }
-
     internal List<Nombre> _nombres { get; set; }
     public IEnumerable<Nombre> Nombres => _nombres.AsReadOnly();
 
-    public Designacion(List<Nombre> nombres)
-        : base(nombres.First(), 1.0)
+    /// <summary>
+    /// Función que determina el efecto dado un tiempo y una frecuencia.
+    /// </summary>
+    public Func<(double Tiempo, double Frecuencia), (double Amplitud, double Fase)> Efectos { get; }
+
+    /// <summary>
+    /// Función que determina la velocidad de grupo dada una frecuencia.
+    /// </summary>
+    public Func<double, double> VelocidadGrupo { get; }
+
+    internal Designacion(
+        List<Nombre> nombres,
+        Func<(double Tiempo, double Frecuencia), (double Amplitud, double Fase)> efectos,
+        Func<double, double> velocidadGrupo)
+        : base(nombres.First().Esencia.Amplitud)
     {
         Id = Guid.NewGuid();
         _nombres = nombres;
-        VelocidadGrupo = frecuencia => 1.0;
+        Efectos = efectos;
+        VelocidadGrupo = velocidadGrupo;
     }
 
     /// <summary>
@@ -27,49 +35,31 @@ public class Designacion : Apariencia
     /// </summary>
     /// <param name="apariencia">La apariencia sobre la cual proyectar el nombre.</param>
     /// <param name="nombre">El nombre a proyectar.</param>
-    /// <param name="ventana">La función que define que nombres se incluyen en la nueva designación, si se omite se incluyen aquellos que estan incluidos en las frecuencias del nombre proyectado.</param>
+    /// <param name="ventana">La función un mapeo de tiempo a frecuencia.</param>
     /// <returns>La nueva designación creada.</returns>
     public Designacion Designar(Apariencia apariencia, 
         Nombre nombre,
-        Func<Nombre, bool> ventana = null)
+        Func<double, double> ventana)
     {
-        var nuevaDesignacion = new Designacion(new List<Nombre> { nombre });
+        Func<(double Tiempo, double Frecuencia), 
+            (double Amplitud, double Fase)> efectos = x =>
+        {
+            var amplitud = apariencia.Amplitud 
+                    * Math.Cos(x.Frecuencia * x.Tiempo + nombre.Fase)
+                + nombre.Amplitud(ventana(x.Tiempo))
+                    * Math.Sin(x.Frecuencia * x.Tiempo + nombre.Fase);
+            var fase = x.Tiempo % (2 * Math.PI);
+            return (amplitud, fase);
+        };
 
+        Func<double, double> velocidadGrupo = f => 1.0;
         var designacion = apariencia as Designacion;
-        if (designacion == null)
+        var nombres = new List<Nombre>(designacion.Nombres)
         {
-            return nuevaDesignacion;
-        }
-        designacion._nombres.Add(nombre);
-        
-        var frecuenciaMaxima = nombre.Efecto.Keys.Max(k => Math.Abs(k));
-        if(ventana == null)
-        {
-            ventana = n => frecuenciaMaxima >= 
-                n.Efecto.Keys.Max(k => Math.Abs(k));
-        }
-        nuevaDesignacion
-            ._nombres
-            .AddRange(designacion.Nombres.Where(n => ventana(n)));
-        
+            nombre,
+        };
+        var nuevaDesignacion = new Designacion(nombres, efectos, designacion.VelocidadGrupo);
         return nuevaDesignacion;
-    }
-
-    /// <summary>
-    /// Sobreescribe ToString para mostrar una representación de la designación, incluyendo su naturaleza y esencia.
-    /// Se muestra la naturaleza como una lista de efectos, cada uno con su causa, frecuencia y fase.
-    /// </summary>
-    /// <returns>Una cadena que representa la designación.</returns>
-    public override string ToString()
-    {
-        var resultado = new StringBuilder();
-        resultado.AppendLine("═══ Designación ═══");
-        foreach (var nombre in Nombres)
-        {
-            resultado.AppendLine(nombre.ToString());
-        }
-        resultado.AppendLine("═══ Fin ═══");
-        return resultado.ToString();
     }
 
     /// <summary>

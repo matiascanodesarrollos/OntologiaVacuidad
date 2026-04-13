@@ -4,7 +4,7 @@ public class NombreTests
     public void ObtenerValor_RetornaCeroCuandoLaFrecuenciaNoExiste()
     {
         var nombre = ((Designacion)Apariencia.Aparecer(new List<string> { "pensar mundo" }, _ => (0.5d, 3d, 2d)))
-            .Nombres
+            .Apariencias
             .Last();
 
         var valor = nombre.ObtenerValor(99);
@@ -19,7 +19,7 @@ public class NombreTests
         var fuente = (Designacion)Apariencia.Aparecer(
             new List<string> { "ser humano", "decir verdad" },
             texto => texto == "ser humano" ? (0d, 1d, 1d) : (1d, 2d, 4d));
-        var nombre = fuente.Nombres.Last();
+        var nombre = fuente.Apariencias.Last();
 
         var resultado = nombre.Mostrarse(fuente);
 

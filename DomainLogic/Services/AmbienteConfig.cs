@@ -26,9 +26,6 @@ namespace DomainLogic.Services
 
             var deltaFasePredicados = 2 * Math.PI / oraciones.Count;
             var frecuenciaOraciones = oraciones.Count;
-            var diccionarioVerbos = oraciones
-                .GroupBy(p => p.Split(' ').First())
-                .ToDictionary(g => g.Key, g => g.Count());
             var diccionarioComplementos = oraciones
                 .SelectMany(p => p.Split(' ').Skip(1))
                 .GroupBy(p => p)
@@ -39,14 +36,12 @@ namespace DomainLogic.Services
                     .Aparecer(oraciones, oracion =>
                     {
                         var palabras = oracion.Split(' ');
-                        var verboNucleo = palabras.First();
                         var complementosDelSujeto = palabras.Skip(1).ToList();
-                        var resultado = (i * deltaFasePredicados, 
-                            diccionarioVerbos[verboNucleo],
-                            complementosDelSujeto.Sum(c => diccionarioComplementos[c]));
                         i++;
-                        return resultado;
-                    }) as Designacion;
+                        return (i * deltaFasePredicados, 
+                            complementosDelSujeto.Sum(c => diccionarioComplementos[c]));
+                    },
+                    f => 1) as Designacion;
         }
     }
 
