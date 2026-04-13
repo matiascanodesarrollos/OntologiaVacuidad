@@ -1,43 +1,40 @@
-using Moq;
+using System.Linq;
 
 public class AparienciaTests
 {
     [Fact]
-    public void Aparecer_CreaDesignacionConNombresYAmplitudTotal()
+    public void Aparecer_CreaDesignacionConNombresYEfectosSegunFaseMasCercana()
     {
-        var predicados = new List<string> { "ser humano", "ser lenguaje" };
-
-        var apariencia = Apariencia.Aparecer(predicados, texto =>
-            texto switch
-            {
-                "ser humano" => (Math.PI * 3, 2d, 1.5d),
-                "ser lenguaje" => (Math.PI / 2, 2d, 2.5d),
-                _ => (0d, 0d, 0d)
-            });
+        var apariencia = Apariencia.Aparecer(
+            new List<string> { "ser humano", "ser lenguaje" },
+            texto => texto == "ser humano" ? (-Math.PI / 2, 1.5d) : (Math.PI, 2.5d),
+            frecuencia => frecuencia * 2);
 
         var designacion = Assert.IsType<Designacion>(apariencia);
-        var nombres = designacion.Apariencias.Skip(1).ToList();
+        var nombres = designacion.Nombres.ToList();
+        var efectoPrimerNombre = designacion.Efectos((Math.PI / 2, 3d));
+        var efectoSegundoNombre = designacion.Efectos((Math.PI * 0.95, 3d));
 
-        Assert.Equal(4.0, designacion.Amplitud);
         Assert.Equal(2, nombres.Count);
-        Assert.Equal(Math.PI, nombres[0].Fase);
-        Assert.Equal(2, nombres[0].Frecuencia);
-        Assert.Equal(1.5, nombres[0].ObtenerValor(2).Amplitud);
-        Assert.Equal(2.5, nombres[1].ObtenerValor(2).Amplitud);
+        Assert.Equal(Math.PI / 2, nombres[0].Fase, 10);
+        Assert.Equal(Math.PI, nombres[1].Fase, 10);
+        Assert.Equal(1.5d, designacion.Amplitud, 10);
+        Assert.Equal(6d, designacion.VelocidadGrupo(3d), 10);
+        Assert.Equal(1.5d, efectoPrimerNombre.Amplitud, 10);
+        Assert.Equal(2.5d, efectoSegundoNombre.Amplitud, 10);
+        Assert.Equal(Math.PI / 2, efectoPrimerNombre.Fase, 10);
     }
 
     [Fact]
-    public void Designar_ConAparienciaMockeada_NoModificaLaFuenteYRetornaSoloElNombreProyectado()
+    public void EqualsYGetHashCode_ComparanPorId()
     {
-        var nombre = ((Designacion)Apariencia.Aparecer(new List<string> { "decir verdad" }, _ => (0d, 1d, 3d)))
-            .Apariencias
-            .Last();
-        var apariencia = new Mock<Apariencia>(nombre, 1d) { CallBase = true };
+        var apariencia = new Apariencia(2d);
+        var mismaReferencia = apariencia;
+        var otra = new Apariencia(2d);
 
-        var resultado = new Designacion(new List<Nombre> { nombre }).Designar(apariencia.Object, nombre);
-
-        var nombres = resultado.Apariencias.ToList();
-        Assert.Single(nombres);
-        Assert.Same(nombre, nombres[0]);
+        Assert.True(apariencia.Equals(mismaReferencia));
+        Assert.False(apariencia.Equals(otra));
+        Assert.False(apariencia.Equals("no-apariencia"));
+        Assert.Equal(apariencia.Id.GetHashCode(), apariencia.GetHashCode());
     }
 }
