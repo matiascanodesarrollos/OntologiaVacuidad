@@ -30,8 +30,8 @@ jobs:
         shell: pwsh
         run: |
           $projects = @(
-            @{ Name = 'Models'; TestProject = 'Models.Tests/Models.Tests.csproj'; ResultsDirectory = 'TestResults/Models' },
-            @{ Name = 'DomainLogic'; TestProject = 'DomainLogic.Tests/DomainLogic.Tests.csproj'; ResultsDirectory = 'TestResults/DomainLogic' }
+            @{ Name = 'Models'; TestProject = 'Models.Tests/Models.Tests.csproj'; ResultsDirectory = 'TestResults/Models'; PackageName = 'Models' },
+            @{ Name = 'DomainLogic'; TestProject = 'DomainLogic.Tests/DomainLogic.Tests.csproj'; ResultsDirectory = 'TestResults/DomainLogic'; PackageName = 'DomainLogic' }
           )
 
           foreach ($project in $projects) {
@@ -46,7 +46,12 @@ jobs:
             }
 
             [xml]$coverage = Get-Content $coverageFile.FullName
-            $lineRate = [double]$coverage.coverage.'line-rate'
+            $package = @($coverage.coverage.packages.package | Where-Object { $_.name -eq $project.PackageName } | Select-Object -First 1)
+            if (-not $package) {
+              throw "Coverage package '$($project.PackageName)' not found for $($project.Name)."
+            }
+
+            $lineRate = [double]$package.'line-rate'
             $coveragePercent = [math]::Round($lineRate * 100, 2)
 
             Write-Host "$($project.Name) coverage: $coveragePercent%"

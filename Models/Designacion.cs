@@ -52,7 +52,6 @@ public class Designacion : Apariencia
             return (amplitud, fase);
         };
 
-        Func<double, double> velocidadGrupo = f => 1.0;
         var designacion = apariencia as Designacion;
         var nombres = new List<Nombre>(designacion.Nombres)
         {
