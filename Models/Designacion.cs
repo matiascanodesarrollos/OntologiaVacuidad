@@ -5,59 +5,85 @@ using System.Linq;
 public class Designacion : Apariencia
 {
     public override Guid Id { get; }
-    internal List<Nombre> _nombres { get; set; }
+    private List<Nombre> _nombres { get; set; }
     public IEnumerable<Nombre> Nombres => _nombres.AsReadOnly();
+    private List<Apariencia> _apariencias { get; set; }
+    public IEnumerable<Apariencia> Apariencias => _apariencias.AsReadOnly();
 
     /// <summary>
-    /// Función que determina el efecto dado un tiempo y una frecuencia.
+    /// Función que determina la velocidad de grupo dada un nombre.
     /// </summary>
-    public Func<(double Tiempo, double Frecuencia), (double Amplitud, double Fase)> Efectos { get; }
+    public Func<Nombre, double> VelocidadGrupo { get; }
 
-    /// <summary>
-    /// Función que determina la velocidad de grupo dada una frecuencia.
-    /// </summary>
-    public Func<double, double> VelocidadGrupo { get; }
-
-    internal Designacion(
-        List<Nombre> nombres,
-        Func<(double Tiempo, double Frecuencia), (double Amplitud, double Fase)> efectos,
-        Func<double, double> velocidadGrupo)
-        : base(nombres.First().Esencia.Amplitud)
+    internal Designacion(List<Nombre> nombres, 
+        Func<Nombre, double> velocidadGrupo)
+        : base(Palabra.Vacuidad)
     {
         Id = Guid.NewGuid();
         _nombres = nombres;
-        Efectos = efectos;
+        _apariencias = nombres.Select(n => n.Esencia).ToList();
         VelocidadGrupo = velocidadGrupo;
+    }
+    
+    internal Designacion(List<string> predicados)
+        : base(Palabra.Vacuidad)
+    {
+        Id = Guid.NewGuid();
+        _nombres = new List<Nombre>();
+        _apariencias = new List<Apariencia>() { this };
+
+        var deltaFasePredicados = 2 * Math.PI / predicados.Count;
+        var diccionarioVerbos = predicados
+            .Select(p => p.Split(' ').First())
+            .GroupBy(p => p)
+            .ToDictionary(g => g.Key, g => g.Count());
+        
+        var diccionarioComplementos = predicados
+            .SelectMany(p => p.Split(' ').Skip(1))
+            .GroupBy(p => p)
+            .ToDictionary(g => g.Key, g => Math.Max(1,g.Count()));
+
+        for(var i = 0; i < predicados.Count; i++)
+        {
+            var palabras = predicados[i].Split(' ');
+
+            var frecuencia = diccionarioVerbos[palabras.First()];
+            var amplitud = palabras.Skip(1).Count();
+            var fase = i * deltaFasePredicados;
+
+            var apariencia = new Apariencia(t => 
+                amplitud * Math.Cos(frecuencia * Math.PI * t + fase) 
+                + amplitud * Math.Sin(frecuencia * Math.PI * t + fase));
+            _apariencias.Add(apariencia);
+            
+            var nombre = new Nombre(predicados[i], fase, apariencia);
+            _nombres.Add(nombre);
+        }
+
+        VelocidadGrupo = n => 1;
     }
 
     /// <summary>
-    /// Crea una nueva designación al proyectar el nombre sobre la apariencia, al mostrarse con una ventana Gaussiana.
+    /// Crea una nueva designación al proyectar el nombre sobre la apariencia.
+    /// Si la apariencia no es una designación, se crea una vacuidad.
     /// </summary>
     /// <param name="apariencia">La apariencia sobre la cual proyectar el nombre.</param>
     /// <param name="nombre">El nombre a proyectar.</param>
-    /// <param name="ventana">La función un mapeo de tiempo a frecuencia.</param>
     /// <returns>La nueva designación creada.</returns>
     public Designacion Designar(Apariencia apariencia, 
-        Nombre nombre,
-        Func<double, double> ventana)
+        Nombre nombre)
     {
-        Func<(double Tiempo, double Frecuencia), 
-            (double Amplitud, double Fase)> efectos = x =>
+        var nombres = Nombres
+            .SkipLast(1) //Analogo a derivar
+            .ToList();
+        nombres.Add(nombre);
+        var nuevaDesignacion = new Designacion(nombres, n =>
         {
-            var amplitud = apariencia.Amplitud 
-                    * Math.Cos(x.Frecuencia * x.Tiempo + nombre.Fase)
-                + nombre.Amplitud(ventana(x.Tiempo))
-                    * Math.Sin(x.Frecuencia * x.Tiempo + nombre.Fase);
-            var fase = x.Tiempo % (2 * Math.PI);
-            return (amplitud, fase);
-        };
-
-        var designacion = apariencia as Designacion;
-        var nombres = new List<Nombre>(designacion.Nombres)
-        {
-            nombre,
-        };
-        var nuevaDesignacion = new Designacion(nombres, efectos, designacion.VelocidadGrupo);
+            var velocidad = VelocidadGrupo(n);
+            return velocidad != 0 
+                ? velocidad 
+                : velocidad + 2; //Si el nombre no es el correcto va a una velocidad más alta
+        });        
         return nuevaDesignacion;
     }
 

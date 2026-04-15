@@ -1,5 +1,4 @@
 using DomainLogic.Services;
-using System.Linq;
 
 public class AmbienteConfigTests
 {

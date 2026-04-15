@@ -1,5 +1,3 @@
-using System.Linq;
-
 public class AparienciaTests
 {
     [Fact]
@@ -28,9 +26,15 @@ public class AparienciaTests
     [Fact]
     public void EqualsYGetHashCode_ComparanPorId()
     {
-        var apariencia = new Apariencia(2d);
+        var apariencia = Apariencia.Aparecer(
+            new List<string> { "ser" },
+            _ => (0d, 2d),
+            _ => 1d);
         var mismaReferencia = apariencia;
-        var otra = new Apariencia(2d);
+        var otra = Apariencia.Aparecer(
+            new List<string> { "otro" },
+            _ => (0d, 2d),
+            _ => 1d);
 
         Assert.True(apariencia.Equals(mismaReferencia));
         Assert.False(apariencia.Equals(otra));

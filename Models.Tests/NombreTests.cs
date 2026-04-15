@@ -1,5 +1,3 @@
-using System.Linq;
-
 public class NombreTests
 {
     [Fact]
@@ -15,7 +13,7 @@ public class NombreTests
         var nombres = resultado.Nombres.ToList();
         var efecto = resultado.Efectos((1d, 2d));
         var amplitudEsperada = fuente.Amplitud * Math.Cos(2d + nombre.Fase)
-            + nombre.Amplitud(nombre.Fase) * Math.Sin(2d + nombre.Fase);
+            + nombre.Amplitud(fuente.Nombres.Count()) * Math.Sin(2d + nombre.Fase);
 
         Assert.Equal(3, nombres.Count);
         Assert.Same(nombre, nombres.Last());
@@ -25,23 +23,38 @@ public class NombreTests
     }
 
     [Fact]
-    public void Mostrarse_ConAparienciaBaseDevuelveDesignacionBasica()
+    public void Mostrarse_ConAparienciaCreadaPublicamenteDevuelveNuevaDesignacion()
     {
-        var nombre = new Nombre("logos", Math.PI / 3, _ => 2.5d);
-        var apariencia = new Apariencia(1d);
+        var fuenteNombre = (Designacion)Apariencia.Aparecer(
+            new List<string> { "logos" },
+            _ => (Math.PI / 3, 2.5d),
+            _ => 1d);
+        var nombre = fuenteNombre.Nombres.Single();
+        var apariencia = Apariencia.Aparecer(
+            new List<string> { "base" },
+            _ => (0d, 1d),
+            _ => 1d);
 
         var resultado = nombre.Mostrarse(apariencia);
 
-        Assert.Single(resultado.Nombres);
-        Assert.Same(nombre, resultado.Nombres.Single());
-        Assert.Equal((0d, 0d), resultado.Efectos((5d, 9d)));
+        Assert.Equal(2, resultado.Nombres.Count());
+        Assert.Same(nombre, resultado.Nombres.Last());
+        Assert.Equal(1.7267418003999999d, resultado.Efectos((5d, 9d)).Amplitud, 10);
         Assert.Equal(1d, resultado.VelocidadGrupo(10d), 10);
     }
 
     [Fact]
     public void NombreYCopia_ConservanValoresYRepresentacion()
     {
-        var nombre = new Nombre("ser", -Math.PI / 2, _ => 2d);
+        var fuente = (Designacion)Apariencia.Aparecer(
+            new List<string> { "ser" },
+            _ => (-Math.PI / 2, 2d),
+            _ => 1d);
+        var otro = ((Designacion)Apariencia.Aparecer(
+            new List<string> { "otro" },
+            _ => (0d, 1d),
+            _ => 1d)).Nombres.Single();
+        var nombre = fuente.Nombres.Single();
         var copia = new Nombre(nombre);
 
         Assert.Equal(Math.PI / 2, nombre.Fase, 10);
@@ -51,7 +64,7 @@ public class NombreTests
         Assert.Equal(2d, nombre.Amplitud(123d), 10);
         Assert.Equal("ser (90.00º, 2.00 A)", nombre.ToString());
         Assert.True(nombre.Equals(copia));
-        Assert.False(nombre.Equals(new Nombre("otro", 0d, _ => 1d)));
+        Assert.False(nombre.Equals(otro));
         Assert.False(nombre.Equals("no-nombre"));
         Assert.Equal(nombre.Id.GetHashCode(), nombre.GetHashCode());
     }
@@ -59,17 +72,17 @@ public class NombreTests
     [Fact]
     public void DesignacionYPalabra_ComparanPorIdYNormalizanFase()
     {
-        var palabra = new Palabra("vacio", -7d);
-        var otraPalabra = new Palabra("vacio", 1d);
-        var designacion = new Designacion(
-            new List<Nombre> { new Nombre("ser", 0d, _ => 1d) },
-            x => (x.Tiempo + x.Frecuencia, x.Tiempo),
+        var designacion = (Designacion)Apariencia.Aparecer(
+            new List<string> { "vacio" },
+            _ => (-7d, 1d),
             frecuencia => frecuencia * 3);
-        var mismaDesignacion = designacion;
-        var otraDesignacion = new Designacion(
-            new List<Nombre> { new Nombre("ser", 0d, _ => 1d) },
-            x => (0d, 0d),
+        var otraDesignacion = (Designacion)Apariencia.Aparecer(
+            new List<string> { "vacio" },
+            _ => (1d, 1d),
             _ => 1d);
+        var palabra = designacion.Nombres.Single();
+        var otraPalabra = otraDesignacion.Nombres.Single();
+        var mismaDesignacion = designacion;
 
         Assert.InRange(palabra.Fase, 0d, 2 * Math.PI);
         Assert.True(palabra.Equals(palabra));
@@ -80,6 +93,6 @@ public class NombreTests
         Assert.False(designacion.Equals(otraDesignacion));
         Assert.False(designacion.Equals("no-designacion"));
         Assert.Equal(designacion.Id.GetHashCode(), designacion.GetHashCode());
-        Assert.Equal(6d, designacion.Efectos((2d, 4d)).Amplitud, 10);
+        Assert.Equal(6d, designacion.VelocidadGrupo(2d), 10);
     }
 }

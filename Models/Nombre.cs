@@ -7,18 +7,18 @@ public class Nombre : Palabra
     public Apariencia Esencia { get; private set; }
 
     /// <summary>
-    /// Función que determina la amplitud dada una frecuencia.
+    /// Crea un nuevo nombre con el texto, fase y esencia dados. El Id se genera automáticamente.
     /// </summary>
-    public Func<double, double> Amplitud { get; internal set; }
-
-    internal Nombre(string texto, 
+    /// <param name="texto">El texto del nombre.</param>
+    /// <param name="fase">La fase del nombre.</param>
+    /// <param name="esencia">La esencia del nombre. Si es null, se crea una vacuidad.</param>
+    public Nombre(string texto, 
         double fase,
-        Func<double, double> amplitud)
+        Apariencia esencia)
         : base(texto, fase)
     {
         Id = Guid.NewGuid();
-        Amplitud = amplitud;
-        Esencia = new Apariencia(amplitud(0));
+        Esencia = esencia ?? new Apariencia(t => Vacuidad(t));
     }
 
     /// <summary>
@@ -31,32 +31,32 @@ public class Nombre : Palabra
             nombre.Fase)
     {
         Id = nombre.Id;
-        Amplitud = nombre.Amplitud;
         Esencia = nombre.Esencia;
     }
 
     /// <summary>
-    /// Crea una nueva designación con los nombres seleccionados del espacios según la ventana especificada.
-    /// La velocidad de grupo se determina promediando las velocidades de grupo de las apariencias proyectadas.
-    /// El espacio designa el nombre tomando la nueva designación como apariencia.
+    /// Crea una nueva designación al proyectar el nombre sobre la apariencia.
+    /// Si la apariencia no es una designación, se crea a partir de los predicados dados.
     /// </summary>
     /// <param name="apariencia">La apariencia que funciona como espacio.</param>
-    public Designacion Mostrarse(Apariencia apariencia)
+    /// <param name="predicados">Los predicados que se utilizarán para crear la nueva designación si la apariencia no es una designación.</param>
+    /// <returns>La nueva designación creada.</returns>
+    public Designacion Mostrarse(Apariencia apariencia, List<string> predicados)
     {
         var designacion = apariencia as Designacion;
-        if (designacion != null)
+        if (designacion == null)
         {
-            return designacion.Designar(apariencia, this, t => Fase);
+            designacion = new Designacion(predicados);
         }
 
-        return new Designacion(new List<Nombre> { this }, x => (0.0, 0.0), f => 1.0);
+        return designacion.Designar(apariencia, this);
     }
 
     /// <summary>
     /// Representacion en texto de la apariencia. 
     /// </summary>
     /// <returns>Una cadena que representa la apariencia.</returns>
-    public override string ToString() => $"{Texto} ({Fase * (180 / Math.PI):F2}º, {Esencia.Amplitud:F2} A)";
+    public override string ToString() => $"{Texto} ({Fase * (180 / Math.PI):F2}º, {Esencia.Amplitud(1):F2} A)";
 
     /// <summary>
     /// Sobreescribe Equals para comparar nombres por su Id.

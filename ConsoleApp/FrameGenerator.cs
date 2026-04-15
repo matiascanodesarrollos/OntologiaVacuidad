@@ -18,9 +18,9 @@ namespace ConsoleApp
         private const float RADIO_RAYO_MAXIMO = 200f;
         private const float RADIO_RAYO_MINIMO = 12f;
 
-        public static Func<Particula, SKColor> FuncionAmplitudAColor = (part) =>
+        public static Func<Particula, double, SKColor> FuncionAmplitudAColor = (part, tiempo) =>
         {
-            return part.Esencia.Amplitud switch
+            return part.Esencia.Amplitud(tiempo) switch
             {
                 <= 1 => SKColor.Parse("#0011ff"),
                 <= 2 => SKColor.Parse("#036603"),
@@ -75,13 +75,13 @@ namespace ConsoleApp
 
                         var particulas = espacio
                             .Particulas
-                            .OrderByDescending(p => p.Esencia.Amplitud)
+                            .OrderByDescending(p => p.Esencia.Amplitud(espacio.Tiempo))
                             .GroupBy(p => p.Posicion2D)
                             .Select(g => g.First())
                             .ToList();
                         foreach (var particula in particulas)
                         {                            
-                            var color = FuncionAmplitudAColor(particula);                     
+                            var color = FuncionAmplitudAColor(particula, espacio.Tiempo);                     
                             var x = CENTROX + (float) particula.Posicion2D.X;
                             var y = CENTROY - (float) particula.Posicion2D.Y;
 
@@ -171,16 +171,7 @@ namespace ConsoleApp
                 throw new Exception($"Error generando frames: {ex.Message}", ex);
             }
         }
-
-        private static bool RectsOverlap(SKRect rect1, SKRect rect2)
-        {
-            const float margen = 5f;
-            return !(rect1.Right + margen < rect2.Left || 
-                     rect1.Left - margen > rect2.Right || 
-                     rect1.Bottom + margen < rect2.Top || 
-                     rect1.Top - margen > rect2.Bottom);
-        }
-
+        
         private static double CalcularIntensidadRayo(IEnumerable<(double Amplitud, double Fase)> ondas, double angulo)
         {
             return ondas.Sum(onda => Math.Abs(onda.Amplitud) * Math.Max(0d, Math.Cos(angulo - onda.Fase)));

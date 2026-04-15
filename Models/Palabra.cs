@@ -4,6 +4,10 @@ public class Palabra
     public virtual Guid Id { get; }
     public virtual double Fase { get; internal set; }
     public virtual string Texto { get; }
+    public static Func<double, double> Vacuidad = t => 
+        t == 0 
+            ? double.MaxValue 
+            : Math.Cos(t) + Math.Sin(t);
 
     internal Palabra(string texto, double fase)
     {

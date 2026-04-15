@@ -1,6 +1,5 @@
 using DomainLogic.Services.Particulas;
 using Moq;
-using System.Linq;
 
 public class ParticulasTests
 {

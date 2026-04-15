@@ -27,7 +27,7 @@ namespace ConsoleApp
                 var ambiente = AmbienteConfig.CrearAmbiente(string.Join(' ', args));
                 
                 logger.LogInformation($"[ESPACIO basado en amplitud (apariencia)] Creado para: {ambiente}\n");
-                var espacio = new Espacio(ambiente, new List<double> { 0.0, 1.0, 2.0, 3.0 });
+                var espacio = new Espacio(ambiente);
                 
                 var framesDir = Path.Combine(Directory.GetCurrentDirectory(), "frames");
                 var directorioSalida = Path.Combine(framesDir, "Amplitud");
