@@ -35,18 +35,24 @@ public class Nombre : Palabra
     }
 
     /// <summary>
-    /// Crea una nueva designación al proyectar el nombre sobre la apariencia.
-    /// Si la apariencia no es una designación, se crea a partir de los predicados dados.
+    /// Crea una nueva designación al proyectar el nombre + una lista de predicados sobre la apariencia.
+    /// Cada predicado se convierte en un nombre con una apariencia asociada.
+    /// La frecuencia se determina por la cantidad de nombres que comparten el mismo verbo núcleo (se asume la primer palabra del predicado),
+    /// la amplitud por la cantidad de complementos del sujeto que comparten (se asume las palabras restantes del predicado),
+    /// y la fase por la posición del predicado en la lista (distribuido en 360º).
     /// </summary>
     /// <param name="apariencia">La apariencia que funciona como espacio.</param>
     /// <param name="predicados">Los predicados que se utilizarán para crear la nueva designación si la apariencia no es una designación.</param>
     /// <returns>La nueva designación creada.</returns>
     public Designacion Mostrarse(Apariencia apariencia, List<string> predicados)
     {
-        var designacion = apariencia as Designacion;
+        var designacion = predicados == null
+            ? apariencia as Designacion
+            : new Designacion(predicados);
+
         if (designacion == null)
         {
-            designacion = new Designacion(predicados);
+            throw new ArgumentNullException(nameof(predicados), "Se requieren predicados cuando la apariencia no es una designacion.");
         }
 
         return designacion.Designar(apariencia, this);

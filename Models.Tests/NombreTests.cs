@@ -1,68 +1,62 @@
 public class NombreTests
 {
     [Fact]
-    public void Mostrarse_ConDesignacionDevuelveNuevaDesignacionConNombreAgregadoYEfectoCalculado()
+    public void Mostrarse_ConPredicadosCreaDesignacionYAgregaElNombreActual()
     {
-        var fuente = (Designacion)Apariencia.Aparecer(
-            new List<string> { "ser humano", "decir verdad" },
-            texto => texto == "ser humano" ? (0d, 1d) : (Math.PI / 2, 4d),
-            frecuencia => frecuencia + 1);
-        var nombre = fuente.Nombres.Last();
+        var nombre = new Nombre("logos", Math.PI / 3, null);
 
-        var resultado = nombre.Mostrarse(fuente);
+        var resultado = nombre.Mostrarse(null, new List<string> { "ser humano", "ser lenguaje" });
         var nombres = resultado.Nombres.ToList();
-        var efecto = resultado.Efectos((1d, 2d));
-        var amplitudEsperada = fuente.Amplitud * Math.Cos(2d + nombre.Fase)
-            + nombre.Amplitud(fuente.Nombres.Count()) * Math.Sin(2d + nombre.Fase);
 
-        Assert.Equal(3, nombres.Count);
-        Assert.Same(nombre, nombres.Last());
-        Assert.Equal(fuente.VelocidadGrupo(3d), resultado.VelocidadGrupo(3d), 10);
-        Assert.Equal(amplitudEsperada, efecto.Amplitud, 10);
-        Assert.Equal(1d, efecto.Fase, 10);
+        Assert.Equal(2, nombres.Count);
+        Assert.Equal("ser humano", nombres[0].Texto);
+        Assert.Same(nombre, nombres[1]);
+        Assert.Equal(1d, resultado.VelocidadGrupo(nombre), 10);
     }
 
     [Fact]
-    public void Mostrarse_ConAparienciaCreadaPublicamenteDevuelveNuevaDesignacion()
+    public void Mostrarse_ConDesignacionYSinPredicadosReutilizaLaDesignacionExistente()
     {
-        var fuenteNombre = (Designacion)Apariencia.Aparecer(
-            new List<string> { "logos" },
-            _ => (Math.PI / 3, 2.5d),
-            _ => 1d);
-        var nombre = fuenteNombre.Nombres.Single();
-        var apariencia = Apariencia.Aparecer(
-            new List<string> { "base" },
-            _ => (0d, 1d),
-            _ => 1d);
+        var baseDesignacion = new Nombre("origen", 0d, null)
+            .Mostrarse(null, new List<string> { "ser humano", "pensar humano" });
+        var nombre = new Nombre("logos", Math.PI / 2, null);
 
-        var resultado = nombre.Mostrarse(apariencia);
+        var resultado = nombre.Mostrarse(baseDesignacion, null);
+        var nombres = resultado.Nombres.ToList();
 
-        Assert.Equal(2, resultado.Nombres.Count());
-        Assert.Same(nombre, resultado.Nombres.Last());
-        Assert.Equal(1.7267418003999999d, resultado.Efectos((5d, 9d)).Amplitud, 10);
-        Assert.Equal(1d, resultado.VelocidadGrupo(10d), 10);
+        Assert.Equal(2, nombres.Count);
+        Assert.Equal(baseDesignacion.Nombres.First().Texto, nombres[0].Texto);
+        Assert.Same(nombre, nombres[1]);
     }
 
     [Fact]
-    public void NombreYCopia_ConservanValoresYRepresentacion()
+    public void Mostrarse_SinPredicadosNiDesignacionLanzaErrorClaro()
     {
-        var fuente = (Designacion)Apariencia.Aparecer(
-            new List<string> { "ser" },
-            _ => (-Math.PI / 2, 2d),
-            _ => 1d);
-        var otro = ((Designacion)Apariencia.Aparecer(
-            new List<string> { "otro" },
-            _ => (0d, 1d),
-            _ => 1d)).Nombres.Single();
-        var nombre = fuente.Nombres.Single();
+        var nombre = new Nombre("logos", 0d, null);
+
+        var error = Assert.Throws<ArgumentNullException>(() => nombre.Mostrarse(Apariencia.Aparecer(nombre.Mostrarse(null, new List<string> { "ser humano" })), null));
+
+        Assert.Equal("predicados", error.ParamName);
+    }
+
+    [Fact]
+    public void ConstructoresYComparaciones_ConservanValoresEsperados()
+    {
+        var esencia = Apariencia.Aparecer(new Nombre("base", 0d, null)
+            .Mostrarse(null, new List<string> { "ser humano", "pensar humano" }));
+        var nombre = new Nombre("ser", -Math.PI / 2, esencia);
         var copia = new Nombre(nombre);
+        var otro = new Nombre("otro", 0d, null);
+        var conEsenciaNula = new Nombre("vacio", 0d, null);
 
         Assert.Equal(Math.PI / 2, nombre.Fase, 10);
         Assert.Equal(nombre.Id, copia.Id);
         Assert.Equal(nombre.Texto, copia.Texto);
-        Assert.Equal(nombre.Esencia, copia.Esencia);
-        Assert.Equal(2d, nombre.Amplitud(123d), 10);
-        Assert.Equal("ser (90.00º, 2.00 A)", nombre.ToString());
+        Assert.Same(esencia, nombre.Esencia);
+        Assert.Same(nombre.Esencia, copia.Esencia);
+        Assert.Equal(double.MaxValue, conEsenciaNula.Esencia.Amplitud(0d));
+        Assert.Equal(Math.Cos(1d) + Math.Sin(1d), conEsenciaNula.Esencia.Amplitud(1d), 10);
+        Assert.Equal($"ser ({nombre.Fase * (180 / Math.PI):F2}º, {esencia.Amplitud(1d):F2} A)", nombre.ToString());
         Assert.True(nombre.Equals(copia));
         Assert.False(nombre.Equals(otro));
         Assert.False(nombre.Equals("no-nombre"));
@@ -70,29 +64,26 @@ public class NombreTests
     }
 
     [Fact]
-    public void DesignacionYPalabra_ComparanPorIdYNormalizanFase()
+    public void Designacion_ExponeMatematicaEsperadaYComparaPorId()
     {
-        var designacion = (Designacion)Apariencia.Aparecer(
-            new List<string> { "vacio" },
-            _ => (-7d, 1d),
-            frecuencia => frecuencia * 3);
-        var otraDesignacion = (Designacion)Apariencia.Aparecer(
-            new List<string> { "vacio" },
-            _ => (1d, 1d),
-            _ => 1d);
-        var palabra = designacion.Nombres.Single();
-        var otraPalabra = otraDesignacion.Nombres.Single();
-        var mismaDesignacion = designacion;
+        var designacion = new Nombre("origen", 0d, null)
+            .Mostrarse(null, new List<string> { "ser humano", "ser lenguaje", "pensar humano" });
+        var otra = new Nombre("origen", 0d, null)
+            .Mostrarse(null, new List<string> { "ser humano", "ser lenguaje", "pensar humano" });
+        var nombres = designacion.Nombres.ToList();
 
-        Assert.InRange(palabra.Fase, 0d, 2 * Math.PI);
-        Assert.True(palabra.Equals(palabra));
-        Assert.False(palabra.Equals(otraPalabra));
-        Assert.False(palabra.Equals("no-palabra"));
-        Assert.Equal(palabra.Id.GetHashCode(), palabra.GetHashCode());
-        Assert.True(designacion.Equals(mismaDesignacion));
-        Assert.False(designacion.Equals(otraDesignacion));
+        Assert.Equal(3, nombres.Count);
+        Assert.Equal(0d, nombres[0].Fase, 10);
+        Assert.Equal(2 * Math.PI / 3, nombres[1].Fase, 10);
+        Assert.Equal(0d, nombres[2].Fase, 10);
+        Assert.Equal("origen", nombres[2].Texto);
+        Assert.Equal(2d, nombres[0].Esencia.Amplitud(0d), 10);
+        Assert.Equal(0.3660254038d, nombres[1].Esencia.Amplitud(0d), 10);
+        Assert.Equal(double.MaxValue, nombres[2].Esencia.Amplitud(0d));
+        Assert.Equal(double.MaxValue, designacion.Amplitud(0d));
+        Assert.True(designacion.Equals(designacion));
+        Assert.False(designacion.Equals(otra));
         Assert.False(designacion.Equals("no-designacion"));
         Assert.Equal(designacion.Id.GetHashCode(), designacion.GetHashCode());
-        Assert.Equal(6d, designacion.VelocidadGrupo(2d), 10);
     }
 }

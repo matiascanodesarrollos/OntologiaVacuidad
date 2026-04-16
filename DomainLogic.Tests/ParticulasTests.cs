@@ -1,5 +1,5 @@
+using DomainLogic.Services;
 using DomainLogic.Services.Particulas;
-using Moq;
 
 public class ParticulasTests
 {
@@ -32,63 +32,52 @@ public class ParticulasTests
     }
 
     [Fact]
-    public void Particula_MoverActualizaPosicionTiempoYComparacion()
+    public void Espacio_ConstruyeParticulasYOndasDesdeUnaDesignacionPublica()
     {
-        var designacion = (Designacion)Apariencia.Aparecer(
-            new List<string> { "ser" },
-            _ => (0d, 2d),
-            _ => 1d);
-        var nombre = designacion.Nombres.Single();
-        var otroNombre = ((Designacion)Apariencia.Aparecer(
-            new List<string> { "otro" },
-            _ => (0d, 1d),
-            _ => 1d)).Nombres.Single();
-        var particula = new Particula(nombre);
+        var designacion = AmbienteConfig.CrearAmbiente("ser humano. pensar lenguaje");
 
-        particula.Mover(2d);
+        var espacio = new Espacio(designacion);
 
-        Assert.Equal(2d, particula.Posicion2D.X, 10);
-        Assert.Equal(0d, particula.Posicion2D.Y, 10);
-        Assert.Equal(2d, particula.Tiempo, 10);
-        Assert.Equal(1d, particula.Velocidad2D.X, 10);
-        Assert.Equal(0d, particula.Velocidad2D.Y, 10);
-        Assert.True(particula.Equals(particula));
-        Assert.False(particula.Equals(new Particula(otroNombre)));
-        Assert.Equal(particula.Id.GetHashCode(), particula.GetHashCode());
+        Assert.Equal(0d, espacio.Tiempo, 10);
+        Assert.Equal(2, espacio.Particulas.Count);
+        Assert.Equal(2, espacio.Ondas.Count);
+        Assert.All(espacio.Particulas, particula => Assert.True(espacio.Ondas.ContainsKey(particula)));
+        Assert.All(espacio.Ondas.Values, ondas => Assert.Equal(2, ondas.Count));
     }
 
     [Fact]
-    public void MoverParticulas_LlamaMoverYRecalculaOndas()
+    public void MoverParticulas_ActualizaTiempoPosicionesYOndas()
     {
-        var designacion = (Designacion)Apariencia.Aparecer(
-            new List<string> { "ser humano" },
-            _ => (0d, 1d),
-            frecuencia => frecuencia + 10);
-        var espacio = new Espacio(designacion, new List<double> { 0d, 1d });
-        espacio.Particulas.Clear();
-
-        var particula = new Mock<Particula>(designacion.Nombres.Last()) { CallBase = true };
-        espacio.Particulas.Add(particula.Object);
+        var designacion = AmbienteConfig.CrearAmbiente("ser humano. pensar lenguaje");
+        var espacio = new Espacio(designacion);
+        var particula = espacio.Particulas.First();
+        var posicionInicial = particula.Posicion2D;
+        var otraParticula = espacio.Particulas.Last();
 
         espacio.MoverParticulas(0.5d);
 
-        particula.Verify(p => p.Mover(0.5d), Times.Once);
         Assert.Equal(0.5d, espacio.Tiempo, 10);
-        Assert.Single(espacio.Ondas);
-        Assert.Equal(2, espacio.Ondas[particula.Object].Count);
+        Assert.Equal(posicionInicial.X + particula.Velocidad2D.X * 0.5d, particula.Posicion2D.X, 10);
+        Assert.Equal(posicionInicial.Y + particula.Velocidad2D.Y * 0.5d, particula.Posicion2D.Y, 10);
+        Assert.Equal(0.5d, particula.Tiempo, 10);
+        Assert.True(particula.Equals(particula));
+        Assert.False(particula.Equals(otraParticula));
+        Assert.Equal(particula.Id.GetHashCode(), particula.GetHashCode());
+        Assert.All(espacio.Ondas.Values, ondas => Assert.Equal(2, ondas.Count));
     }
 
     [Fact]
-    public void MoverParticulas_CuandoHayColisionLanzaErrorPorClavesDuplicadas()
+    public void CalcularOndas_RecalculaDespuesDeModificarParticulasPublicamente()
     {
-        var designacion = (Designacion)Apariencia.Aparecer(
-            new List<string> { "ser humano", "ser lenguaje" },
-            _ => (0d, 1d),
-            _ => 1d);
-        var espacio = new Espacio(designacion, new List<double> { 0d });
+        var designacion = AmbienteConfig.CrearAmbiente("ser humano. pensar lenguaje");
+        var espacio = new Espacio(designacion);
 
-        var error = Assert.Throws<ArgumentException>(() => espacio.MoverParticulas(1d));
+        espacio.Particulas.RemoveAt(1);
 
-        Assert.Contains("same key", error.Message, StringComparison.OrdinalIgnoreCase);
+        espacio.CalcularOndas();
+
+        Assert.Single(espacio.Particulas);
+        Assert.Single(espacio.Ondas);
+        Assert.Equal(2, espacio.Ondas.Values.Single().Count);
     }
 }

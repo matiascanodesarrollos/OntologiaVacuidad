@@ -24,7 +24,7 @@ public class Designacion : Apariencia
         _apariencias = nombres.Select(n => n.Esencia).ToList();
         VelocidadGrupo = velocidadGrupo;
     }
-    
+
     internal Designacion(List<string> predicados)
         : base(Palabra.Vacuidad)
     {
@@ -48,7 +48,7 @@ public class Designacion : Apariencia
             var palabras = predicados[i].Split(' ');
 
             var frecuencia = diccionarioVerbos[palabras.First()];
-            var amplitud = palabras.Skip(1).Count();
+            var amplitud = palabras.Skip(1).Sum(p => diccionarioComplementos[p]);
             var fase = i * deltaFasePredicados;
 
             var apariencia = new Apariencia(t => 
@@ -65,7 +65,7 @@ public class Designacion : Apariencia
 
     /// <summary>
     /// Crea una nueva designación al proyectar el nombre sobre la apariencia.
-    /// Si la apariencia no es una designación, se crea una vacuidad.
+    /// Si la apariencia no es una designación, se toma la designación actual como apariencia.
     /// </summary>
     /// <param name="apariencia">La apariencia sobre la cual proyectar el nombre.</param>
     /// <param name="nombre">El nombre a proyectar.</param>
@@ -73,7 +73,13 @@ public class Designacion : Apariencia
     public Designacion Designar(Apariencia apariencia, 
         Nombre nombre)
     {
-        var nombres = Nombres
+        var designacion = apariencia as Designacion;
+        if (designacion == null)
+        {
+            designacion = this;
+        }
+        var nombres = designacion
+            .Nombres
             .SkipLast(1) //Analogo a derivar
             .ToList();
         nombres.Add(nombre);
