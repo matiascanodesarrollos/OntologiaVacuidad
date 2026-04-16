@@ -7,8 +7,6 @@ public class Designacion : Apariencia
     public override Guid Id { get; }
     private List<Nombre> _nombres { get; set; }
     public IEnumerable<Nombre> Nombres => _nombres.AsReadOnly();
-    private List<Apariencia> _apariencias { get; set; }
-    public IEnumerable<Apariencia> Apariencias => _apariencias.AsReadOnly();
 
     /// <summary>
     /// Función que determina la velocidad de grupo dada un nombre.
@@ -21,7 +19,6 @@ public class Designacion : Apariencia
     {
         Id = Guid.NewGuid();
         _nombres = nombres;
-        _apariencias = nombres.Select(n => n.Esencia).ToList();
         VelocidadGrupo = velocidadGrupo;
     }
 
@@ -30,7 +27,6 @@ public class Designacion : Apariencia
     {
         Id = Guid.NewGuid();
         _nombres = new List<Nombre>();
-        _apariencias = new List<Apariencia>() { this };
 
         var deltaFasePredicados = 2 * Math.PI / predicados.Count;
         var diccionarioVerbos = predicados
@@ -53,10 +49,8 @@ public class Designacion : Apariencia
 
             var apariencia = new Apariencia(t => 
                 amplitud * Math.Cos(frecuencia * Math.PI * t + fase) 
-                + amplitud * Math.Sin(frecuencia * Math.PI * t + fase));
-            _apariencias.Add(apariencia);
-            
-            var nombre = new Nombre(predicados[i], fase, apariencia);
+                + amplitud * Math.Sin(frecuencia * Math.PI * t + fase));            
+            var nombre = new Nombre(predicados[i], fase, frecuencia, apariencia);
             _nombres.Add(nombre);
         }
 

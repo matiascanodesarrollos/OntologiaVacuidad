@@ -3,21 +3,23 @@ using System.Collections.Generic;
 
 public class Nombre : Palabra
 {
-    public override Guid Id { get; }
     public Apariencia Esencia { get; private set; }
+    public double Frecuencia { get; private set; }
 
     /// <summary>
     /// Crea un nuevo nombre con el texto, fase y esencia dados. El Id se genera automáticamente.
     /// </summary>
     /// <param name="texto">El texto del nombre.</param>
     /// <param name="fase">La fase del nombre.</param>
+    /// <param name="frecuencia">La frecuencia del nombre.</param>
     /// <param name="esencia">La esencia del nombre. Si es null, se crea una vacuidad.</param>
     public Nombre(string texto, 
         double fase,
+        double frecuencia,
         Apariencia esencia)
         : base(texto, fase)
     {
-        Id = Guid.NewGuid();
+        Frecuencia = frecuencia;
         Esencia = esencia ?? new Apariencia(t => Vacuidad(t));
     }
 
@@ -30,7 +32,7 @@ public class Nombre : Palabra
         : base(nombre.Texto, 
             nombre.Fase)
     {
-        Id = nombre.Id;
+        Frecuencia = nombre.Frecuencia;
         Esencia = nombre.Esencia;
     }
 
@@ -62,7 +64,7 @@ public class Nombre : Palabra
     /// Representacion en texto de la apariencia. 
     /// </summary>
     /// <returns>Una cadena que representa la apariencia.</returns>
-    public override string ToString() => $"{Texto} ({Fase * (180 / Math.PI):F2}º, {Esencia.Amplitud(1):F2} A)";
+    public override string ToString() => $"{Texto} ({Fase * (180 / Math.PI):F2}º, {Frecuencia:F2} Hz)";
 
     /// <summary>
     /// Sobreescribe Equals para comparar nombres por su Id.
@@ -72,7 +74,7 @@ public class Nombre : Palabra
     {
         if (obj is Nombre other)
         {
-            return Id == other.Id;
+            return Texto == other.Texto;
         }
         return false;
     }

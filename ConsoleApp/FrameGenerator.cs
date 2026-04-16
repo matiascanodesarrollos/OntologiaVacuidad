@@ -18,14 +18,14 @@ namespace ConsoleApp
         private const float RADIO_RAYO_MAXIMO = 200f;
         private const float RADIO_RAYO_MINIMO = 12f;
 
-        public static Func<Particula, double, SKColor> FuncionAmplitudAColor = (part, tiempo) =>
+        public static Func<double, SKColor> FuncionAmplitudAColor = (amp) =>
         {
-            return part.Esencia.Amplitud(tiempo) switch
+            return amp switch
             {
-                <= 1 => SKColor.Parse("#0011ff"),
-                <= 2 => SKColor.Parse("#036603"),
-                <= 3 => SKColor.Parse("#cc0000"),
-                <= 4 => SKColor.Parse("#ffe60a"),
+                <= 0.5 => SKColor.Parse("#cc0000"),
+                <= 1.5 => SKColor.Parse("#0011ff"),
+                <= 4 => SKColor.Parse("#036603"),                
+                <= 6 => SKColor.Parse("#ffe60a"),
                 _ => SKColor.Parse("#FFFFFF")
             };
         };
@@ -80,8 +80,9 @@ namespace ConsoleApp
                             .Select(g => g.First())
                             .ToList();
                         foreach (var particula in particulas)
-                        {                            
-                            var color = FuncionAmplitudAColor(particula, espacio.Tiempo);                     
+                        {
+                            var amplitud = Math.Abs(particula.Esencia.Amplitud(espacio.Tiempo));
+                            var color = FuncionAmplitudAColor(amplitud);                     
                             var x = CENTROX + (float) particula.Posicion2D.X;
                             var y = CENTROY - (float) particula.Posicion2D.Y;
 
@@ -128,7 +129,7 @@ namespace ConsoleApp
                             using (var font = new SKFont(typeface, 12f))
                             using (var paint = new SKPaint { Color = SKColors.Black, IsAntialias = true })
                             {
-                                canvas.DrawText(particula.ToString(), x, y, font, paint);
+                                canvas.DrawText($"{amplitud} A {particula}", x, y, font, paint);
                             }
                         }
 

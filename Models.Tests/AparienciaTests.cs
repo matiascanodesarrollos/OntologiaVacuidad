@@ -3,11 +3,11 @@ public class AparienciaTests
     [Fact]
     public void Aparecer_SumaLasAmplitudesDeLaDesignacionEnElTiempoDado()
     {
-        var designacion = new Nombre("observador", 0d, null)
+        var designacion = new Nombre("observador", 0d, 1d, null)
             .Mostrarse(null, new List<string> { "ser humano", "pensar humano" });
 
         var apariencia = Apariencia.Aparecer(designacion);
-        var amplitudEsperada = designacion.Apariencias.Sum(a => a.Amplitud(0.5d));
+        var amplitudEsperada = designacion.Nombres.Sum(n => n.Esencia.Amplitud(0.5d));
 
         Assert.Equal(amplitudEsperada, apariencia.Amplitud(0.5d), 10);
     }
@@ -15,7 +15,7 @@ public class AparienciaTests
     [Fact]
     public void EqualsYGetHashCode_ComparanPorId()
     {
-        var designacion = new Nombre("observador", 0d, null)
+        var designacion = new Nombre("observador", 0d, 1d, null)
             .Mostrarse(null, new List<string> { "ser humano", "pensar humano" });
         var apariencia = Apariencia.Aparecer(designacion);
         var mismaReferencia = apariencia;

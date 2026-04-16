@@ -20,7 +20,9 @@ public class Apariencia
     public static Apariencia Aparecer(Designacion designacion)
     {
         var apariencia = new Apariencia(t => //Fourrier
-            designacion.Apariencias.Sum(a => a.Amplitud(t)));
+            designacion
+                .Nombres
+                .Sum(n => n.Esencia.Amplitud(t)));
         return apariencia;
     }
 

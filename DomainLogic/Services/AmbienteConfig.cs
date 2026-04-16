@@ -23,7 +23,11 @@ namespace DomainLogic.Services
                     .Select(t => t.Trim())
                     .Where(t => !string.IsNullOrEmpty(t))
                     .ToList();
-            var nombre = new Nombre(texto, 0, null);
+            var deltaFasePredicados = 2 * Math.PI / oraciones.Count;            
+            var nombre = new Nombre(oraciones.Last(), 
+                2 * Math.PI - deltaFasePredicados, 
+                oraciones.Count,
+                null);
             return nombre.Mostrarse(null, oraciones);
         }
     }

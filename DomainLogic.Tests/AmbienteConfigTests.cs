@@ -10,9 +10,9 @@ public class AmbienteConfigTests
 
         Assert.Equal(3, nombres.Count);
         Assert.Equal(0d, nombres[0].Fase, 10);
-        Assert.Equal(2 * Math.PI / 3, nombres[1].Fase, 10);
-        Assert.Equal(0d, nombres[2].Fase, 10);
-        Assert.Equal("ser humano. ser lenguaje. pensar humano.", nombres[2].Texto);
+        Assert.Equal(2.0943951024, nombres[1].Fase, 10);
+        Assert.Equal(4.1887902048, nombres[2].Fase, 10);
+        Assert.Equal("pensar humano", nombres[2].Texto);
         Assert.Equal(2d, nombres[0].Esencia.Amplitud(0d), 10);
         Assert.Equal(0.3660254038d, nombres[1].Esencia.Amplitud(0d), 10);
         Assert.Equal(double.MaxValue, nombres[2].Esencia.Amplitud(0d));
