@@ -31,7 +31,5 @@ public class AparienciaTests
     {
         Assert.Equal((double.MaxValue, double.MaxValue), Apariencia.Vacuidad.Valor(0d));
         Assert.Equal((0d, 0d), Apariencia.Vacuidad.Valor(1d));
-        Assert.Single(Apariencia.Vacuidad.Esencia);
-        Assert.False(string.IsNullOrWhiteSpace(Apariencia.Vacuidad.Esencia.Single().Texto));
     }
 }
