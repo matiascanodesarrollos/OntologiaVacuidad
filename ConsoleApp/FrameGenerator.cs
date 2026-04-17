@@ -123,7 +123,7 @@ namespace ConsoleApp
                             using (var font = new SKFont(typeface, 12f))
                             using (var paint = new SKPaint { Color = SKColors.Black, IsAntialias = true })
                             {
-                                canvas.DrawText($"{valor.Amplitud} A {particula}", x, y, font, paint);
+                                canvas.DrawText(particula.ToString(), x, y, font, paint);
                             }
                         }
 

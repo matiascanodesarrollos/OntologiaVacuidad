@@ -29,7 +29,7 @@ public class NombreTests
 
         Assert.Equal(3, nombres.Count);
         Assert.Equal(baseDesignacion.Nombres.First().Texto, nombres[0].Texto);
-        Assert.Equal(baseDesignacion.Esencia.Texto, nombres.Last().Texto);
+        Assert.Equal(baseDesignacion.Esencia.Last().Texto, nombres.Last().Texto);
         Assert.Equal(nombre.Frecuencia, nombres.Last().Frecuencia);
     }
 

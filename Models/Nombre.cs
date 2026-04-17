@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 public class Nombre : Palabra
 {
@@ -21,7 +22,7 @@ public class Nombre : Palabra
         Frecuencia = frecuencia;
         Esencia = new Apariencia(
             t => (Math.Cos(frecuencia * t), Math.Sin(frecuencia * t)), 
-            this);
+            new List<Nombre> { this });
     }
 
     /// <summary>
@@ -51,7 +52,10 @@ public class Nombre : Palabra
     public Designacion Mostrarse(Apariencia apariencia, List<string> predicados)
     {
         var designacion = new Designacion(predicados);
-        return designacion.Designar(this, apariencia.Esencia);
+        var palabra = ReferenceEquals(apariencia, Apariencia.Vacuidad)
+            ? this
+            : apariencia.Esencia.Last();
+        return designacion.Designar(this, palabra);
     }
 
     /// <summary>

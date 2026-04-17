@@ -4,8 +4,7 @@ using System.Linq;
 
 public class Designacion : Apariencia
 {
-    private List<Nombre> _nombres { get; set; }
-    public IEnumerable<Nombre> Nombres => _nombres.AsReadOnly();
+    public IEnumerable<Nombre> Nombres => Esencia;
 
     /// <summary>
     /// Función que determina la velocidad de grupo dada un nombre.
@@ -14,17 +13,16 @@ public class Designacion : Apariencia
 
     internal Designacion(List<Nombre> nombres, 
         Func<Nombre, double> velocidadGrupo)
-        : base(Vacuidad.Valor, Vacuidad.Esencia)
+        : base(Vacuidad.Valor, nombres)
     {
-        _nombres = nombres;
         VelocidadGrupo = velocidadGrupo;
     }
 
     internal Designacion(List<string> predicados)
-        : base(Vacuidad.Valor, Vacuidad.Esencia)
+        : base(Vacuidad.Valor, Vacuidad.Esencia.ToList())
     {
-        _nombres = new List<Nombre>();
-
+        VelocidadGrupo = n => 1;
+        
         var deltaFasePredicados = 2 * Math.PI / predicados.Count;
         var diccionarioVerbos = predicados
             .Select(p => p.Split(' ').First())
@@ -50,12 +48,10 @@ public class Designacion : Apariencia
             var apariencia = new Apariencia(t => 
                 (amplitud * Math.Cos(frecuencia * t + fase), 
                 frecuencia * Math.Sin(frecuencia * t + fase))
-                , nombre);
+                , new List<Nombre> { nombre });
             
             _nombres.Add(nombre);
         }
-
-        VelocidadGrupo = n => 1;
     }
 
     /// <summary>
@@ -67,8 +63,7 @@ public class Designacion : Apariencia
     /// <returns>La nueva designación creada.</returns>
     public Designacion Designar(Nombre nombre, Palabra palabra)
     {        
-        var nombres = Nombres
-            .ToList();
+        var nombres = Esencia.ToList();
         var nombreProyectado = new Nombre(palabra.Texto, palabra.Fase, nombre.Frecuencia);
         nombres.Add(nombreProyectado);
         var nuevaDesignacion = new Designacion(nombres, n =>

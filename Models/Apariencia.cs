@@ -1,22 +1,19 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 public class Apariencia
 {
-    public static Apariencia Vacuidad = new Apariencia(
-        t => t == 0 
-            ? (double.MaxValue, double.MaxValue) 
-            : (0, 0), 
-        new Nombre(null, 0, 0));
     public Guid Id { get; }
-    public Nombre Esencia { get; }
+    protected List<Nombre> _nombres { get; set; }
+    public IEnumerable<Nombre> Esencia => _nombres.AsReadOnly();
     public Func<double, (double Amplitud, double Fase)> Valor { get; }
 
-    internal Apariencia(Func<double, (double Amplitud, double Fase)> valor, Nombre esencia)
+    internal Apariencia(Func<double, (double Amplitud, double Fase)> valor, List<Nombre> esencia)
     {
         Id = Guid.NewGuid();
         Valor = valor;
-        Esencia = esencia;
+        _nombres = esencia;
     }
 
     /// <summary>
@@ -26,12 +23,12 @@ public class Apariencia
     /// <returns>Una nueva apariencia creada a partir de la designación.</returns>
     public static Apariencia Aparecer(Designacion designacion)
     {
+        var nombres = designacion.Esencia.ToList();
         var apariencia = new Apariencia(t => //Fourrier
-            designacion
-                .Nombres
+            nombres
                 .Select(n => n.Esencia.Valor(t))
                 .Aggregate((a, b) => (a.Amplitud + b.Amplitud, a.Fase + b.Fase)),
-            designacion.Nombres.First());
+            nombres);
         return apariencia;
     }
 
@@ -54,4 +51,15 @@ public class Apariencia
         }
         return false;
     }
+
+    /// <summary>
+    /// Apariencia base.
+    /// </summary>
+    public static Apariencia Vacuidad = new Apariencia(
+        t => t == 0 
+            ? (double.MaxValue, double.MaxValue) 
+            : (0, 0), 
+        new List<Nombre>());
 }
+
+
