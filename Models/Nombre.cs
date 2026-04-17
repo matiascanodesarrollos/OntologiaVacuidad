@@ -15,12 +15,13 @@ public class Nombre : Palabra
     /// <param name="esencia">La esencia del nombre. Si es null, se crea una vacuidad.</param>
     public Nombre(string texto, 
         double fase,
-        double frecuencia,
-        Apariencia esencia)
-        : base(texto, fase)
+        double frecuencia)
+        : base(texto, fase, t => frecuencia * t)
     {
         Frecuencia = frecuencia;
-        Esencia = esencia ?? new Apariencia(t => Vacuidad(t));
+        Esencia = new Apariencia(
+            t => (Math.Cos(frecuencia * t), Math.Sin(frecuencia * t)), 
+            this);
     }
 
     /// <summary>
@@ -30,34 +31,27 @@ public class Nombre : Palabra
     /// <param name="nombre">El nombre del cual se copiarán las propiedades.</param>
     public Nombre(Nombre nombre) 
         : base(nombre.Texto, 
-            nombre.Fase)
+            nombre.Fase,
+            nombre.FaseInstanea)
     {
         Frecuencia = nombre.Frecuencia;
         Esencia = nombre.Esencia;
     }
 
     /// <summary>
-    /// Crea una nueva designación al proyectar el nombre + una lista de predicados sobre la apariencia.
+    /// Crea una nueva designación al proyectar una apariencia sobre una lista de predicados.
     /// Cada predicado se convierte en un nombre con una apariencia asociada.
     /// La frecuencia se determina por la cantidad de nombres que comparten el mismo verbo núcleo (se asume la primer palabra del predicado),
     /// la amplitud por la cantidad de complementos del sujeto que comparten (se asume las palabras restantes del predicado),
     /// y la fase por la posición del predicado en la lista (distribuido en 360º).
     /// </summary>
-    /// <param name="apariencia">La apariencia que funciona como espacio.</param>
-    /// <param name="predicados">Los predicados que se utilizarán para crear la nueva designación si la apariencia no es una designación.</param>
+    /// <param name="apariencia">La apariencia proyectada.</param>
+    /// <param name="predicados">La lista de predicados que funciona como espacio.</param>
     /// <returns>La nueva designación creada.</returns>
     public Designacion Mostrarse(Apariencia apariencia, List<string> predicados)
     {
-        var designacion = predicados == null
-            ? apariencia as Designacion
-            : new Designacion(predicados);
-
-        if (designacion == null)
-        {
-            throw new ArgumentNullException(nameof(predicados), "Se requieren predicados cuando la apariencia no es una designacion.");
-        }
-
-        return designacion.Designar(apariencia, this);
+        var designacion = new Designacion(predicados);
+        return designacion.Designar(this, apariencia.Esencia);
     }
 
     /// <summary>
@@ -74,7 +68,7 @@ public class Nombre : Palabra
     {
         if (obj is Nombre other)
         {
-            return Texto == other.Texto;
+            return Texto == other.Texto && Frecuencia == other.Frecuencia;
         }
         return false;
     }

@@ -1,24 +1,21 @@
 public class AparienciaTests
 {
     [Fact]
-    public void Aparecer_SumaLasAmplitudesDeLaDesignacionEnElTiempoDado()
+    public void Aparecer_UsaComoEsenciaElPrimerNombreDeLaDesignacion()
     {
-        var designacion = new Nombre("observador", 0d, 1d, null)
-            .Mostrarse(null, new List<string> { "ser humano", "pensar humano" });
+        var designacion = new Nombre("observador", 0d, 1d)
+            .Mostrarse(Apariencia.Vacuidad, new List<string> { "ser humano", "pensar humano" });
 
         var apariencia = Apariencia.Aparecer(designacion);
-        var amplitudEsperada = designacion.Nombres
-            .Select(n => n.Esencia.Amplitud(0.5d))
-            .Aggregate((a, b) => (a.Item1 + b.Item1, a.Item2 + b.Item2));
-        
-        Assert.Equal(amplitudEsperada, apariencia.Amplitud(0.5d));
+
+        Assert.Same(designacion.Nombres.First(), apariencia.Esencia);
     }
 
     [Fact]
     public void EqualsYGetHashCode_ComparanPorId()
     {
-        var designacion = new Nombre("observador", 0d, 1d, null)
-            .Mostrarse(null, new List<string> { "ser humano", "pensar humano" });
+        var designacion = new Nombre("observador", 0d, 1d)
+            .Mostrarse(Apariencia.Vacuidad, new List<string> { "ser humano", "pensar humano" });
         var apariencia = Apariencia.Aparecer(designacion);
         var mismaReferencia = apariencia;
         var otra = Apariencia.Aparecer(designacion);
@@ -27,5 +24,13 @@ public class AparienciaTests
         Assert.False(apariencia.Equals(otra));
         Assert.False(apariencia.Equals("no-apariencia"));
         Assert.Equal(apariencia.Id.GetHashCode(), apariencia.GetHashCode());
+    }
+
+    [Fact]
+    public void Vacuidad_DevuelveMaximoEnTiempoCeroYCeroFueraDeEseInstante()
+    {
+        Assert.Equal((double.MaxValue, double.MaxValue), Apariencia.Vacuidad.Valor(0d));
+        Assert.Equal((0d, 0d), Apariencia.Vacuidad.Valor(1d));
+        Assert.Null(Apariencia.Vacuidad.Esencia.Texto);
     }
 }

@@ -4,7 +4,6 @@ using System.Linq;
 
 public class Designacion : Apariencia
 {
-    public override Guid Id { get; }
     private List<Nombre> _nombres { get; set; }
     public IEnumerable<Nombre> Nombres => _nombres.AsReadOnly();
 
@@ -15,17 +14,15 @@ public class Designacion : Apariencia
 
     internal Designacion(List<Nombre> nombres, 
         Func<Nombre, double> velocidadGrupo)
-        : base(Palabra.Vacuidad)
+        : base(Vacuidad.Valor, Vacuidad.Esencia)
     {
-        Id = Guid.NewGuid();
         _nombres = nombres;
         VelocidadGrupo = velocidadGrupo;
     }
 
     internal Designacion(List<string> predicados)
-        : base(Palabra.Vacuidad)
+        : base(Vacuidad.Valor, Vacuidad.Esencia)
     {
-        Id = Guid.NewGuid();
         _nombres = new List<Nombre>();
 
         var deltaFasePredicados = 2 * Math.PI / predicados.Count;
@@ -47,10 +44,14 @@ public class Designacion : Apariencia
             var amplitud = palabras.Skip(1).Sum(p => diccionarioComplementos[p]);
             var fase = i * deltaFasePredicados;
 
+            var nombre = new Nombre(predicados[i], 
+                fase, 
+                frecuencia);
             var apariencia = new Apariencia(t => 
-                (amplitud * Math.Cos(frecuencia * Math.PI * t + fase), 
-                frecuencia * Math.Sin(frecuencia * Math.PI * t + fase)));
-            var nombre = new Nombre(predicados[i], fase, frecuencia, apariencia);
+                (amplitud * Math.Cos(frecuencia * t + fase), 
+                frecuencia * Math.Sin(frecuencia * t + fase))
+                , nombre);
+            
             _nombres.Add(nombre);
         }
 
@@ -61,22 +62,15 @@ public class Designacion : Apariencia
     /// Crea una nueva designación al proyectar el nombre sobre la apariencia.
     /// Si la apariencia no es una designación, se toma la designación actual como apariencia.
     /// </summary>
-    /// <param name="apariencia">La apariencia sobre la cual proyectar el nombre.</param>
     /// <param name="nombre">El nombre a proyectar.</param>
+    /// <param name="palabra">La palabra sobre la cual se proyecta el nombre.</param>
     /// <returns>La nueva designación creada.</returns>
-    public Designacion Designar(Apariencia apariencia, 
-        Nombre nombre)
-    {
-        var designacion = apariencia as Designacion;
-        if (designacion == null)
-        {
-            designacion = this;
-        }
-        var nombres = designacion
-            .Nombres
-            .SkipLast(1) //Analogo a derivar
+    public Designacion Designar(Nombre nombre, Palabra palabra)
+    {        
+        var nombres = Nombres
             .ToList();
-        nombres.Add(nombre);
+        var nombreProyectado = new Nombre(palabra.Texto, palabra.Fase, nombre.Frecuencia);
+        nombres.Add(nombreProyectado);
         var nuevaDesignacion = new Designacion(nombres, n =>
         {
             var velocidad = VelocidadGrupo(n);

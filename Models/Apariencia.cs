@@ -3,13 +3,20 @@ using System.Linq;
 
 public class Apariencia
 {
-    public virtual Guid Id { get; }
-    public Func<double, (double, double)> Amplitud { get; internal set; }
+    public static Apariencia Vacuidad = new Apariencia(
+        t => t == 0 
+            ? (double.MaxValue, double.MaxValue) 
+            : (0, 0), 
+        new Nombre(null, 0, 0));
+    public Guid Id { get; }
+    public Nombre Esencia { get; }
+    public Func<double, (double Amplitud, double Fase)> Valor { get; }
 
-    internal Apariencia(Func<double, (double, double)> amplitud)
+    internal Apariencia(Func<double, (double Amplitud, double Fase)> valor, Nombre esencia)
     {
         Id = Guid.NewGuid();
-        Amplitud = amplitud;
+        Valor = valor;
+        Esencia = esencia;
     }
 
     /// <summary>
@@ -22,8 +29,9 @@ public class Apariencia
         var apariencia = new Apariencia(t => //Fourrier
             designacion
                 .Nombres
-                .Select(n => n.Esencia.Amplitud(t))
-                .Aggregate((a, b) => (a.Item1 + b.Item1, a.Item2 + b.Item2)));
+                .Select(n => n.Esencia.Valor(t))
+                .Aggregate((a, b) => (a.Amplitud + b.Amplitud, a.Fase + b.Fase)),
+            designacion.Nombres.First());
         return apariencia;
     }
 

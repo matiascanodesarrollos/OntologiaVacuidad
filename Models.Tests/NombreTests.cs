@@ -4,59 +4,55 @@ public class NombreTests
     public void Mostrarse_ConPredicadosCreaDesignacionYAgregaElNombreActual()
     {
         var frecuencia = 1d;
-        var nombre = new Nombre("logos", Math.PI / 3, frecuencia, null);
+        var nombre = new Nombre("logos", Math.PI / 3, frecuencia);
 
-        var resultado = nombre.Mostrarse(null, new List<string> { "ser humano", "ser lenguaje" });
+        var resultado = nombre.Mostrarse(Apariencia.Vacuidad, new List<string> { "ser humano", "ser lenguaje" });
         var nombres = resultado.Nombres.ToList();
 
-        Assert.Equal(2, nombres.Count);
+        Assert.Equal(3, nombres.Count);
         Assert.Equal("ser humano", nombres[0].Texto);
-        Assert.Same(nombre, nombres[1]);
+        Assert.Equal(nombre.Frecuencia, nombres.Last().Frecuencia);
         Assert.Equal(1d, resultado.VelocidadGrupo(nombre), 10);
         Assert.Equal(frecuencia, nombre.Frecuencia);
     }
 
     [Fact]
-    public void Mostrarse_ConDesignacionYSinPredicadosReutilizaLaDesignacionExistente()
+    public void Mostrarse_ConAparienciaExistenteProyectaSuEsenciaConLaFrecuenciaDelNombre()
     {
-        var baseDesignacion = new Nombre("origen", 0d, 1d, null)
-            .Mostrarse(null, new List<string> { "ser humano", "pensar humano" });
-        var nombre = new Nombre("logos", Math.PI / 2, 1d, null);
+        var predicados = new List<string> { "ser humano", "pensar humano" };
+        var baseDesignacion = new Nombre("origen", 0d, 1d)
+            .Mostrarse(Apariencia.Vacuidad, predicados);
+        var nombre = new Nombre("logos", Math.PI / 2, 1d);
 
-        var resultado = nombre.Mostrarse(baseDesignacion, null);
+        var resultado = nombre.Mostrarse(baseDesignacion, predicados);
         var nombres = resultado.Nombres.ToList();
 
-        Assert.Equal(2, nombres.Count);
+        Assert.Equal(3, nombres.Count);
         Assert.Equal(baseDesignacion.Nombres.First().Texto, nombres[0].Texto);
-        Assert.Same(nombre, nombres[1]);
+        Assert.Equal(baseDesignacion.Esencia.Texto, nombres.Last().Texto);
+        Assert.Equal(nombre.Frecuencia, nombres.Last().Frecuencia);
     }
 
     [Fact]
-    public void Mostrarse_SinPredicadosNiDesignacionLanzaErrorClaro()
+    public void Mostrarse_SinPredicadosLanzaExcepcion()
     {
-        var nombre = new Nombre("logos", 0d, 1d, null);
+        var nombre = new Nombre("logos", 0d, 1d);
 
-        var error = Assert.Throws<ArgumentNullException>(() => nombre.Mostrarse(Apariencia.Aparecer(nombre.Mostrarse(null, new List<string> { "ser humano" })), null));
-
-        Assert.Equal("predicados", error.ParamName);
+        Assert.ThrowsAny<Exception>(() => nombre.Mostrarse(Apariencia.Vacuidad, null));
     }
 
     [Fact]
     public void ConstructoresYComparaciones_ConservanValoresEsperados()
     {
-        var esencia = Apariencia.Aparecer(new Nombre("base", 0d, 1d, null)
-            .Mostrarse(null, new List<string> { "ser humano", "pensar humano" }));
-        var nombre = new Nombre("ser", -Math.PI / 2, 1d, esencia);
+        var nombre = new Nombre("ser", -Math.PI / 2, 1d);
         var copia = new Nombre(nombre);
-        var otro = new Nombre("otro", 0d, 1d, null);
-        var conEsenciaNula = new Nombre("vacio", 0d, 1d, null);
+        var otro = new Nombre("otro", 0d, 1d);
 
         Assert.Equal(Math.PI / 2, nombre.Fase, 10);
         Assert.Equal(nombre.Texto, copia.Texto);
-        Assert.Same(esencia, nombre.Esencia);
         Assert.Same(nombre.Esencia, copia.Esencia);
-        Assert.Equal((double.MaxValue, double.MaxValue), conEsenciaNula.Esencia.Amplitud(0d));
-        Assert.Equal((Math.Cos(1d), Math.Sin(1d)), conEsenciaNula.Esencia.Amplitud(1d));
+        Assert.Equal((1d, 0d), nombre.Esencia.Valor(0d));
+        Assert.Equal((Math.Cos(1d), Math.Sin(1d)), nombre.Esencia.Valor(1d));
         Assert.Equal($"ser ({nombre.Fase * (180 / Math.PI):F2}º, {nombre.Frecuencia:F2} Hz)", nombre.ToString());
         Assert.True(nombre.Equals(copia));
         Assert.False(nombre.Equals(otro));
@@ -65,23 +61,24 @@ public class NombreTests
     }
 
     [Fact]
-    public void Designacion_ExponeMatematicaEsperadaYComparaPorId()
+    public void Designacion_CreaPredicadosYAgregaElNombreProyectado()
     {
-        var designacion = new Nombre("origen", 0d, 1d, null)
-            .Mostrarse(null, new List<string> { "ser humano", "ser lenguaje", "pensar humano" });
-        var otra = new Nombre("origen", 0d, 1d, null)
-            .Mostrarse(null, new List<string> { "ser humano", "ser lenguaje", "pensar humano" });
+        var predicados = new List<string> { "ser humano", "ser lenguaje", "pensar humano" };
+        var designacion = new Nombre("origen", 0d, 1d)
+            .Mostrarse(Apariencia.Vacuidad, predicados);
+        var otra = new Nombre("origen", 0d, 1d)
+            .Mostrarse(Apariencia.Vacuidad, predicados);
         var nombres = designacion.Nombres.ToList();
 
-        Assert.Equal(3, nombres.Count);
+        Assert.Equal(4, nombres.Count);
         Assert.Equal(0d, nombres[0].Fase, 10);
         Assert.Equal(2 * Math.PI / 3, nombres[1].Fase, 10);
-        Assert.Equal(0d, nombres[2].Fase, 10);
-        Assert.Equal("origen", nombres[2].Texto);
-        Assert.Equal((2d, 0d), nombres[0].Esencia.Amplitud(0d));
-        Assert.Equal((-0.49999999999999978, 1.7320508075688774), nombres[1].Esencia.Amplitud(0d));
-        Assert.Equal((double.MaxValue, double.MaxValue), nombres[2].Esencia.Amplitud(0d));
-        Assert.Equal((double.MaxValue, double.MaxValue), designacion.Amplitud(0d));
+        Assert.Equal(4 * Math.PI / 3, nombres[2].Fase, 10);
+        Assert.Equal("pensar humano", nombres[2].Texto);
+        Assert.Equal((1d, 0d), nombres[0].Esencia.Valor(0d));
+        Assert.Equal((1d, 0d), nombres[1].Esencia.Valor(0d));
+        Assert.Equal((1d, 0d), nombres[2].Esencia.Valor(0d));
+        Assert.Equal((double.MaxValue, double.MaxValue), designacion.Valor(0d));
         Assert.True(designacion.Equals(designacion));
         Assert.False(designacion.Equals(otra));
         Assert.False(designacion.Equals("no-designacion"));

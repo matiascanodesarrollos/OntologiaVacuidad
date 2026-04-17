@@ -26,9 +26,8 @@ namespace DomainLogic.Services
             var deltaFasePredicados = 2 * Math.PI / oraciones.Count;            
             var nombre = new Nombre(oraciones.Last(), 
                 2 * Math.PI - deltaFasePredicados, 
-                oraciones.Count,
-                null);
-            return nombre.Mostrarse(null, oraciones);
+                oraciones.Count);
+            return nombre.Mostrarse(Apariencia.Vacuidad, oraciones);
         }
     }
 

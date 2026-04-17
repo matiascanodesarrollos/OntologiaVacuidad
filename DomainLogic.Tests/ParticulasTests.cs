@@ -39,8 +39,9 @@ public class ParticulasTests
         var espacio = new Espacio(designacion);
 
         Assert.Equal(0d, espacio.Tiempo, 10);
-        Assert.Equal(2, espacio.Particulas.Count);
-        Assert.Equal(2, espacio.Ondas.Count);
+        Assert.Equal(3, espacio.Particulas.Count);
+        Assert.Equal(3, espacio.Ondas.Count);
+        Assert.DoesNotContain(espacio.Particulas, particula => particula.Texto is null);
         Assert.All(espacio.Particulas, particula => Assert.True(espacio.Ondas.ContainsKey(particula)));
         Assert.All(espacio.Ondas.Values, ondas => Assert.Equal(2, ondas.Count));
     }
@@ -76,8 +77,7 @@ public class ParticulasTests
 
         espacio.CalcularOndas();
 
-        Assert.Single(espacio.Particulas);
-        Assert.Single(espacio.Ondas);
-        Assert.Equal(2, espacio.Ondas.Values.Single().Count);
+        Assert.Equal(2, espacio.Particulas.Count);
+        Assert.Equal(2, espacio.Ondas.Count);
     }
 }

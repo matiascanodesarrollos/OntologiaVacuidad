@@ -1,19 +1,17 @@
 using System;
 public class Palabra
 {
-    public virtual Guid Id { get; }
-    public virtual double Fase { get; internal set; }
-    public virtual string Texto { get; }
-    public static Func<double, (double, double)> Vacuidad = t => 
-        t == 0 
-            ? (double.MaxValue, double.MaxValue) 
-            : (Math.Cos(t), Math.Sin(t));
+    public Guid Id { get; }
+    public double Fase { get; internal set; }
+    public Func<double, double> FaseInstanea { get; }
+    public string Texto { get; }
 
-    internal Palabra(string texto, double fase)
+    internal Palabra(string texto, double fase, Func<double, double> faseInstanea)
     {
         Id = Guid.NewGuid();
-        Texto = texto;
+        Texto = texto ?? Convert.ToBase64String(Guid.NewGuid().ToByteArray());
         Fase = Math.Abs(fase) % (2 * Math.PI);
+        FaseInstanea = faseInstanea;
     }
 
     /// <summary>
