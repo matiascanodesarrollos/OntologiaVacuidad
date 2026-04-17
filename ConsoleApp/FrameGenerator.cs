@@ -14,15 +14,18 @@ namespace ConsoleApp
         private const int ALTO = 900;
         private const int CENTROY = 450;
         private const int PADDING = 20;
+        private const int CANTIDAD_RAYOS = 36;
+        private const float RADIO_RAYO_MAXIMO = 200f;
+        private const float RADIO_RAYO_MINIMO = 12f;
 
-        public static Func<Particula, SKColor> FuncionAmplitudAColor = (part) =>
+        public static Func<double, SKColor> FuncionAmplitudAColor = (amp) =>
         {
-            return part.ObtenerAmplitudTotal() switch
+            return amp switch
             {
-                <= 1 => SKColor.Parse("#0011ff"),
-                <= 2 => SKColor.Parse("#036603"),
-                <= 3 => SKColor.Parse("#cc0000"),
-                <= 4 => SKColor.Parse("#ffe60a"),
+                <= 0.5 => SKColor.Parse("#cc0000"),
+                <= 1.5 => SKColor.Parse("#0011ff"),
+                <= 4 => SKColor.Parse("#036603"),                
+                <= 6 => SKColor.Parse("#ffe60a"),
                 _ => SKColor.Parse("#FFFFFF")
             };
         };
@@ -70,20 +73,17 @@ namespace ConsoleApp
                             canvas.DrawText("Y", PADDING + 30, PADDING - 30, font, paint);
                         }
 
-                        var posicionesTexto = new List<(float x, float y, string texto)>();
-                        const int cantidadRayos = 36;
-                        const float radioMaximo = 200f;
                         var particulas = espacio
                             .Particulas
-                            .OrderByDescending(p => p.ObtenerAmplitudTotal())
+                            .OrderByDescending(p => p.Esencia.Amplitud(espacio.Tiempo))
                             .GroupBy(p => p.Posicion2D)
                             .Select(g => g.First())
                             .ToList();
-                        var fasesEncontradas = new List<double>();
-
                         foreach (var particula in particulas)
-                        {                            
-                            var color = FuncionAmplitudAColor(particula);                     
+                        {
+                            var amplitudFase = particula.Esencia.Amplitud(espacio.Tiempo);
+                            var amplitud = Math.Abs(Math.Sqrt(amplitudFase.Item1 * amplitudFase.Item1 + amplitudFase.Item2 * amplitudFase.Item2));
+                            var color = FuncionAmplitudAColor(amplitud);                     
                             var x = CENTROX + (float) particula.Posicion2D.X;
                             var y = CENTROY - (float) particula.Posicion2D.Y;
 
@@ -93,63 +93,44 @@ namespace ConsoleApp
                                 canvas.DrawCircle(x, y, 6f, paint);
                             }
 
-                            // Dibujar múltiples rayos irradiados desde la posición de la partícula
-                            for (int i = 0; i < cantidadRayos; i++)
+                            var ondasParticula = espacio.Ondas.TryGetValue(particula, out var ondas)
+                                ? ondas
+                                : Enumerable.Empty<(double Amplitud, double Fase)>().ToList();
+                            var amplitudMaxima = CalcularAmplitudMaxima(ondasParticula);
+
+                            // Dibujar rayos cuya longitud depende de la suma de ondas de la partícula.
+                            for (int i = 0; i < CANTIDAD_RAYOS; i++)
                             {
-                                float angulo = (float)(2 * Math.PI * i / cantidadRayos);
-                                float x1 = x + radioMaximo * (float)Math.Cos(angulo);
-                                float y1 = y - radioMaximo * (float)Math.Sin(angulo);
-                                
-                                using (var paint = new SKPaint 
-                                { 
-                                    Color = new SKColor(color.Red, color.Green, color.Blue, 50),
+                                double angulo = 2 * Math.PI * i / CANTIDAD_RAYOS;
+                                var intensidad = CalcularIntensidadRayo(ondasParticula, angulo);
+
+                                if (intensidad <= 0)
+                                {
+                                    continue;
+                                }
+
+                                var radioRayo = CalcularLongitudRayo(intensidad, amplitudMaxima);
+                                float x1 = x + radioRayo * (float)Math.Cos(angulo);
+                                float y1 = y - radioRayo * (float)Math.Sin(angulo);
+                                byte alpha = CalcularAlphaRayo(intensidad, amplitudMaxima);
+
+                                using (var paint = new SKPaint
+                                {
+                                    Color = new SKColor(color.Red, color.Green, color.Blue, alpha),
                                     StrokeWidth = 2f,
-                                    IsAntialias = true 
+                                    IsAntialias = true
                                 })
                                 {
                                     canvas.DrawLine(x, y, x1, y1, paint);
                                 }
                             }
 
-                            if(!fasesEncontradas.Any(f => Math.Abs(f - particula.Fase) < 0.01))
+                             // Dibujar los textos
+                            using (var typeface = SKTypeface.FromFamilyName("Arial", SKFontStyle.Bold))
+                            using (var font = new SKFont(typeface, 12f))
+                            using (var paint = new SKPaint { Color = SKColors.Black, IsAntialias = true })
                             {
-                                // Dibujar nombre de la partícula
-                                float xText = x;
-                                float yText = y - 20;
-                                var predicado = particula.ToString();
-                                
-                                posicionesTexto.Add((xText, yText, predicado));
-                                fasesEncontradas.Add(particula.Fase);
-                                continue;
-                            }                
-                        }
-
-                        var textosAgrupados = posicionesTexto
-                            .GroupBy(t => (int) t.y)
-                            .Where(g => g.Count() > 1)
-                            .ToList();
-                        
-                        foreach (var grupo in textosAgrupados)
-                        {
-                            var textos = grupo.OrderBy(t => t.x).ToList();
-                            var separacion = 350 / textos.Count;
-                            var primerX = textos.First().x - 200;
-                            for (int i = 0; i < textos.Count; i++)
-                            {
-                                var (x, y, texto) = textos[i];
-                                int idx = posicionesTexto.FindIndex(t => t.x == x && t.y == y && t.texto == texto);
-                                posicionesTexto[idx] = (separacion * (i + 1) + primerX, y, texto);
-                            }
-                        }
-
-                        // Dibujar los textos
-                        using (var typeface = SKTypeface.FromFamilyName("Arial", SKFontStyle.Bold))
-                        using (var font = new SKFont(typeface, 12f))
-                        using (var paint = new SKPaint { Color = SKColors.Black, IsAntialias = true })
-                        {
-                            foreach (var (x, y, texto) in posicionesTexto)
-                            {
-                                canvas.DrawText(texto, x, y, font, paint);
+                                canvas.DrawText($"{amplitud} A {particula}", x, y, font, paint);
                             }
                         }
 
@@ -192,14 +173,28 @@ namespace ConsoleApp
                 throw new Exception($"Error generando frames: {ex.Message}", ex);
             }
         }
-
-        private static bool RectsOverlap(SKRect rect1, SKRect rect2)
+        
+        private static double CalcularIntensidadRayo(IEnumerable<(double Amplitud, double Fase)> ondas, double angulo)
         {
-            const float margen = 5f;
-            return !(rect1.Right + margen < rect2.Left || 
-                     rect1.Left - margen > rect2.Right || 
-                     rect1.Bottom + margen < rect2.Top || 
-                     rect1.Top - margen > rect2.Bottom);
+            return ondas.Sum(onda => Math.Abs(onda.Amplitud) * Math.Max(0d, Math.Cos(angulo - onda.Fase)));
+        }
+
+        private static double CalcularAmplitudMaxima(IEnumerable<(double Amplitud, double Fase)> ondas)
+        {
+            var amplitudMaxima = ondas.Sum(onda => Math.Abs(onda.Amplitud));
+            return amplitudMaxima <= 0 ? 1d : amplitudMaxima;
+        }
+
+        private static float CalcularLongitudRayo(double intensidad, double amplitudMaxima)
+        {
+            var proporcion = Math.Clamp(intensidad / amplitudMaxima, 0d, 1d);
+            return RADIO_RAYO_MINIMO + (float)((RADIO_RAYO_MAXIMO - RADIO_RAYO_MINIMO) * proporcion);
+        }
+
+        private static byte CalcularAlphaRayo(double intensidad, double amplitudMaxima)
+        {
+            var proporcion = Math.Clamp(intensidad / amplitudMaxima, 0d, 1d);
+            return (byte)(40 + (160 * proporcion));
         }
     }
 }

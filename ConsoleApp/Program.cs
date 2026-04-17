@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using DomainLogic.Services;
 using DomainLogic.Services.Particulas;
+using System.Collections.Generic;
 
 namespace ConsoleApp
 {
@@ -26,11 +27,11 @@ namespace ConsoleApp
                 var ambiente = AmbienteConfig.CrearAmbiente(string.Join(' ', args));
                 
                 logger.LogInformation($"[ESPACIO basado en amplitud (apariencia)] Creado para: {ambiente}\n");
-                var espacio = Espacio.Crear(ambiente);
+                var espacio = new Espacio(ambiente);
                 
                 var framesDir = Path.Combine(Directory.GetCurrentDirectory(), "frames");
                 var directorioSalida = Path.Combine(framesDir, "Amplitud");
-                var paths = espacio.GenerarFramesPng(directorioSalida, 4, 5);
+                var paths = espacio.GenerarFramesPng(directorioSalida, 10, 30);
                 foreach (var path in paths)
                 {
                     logger.LogInformation($"Frame generado: {path}");

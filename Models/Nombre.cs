@@ -1,22 +1,26 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 public class Nombre : Palabra
 {
-    public override Guid Id { get; }
-    public Dictionary<double, List<Apariencia>> Efecto { get; internal set; }
-    public double Frecuencia => Efecto.Keys.Max(k => Math.Abs(k));
+    public Apariencia Esencia { get; private set; }
+    public double Frecuencia { get; private set; }
 
-    internal Nombre(string texto, 
-        double fase) 
+    /// <summary>
+    /// Crea un nuevo nombre con el texto, fase y esencia dados. El Id se genera automáticamente.
+    /// </summary>
+    /// <param name="texto">El texto del nombre.</param>
+    /// <param name="fase">La fase del nombre.</param>
+    /// <param name="frecuencia">La frecuencia del nombre.</param>
+    /// <param name="esencia">La esencia del nombre. Si es null, se crea una vacuidad.</param>
+    public Nombre(string texto, 
+        double fase,
+        double frecuencia,
+        Apariencia esencia)
         : base(texto, fase)
     {
-        Id = Guid.NewGuid();
-        Efecto = new Dictionary<double, List<Apariencia>>
-        {
-            { 0, new List<Apariencia> { new Apariencia(this, 0.0) } }
-        };
+        Frecuencia = frecuencia;
+        Esencia = esencia ?? new Apariencia(t => Vacuidad(t));
     }
 
     /// <summary>
@@ -28,58 +32,39 @@ public class Nombre : Palabra
         : base(nombre.Texto, 
             nombre.Fase)
     {
-        Id = nombre.Id;
-        Efecto = nombre.Efecto;
+        Frecuencia = nombre.Frecuencia;
+        Esencia = nombre.Esencia;
     }
 
     /// <summary>
-    /// Retorna la amplitud total del nombre para una frecuencia dada, sumando las amplitudes de todas las apariencias asociadas a esa frecuencia.
-    /// </summary>
-    /// <param name="frecuencia">La frecuencia para la cual se desea obtener la amplitud.</param>
-    /// <returns>La amplitud total del nombre para la frecuencia especificada.</returns>
-    public (double Amplitud, double Fase) ObtenerValor(double frecuencia)
-    {
-        if (Efecto.TryGetValue(frecuencia, out var apariencias))
-        {
-            var amplitud = apariencias.Sum(a => a.Amplitud);
-            return (amplitud, Fase);
-        }
-
-        return (0, Fase);
-    }
-
-    /// <summary>
-    /// Suma las amplitudes de cada frecuencia.
-    /// </summary>
-    /// <returns>La amplitud total del nombre.</returns>
-    public double ObtenerAmplitudTotal()
-    {
-        return Efecto.Values.Sum(apariencias => apariencias.Sum(a => a.Amplitud));
-    }
-
-    /// <summary>
-    /// Crea una nueva designación con los nombres seleccionados del espacios según la ventana especificada.
-    /// La velocidad de grupo se determina promediando las velocidades de grupo de las apariencias proyectadas.
-    /// El espacio designa el nombre tomando la nueva designación como apariencia.
+    /// Crea una nueva designación al proyectar el nombre + una lista de predicados sobre la apariencia.
+    /// Cada predicado se convierte en un nombre con una apariencia asociada.
+    /// La frecuencia se determina por la cantidad de nombres que comparten el mismo verbo núcleo (se asume la primer palabra del predicado),
+    /// la amplitud por la cantidad de complementos del sujeto que comparten (se asume las palabras restantes del predicado),
+    /// y la fase por la posición del predicado en la lista (distribuido en 360º).
     /// </summary>
     /// <param name="apariencia">La apariencia que funciona como espacio.</param>
-    public Designacion Mostrarse(Apariencia apariencia)
+    /// <param name="predicados">Los predicados que se utilizarán para crear la nueva designación si la apariencia no es una designación.</param>
+    /// <returns>La nueva designación creada.</returns>
+    public Designacion Mostrarse(Apariencia apariencia, List<string> predicados)
     {
-        var nuevaFrecuencia = Efecto.Keys.Max() + 1;
-        Efecto.Add(nuevaFrecuencia, new List<Apariencia> { apariencia });
-        var designacion = apariencia as Designacion;
-        if (designacion != null)
+        var designacion = predicados == null
+            ? apariencia as Designacion
+            : new Designacion(predicados);
+
+        if (designacion == null)
         {
-            return designacion.Designar(apariencia, this);
+            throw new ArgumentNullException(nameof(predicados), "Se requieren predicados cuando la apariencia no es una designacion.");
         }
-        return new Designacion(new List<Nombre> { this });
+
+        return designacion.Designar(apariencia, this);
     }
 
     /// <summary>
-    /// Retorna una representación del nombre.
+    /// Representacion en texto de la apariencia. 
     /// </summary>
-    /// <returns>Naturaleza, fase y frecuencia.</returns>
-    public override string ToString() => $"{Texto} ({Fase * (180 / Math.PI):F2}º, {ObtenerValor(Frecuencia).Amplitud:F2} A)";
+    /// <returns>Una cadena que representa la apariencia.</returns>
+    public override string ToString() => $"{Texto} ({Fase * (180 / Math.PI):F2}º, {Frecuencia:F2} Hz)";
 
     /// <summary>
     /// Sobreescribe Equals para comparar nombres por su Id.
@@ -89,7 +74,7 @@ public class Nombre : Palabra
     {
         if (obj is Nombre other)
         {
-            return Id == other.Id;
+            return Texto == other.Texto;
         }
         return false;
     }

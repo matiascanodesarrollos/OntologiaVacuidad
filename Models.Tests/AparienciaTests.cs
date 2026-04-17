@@ -1,43 +1,31 @@
-using Moq;
-
 public class AparienciaTests
 {
     [Fact]
-    public void Aparecer_CreaDesignacionConNombresYAmplitudTotal()
+    public void Aparecer_SumaLasAmplitudesDeLaDesignacionEnElTiempoDado()
     {
-        var predicados = new List<string> { "ser humano", "ser lenguaje" };
+        var designacion = new Nombre("observador", 0d, 1d, null)
+            .Mostrarse(null, new List<string> { "ser humano", "pensar humano" });
 
-        var apariencia = Apariencia.Aparecer(predicados, texto =>
-            texto switch
-            {
-                "ser humano" => (Math.PI * 3, 2d, 1.5d),
-                "ser lenguaje" => (Math.PI / 2, 2d, 2.5d),
-                _ => (0d, 0d, 0d)
-            });
-
-        var designacion = Assert.IsType<Designacion>(apariencia);
-        var nombres = designacion.Nombres.Skip(1).ToList();
-
-        Assert.Equal(4.0, designacion.Amplitud);
-        Assert.Equal(2, nombres.Count);
-        Assert.Equal(Math.PI, nombres[0].Fase);
-        Assert.Equal(2, nombres[0].Frecuencia);
-        Assert.Equal(1.5, nombres[0].ObtenerValor(2).Amplitud);
-        Assert.Equal(2.5, nombres[1].ObtenerValor(2).Amplitud);
+        var apariencia = Apariencia.Aparecer(designacion);
+        var amplitudEsperada = designacion.Nombres
+            .Select(n => n.Esencia.Amplitud(0.5d))
+            .Aggregate((a, b) => (a.Item1 + b.Item1, a.Item2 + b.Item2));
+        
+        Assert.Equal(amplitudEsperada, apariencia.Amplitud(0.5d));
     }
 
     [Fact]
-    public void Designar_ConAparienciaMockeada_NoModificaLaFuenteYRetornaSoloElNombreProyectado()
+    public void EqualsYGetHashCode_ComparanPorId()
     {
-        var nombre = ((Designacion)Apariencia.Aparecer(new List<string> { "decir verdad" }, _ => (0d, 1d, 3d)))
-            .Nombres
-            .Last();
-        var apariencia = new Mock<Apariencia>(nombre, 1d) { CallBase = true };
+        var designacion = new Nombre("observador", 0d, 1d, null)
+            .Mostrarse(null, new List<string> { "ser humano", "pensar humano" });
+        var apariencia = Apariencia.Aparecer(designacion);
+        var mismaReferencia = apariencia;
+        var otra = Apariencia.Aparecer(designacion);
 
-        var resultado = new Designacion(new List<Nombre> { nombre }).Designar(apariencia.Object, nombre);
-
-        var nombres = resultado.Nombres.ToList();
-        Assert.Single(nombres);
-        Assert.Same(nombre, nombres[0]);
+        Assert.True(apariencia.Equals(mismaReferencia));
+        Assert.False(apariencia.Equals(otra));
+        Assert.False(apariencia.Equals("no-apariencia"));
+        Assert.Equal(apariencia.Id.GetHashCode(), apariencia.GetHashCode());
     }
 }

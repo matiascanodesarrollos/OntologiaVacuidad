@@ -1,55 +1,32 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 
 public class Apariencia
 {
     public virtual Guid Id { get; }
-    public double Amplitud { get; internal set; }
-    public Nombre Causa { get; internal set; }
+    public Func<double, (double, double)> Amplitud { get; internal set; }
 
-    internal Apariencia(Nombre causa, double amplitud)
+    internal Apariencia(Func<double, (double, double)> amplitud)
     {
         Id = Guid.NewGuid();
-        Causa = causa;
         Amplitud = amplitud;
     }
 
     /// <summary>
-    /// Crea una nueva designación a partir de una lista de predicados y una función de mapeo de texto a (fase,frecuencia,amplitud).
-    /// La misma permite personalizar cómo se asignan las propiedades de cada nombre en la designación,
-    /// basándose en el texto del predicado.
-    /// La designación resultante tendrá una amplitud total que es la suma de las amplitudes de los nombres individuales.
+    /// Crea una nueva apariencia a partir de una designación, sumando las amplitudes de las apariencias de los nombres que componen la designación (Fourrier).
     /// </summary>
-    /// <param name="predicados">Los predicados que se utilizarán para crear la designación.</param>
-    /// <param name="funcionMapeo">Una función opcional para mapear los predicados a sus respectivas fases, frecuencias y amplitudes. Si no se proporciona, se utilizará el mapeo predeterminado basado en la estructura de los predicados.</param>
-    public static Apariencia Aparecer(List<string> predicados, 
-        Func<string, (double fase, double frecuencia, double amplitud)> funcionMapeo)
+    /// <param name="designacion">La designación a partir de la cual se crea la apariencia.</param>
+    /// <returns>Una nueva apariencia creada a partir de la designación.</returns>
+    public static Apariencia Aparecer(Designacion designacion)
     {
-        var designacion = new Designacion(
-            new List<Nombre>() 
-            { 
-                new Nombre(null, 0),
-            }
-        );
-        
-        for(var i = 0; i < predicados.Count; i++)
-        {
-            var (fase, frecuencia, amplitud) = funcionMapeo(predicados[i]);
-            var nombre = new Nombre(predicados[i], fase);
-            if(!nombre.Efecto.ContainsKey(frecuencia))
-            {
-                nombre.Efecto[frecuencia] = new List<Apariencia>();
-            }
-            nombre.Efecto[frecuencia].Add(new Apariencia(nombre, amplitud));            
-            designacion._nombres.Add(nombre);
-        }
-        designacion.Amplitud = designacion
-            .Nombres
-            .Sum(n => n.ObtenerAmplitudTotal());
-        
-        return designacion;
+        var apariencia = new Apariencia(t => //Fourrier
+            designacion
+                .Nombres
+                .Select(n => n.Esencia.Amplitud(t))
+                .Aggregate((a, b) => (a.Item1 + b.Item1, a.Item2 + b.Item2)));
+        return apariencia;
     }
+
 
     /// <summary>
     /// Sobreescribe GetHashCode para comparar apariencias por su Id.

@@ -1,75 +1,90 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 public class Designacion : Apariencia
 {
     public override Guid Id { get; }
-    /// <summary>
-    /// Función que determina la velocidad de grupo dada una frecuencia.
-    /// </summary>
-    public Func<double, double> VelocidadGrupo { get; internal set; }
-
-    internal List<Nombre> _nombres { get; set; }
+    private List<Nombre> _nombres { get; set; }
     public IEnumerable<Nombre> Nombres => _nombres.AsReadOnly();
 
-    public Designacion(List<Nombre> nombres)
-        : base(nombres.First(), 1.0)
+    /// <summary>
+    /// Función que determina la velocidad de grupo dada un nombre.
+    /// </summary>
+    public Func<Nombre, double> VelocidadGrupo { get; }
+
+    internal Designacion(List<Nombre> nombres, 
+        Func<Nombre, double> velocidadGrupo)
+        : base(Palabra.Vacuidad)
     {
         Id = Guid.NewGuid();
         _nombres = nombres;
-        VelocidadGrupo = frecuencia => 1.0;
+        VelocidadGrupo = velocidadGrupo;
+    }
+
+    internal Designacion(List<string> predicados)
+        : base(Palabra.Vacuidad)
+    {
+        Id = Guid.NewGuid();
+        _nombres = new List<Nombre>();
+
+        var deltaFasePredicados = 2 * Math.PI / predicados.Count;
+        var diccionarioVerbos = predicados
+            .Select(p => p.Split(' ').First())
+            .GroupBy(p => p)
+            .ToDictionary(g => g.Key, g => g.Count());
+        
+        var diccionarioComplementos = predicados
+            .SelectMany(p => p.Split(' ').Skip(1))
+            .GroupBy(p => p)
+            .ToDictionary(g => g.Key, g => Math.Max(1,g.Count()));
+
+        for(var i = 0; i < predicados.Count; i++)
+        {
+            var palabras = predicados[i].Split(' ');
+
+            var frecuencia = diccionarioVerbos[palabras.First()];
+            var amplitud = palabras.Skip(1).Sum(p => diccionarioComplementos[p]);
+            var fase = i * deltaFasePredicados;
+
+            var apariencia = new Apariencia(t => 
+                (amplitud * Math.Cos(frecuencia * Math.PI * t + fase), 
+                frecuencia * Math.Sin(frecuencia * Math.PI * t + fase)));
+            var nombre = new Nombre(predicados[i], fase, frecuencia, apariencia);
+            _nombres.Add(nombre);
+        }
+
+        VelocidadGrupo = n => 1;
     }
 
     /// <summary>
-    /// Crea una nueva designación al proyectar el nombre sobre la apariencia, al mostrarse con una ventana Gaussiana.
+    /// Crea una nueva designación al proyectar el nombre sobre la apariencia.
+    /// Si la apariencia no es una designación, se toma la designación actual como apariencia.
     /// </summary>
     /// <param name="apariencia">La apariencia sobre la cual proyectar el nombre.</param>
     /// <param name="nombre">El nombre a proyectar.</param>
-    /// <param name="ventana">La función que define que nombres se incluyen en la nueva designación, si se omite se incluyen aquellos que estan incluidos en las frecuencias del nombre proyectado.</param>
     /// <returns>La nueva designación creada.</returns>
     public Designacion Designar(Apariencia apariencia, 
-        Nombre nombre,
-        Func<Nombre, bool> ventana = null)
+        Nombre nombre)
     {
-        var nuevaDesignacion = new Designacion(new List<Nombre> { nombre });
-
         var designacion = apariencia as Designacion;
         if (designacion == null)
         {
-            return nuevaDesignacion;
+            designacion = this;
         }
-        designacion._nombres.Add(nombre);
-        
-        var frecuenciaMaxima = nombre.Efecto.Keys.Max(k => Math.Abs(k));
-        if(ventana == null)
+        var nombres = designacion
+            .Nombres
+            .SkipLast(1) //Analogo a derivar
+            .ToList();
+        nombres.Add(nombre);
+        var nuevaDesignacion = new Designacion(nombres, n =>
         {
-            ventana = n => frecuenciaMaxima >= 
-                n.Efecto.Keys.Max(k => Math.Abs(k));
-        }
-        nuevaDesignacion
-            ._nombres
-            .AddRange(designacion.Nombres.Where(n => ventana(n)));
-        
+            var velocidad = VelocidadGrupo(n);
+            return velocidad != 0 
+                ? velocidad 
+                : velocidad + 2; //Si el nombre no es el correcto va a una velocidad más alta
+        });        
         return nuevaDesignacion;
-    }
-
-    /// <summary>
-    /// Sobreescribe ToString para mostrar una representación de la designación, incluyendo su naturaleza y esencia.
-    /// Se muestra la naturaleza como una lista de efectos, cada uno con su causa, frecuencia y fase.
-    /// </summary>
-    /// <returns>Una cadena que representa la designación.</returns>
-    public override string ToString()
-    {
-        var resultado = new StringBuilder();
-        resultado.AppendLine("═══ Designación ═══");
-        foreach (var nombre in Nombres)
-        {
-            resultado.AppendLine(nombre.ToString());
-        }
-        resultado.AppendLine("═══ Fin ═══");
-        return resultado.ToString();
     }
 
     /// <summary>

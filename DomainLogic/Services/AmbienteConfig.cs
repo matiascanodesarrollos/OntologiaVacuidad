@@ -23,30 +23,12 @@ namespace DomainLogic.Services
                     .Select(t => t.Trim())
                     .Where(t => !string.IsNullOrEmpty(t))
                     .ToList();
-
-            var deltaFasePredicados = 2 * Math.PI / oraciones.Count;
-            var frecuenciaOraciones = oraciones.Count;
-            var diccionarioVerbos = oraciones
-                .GroupBy(p => p.Split(' ').First())
-                .ToDictionary(g => g.Key, g => g.Count());
-            var diccionarioComplementos = oraciones
-                .SelectMany(p => p.Split(' ').Skip(1))
-                .GroupBy(p => p)
-                .ToDictionary(g => g.Key, g => Math.Max(1,g.Count()));
-            var i = 0;
-                
-            return Apariencia
-                    .Aparecer(oraciones, oracion =>
-                    {
-                        var palabras = oracion.Split(' ');
-                        var verboNucleo = palabras.First();
-                        var complementosDelSujeto = palabras.Skip(1).ToList();
-                        var resultado = (i * deltaFasePredicados, 
-                            diccionarioVerbos[verboNucleo],
-                            complementosDelSujeto.Sum(c => diccionarioComplementos[c]));
-                        i++;
-                        return resultado;
-                    }) as Designacion;
+            var deltaFasePredicados = 2 * Math.PI / oraciones.Count;            
+            var nombre = new Nombre(oraciones.Last(), 
+                2 * Math.PI - deltaFasePredicados, 
+                oraciones.Count,
+                null);
+            return nombre.Mostrarse(null, oraciones);
         }
     }
 
