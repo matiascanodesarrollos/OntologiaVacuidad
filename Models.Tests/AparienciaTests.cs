@@ -7,9 +7,11 @@ public class AparienciaTests
             .Mostrarse(null, new List<string> { "ser humano", "pensar humano" });
 
         var apariencia = Apariencia.Aparecer(designacion);
-        var amplitudEsperada = designacion.Nombres.Sum(n => n.Esencia.Amplitud(0.5d));
-
-        Assert.Equal(amplitudEsperada, apariencia.Amplitud(0.5d), 10);
+        var amplitudEsperada = designacion.Nombres
+            .Select(n => n.Esencia.Amplitud(0.5d))
+            .Aggregate((a, b) => (a.Item1 + b.Item1, a.Item2 + b.Item2));
+        
+        Assert.Equal(amplitudEsperada, apariencia.Amplitud(0.5d));
     }
 
     [Fact]

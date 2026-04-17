@@ -4,9 +4,9 @@ using System.Linq;
 public class Apariencia
 {
     public virtual Guid Id { get; }
-    public Func<double, double> Amplitud { get; internal set; }
+    public Func<double, (double, double)> Amplitud { get; internal set; }
 
-    internal Apariencia(Func<double, double> amplitud)
+    internal Apariencia(Func<double, (double, double)> amplitud)
     {
         Id = Guid.NewGuid();
         Amplitud = amplitud;
@@ -22,7 +22,8 @@ public class Apariencia
         var apariencia = new Apariencia(t => //Fourrier
             designacion
                 .Nombres
-                .Sum(n => n.Esencia.Amplitud(t)));
+                .Select(n => n.Esencia.Amplitud(t))
+                .Aggregate((a, b) => (a.Item1 + b.Item1, a.Item2 + b.Item2)));
         return apariencia;
     }
 

@@ -48,8 +48,8 @@ public class Designacion : Apariencia
             var fase = i * deltaFasePredicados;
 
             var apariencia = new Apariencia(t => 
-                amplitud * Math.Cos(frecuencia * Math.PI * t + fase) 
-                + amplitud * Math.Sin(frecuencia * Math.PI * t + fase));            
+                (amplitud * Math.Cos(frecuencia * Math.PI * t + fase), 
+                frecuencia * Math.Sin(frecuencia * Math.PI * t + fase)));
             var nombre = new Nombre(predicados[i], fase, frecuencia, apariencia);
             _nombres.Add(nombre);
         }

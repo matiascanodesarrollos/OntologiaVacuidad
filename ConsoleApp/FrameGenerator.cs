@@ -81,7 +81,8 @@ namespace ConsoleApp
                             .ToList();
                         foreach (var particula in particulas)
                         {
-                            var amplitud = Math.Abs(particula.Esencia.Amplitud(espacio.Tiempo));
+                            var amplitudFase = particula.Esencia.Amplitud(espacio.Tiempo);
+                            var amplitud = Math.Abs(Math.Sqrt(amplitudFase.Item1 * amplitudFase.Item1 + amplitudFase.Item2 * amplitudFase.Item2));
                             var color = FuncionAmplitudAColor(amplitud);                     
                             var x = CENTROX + (float) particula.Posicion2D.X;
                             var y = CENTROY - (float) particula.Posicion2D.Y;

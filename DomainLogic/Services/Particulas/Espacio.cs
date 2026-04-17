@@ -36,7 +36,7 @@ public class Espacio : Nombre
             p => p,
             p => p.Mostrarse(Designacion, null)
                 .Nombres
-                .Select(n => (n.Esencia.Amplitud(Tiempo), n.Fase))
+                .Select(n => n.Esencia.Amplitud(Tiempo))
                 .ToList());
     }
 }

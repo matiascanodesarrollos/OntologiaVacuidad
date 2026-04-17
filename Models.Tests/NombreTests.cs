@@ -55,8 +55,8 @@ public class NombreTests
         Assert.Equal(nombre.Texto, copia.Texto);
         Assert.Same(esencia, nombre.Esencia);
         Assert.Same(nombre.Esencia, copia.Esencia);
-        Assert.Equal(double.MaxValue, conEsenciaNula.Esencia.Amplitud(0d));
-        Assert.Equal(Math.Cos(1d) + Math.Sin(1d), conEsenciaNula.Esencia.Amplitud(1d), 10);
+        Assert.Equal((double.MaxValue, double.MaxValue), conEsenciaNula.Esencia.Amplitud(0d));
+        Assert.Equal((Math.Cos(1d), Math.Sin(1d)), conEsenciaNula.Esencia.Amplitud(1d));
         Assert.Equal($"ser ({nombre.Fase * (180 / Math.PI):F2}º, {nombre.Frecuencia:F2} Hz)", nombre.ToString());
         Assert.True(nombre.Equals(copia));
         Assert.False(nombre.Equals(otro));
@@ -78,10 +78,10 @@ public class NombreTests
         Assert.Equal(2 * Math.PI / 3, nombres[1].Fase, 10);
         Assert.Equal(0d, nombres[2].Fase, 10);
         Assert.Equal("origen", nombres[2].Texto);
-        Assert.Equal(2d, nombres[0].Esencia.Amplitud(0d), 10);
-        Assert.Equal(0.3660254038d, nombres[1].Esencia.Amplitud(0d), 10);
-        Assert.Equal(double.MaxValue, nombres[2].Esencia.Amplitud(0d));
-        Assert.Equal(double.MaxValue, designacion.Amplitud(0d));
+        Assert.Equal((2d, 0d), nombres[0].Esencia.Amplitud(0d));
+        Assert.Equal((-0.49999999999999978, 1.7320508075688774), nombres[1].Esencia.Amplitud(0d));
+        Assert.Equal((double.MaxValue, double.MaxValue), nombres[2].Esencia.Amplitud(0d));
+        Assert.Equal((double.MaxValue, double.MaxValue), designacion.Amplitud(0d));
         Assert.True(designacion.Equals(designacion));
         Assert.False(designacion.Equals(otra));
         Assert.False(designacion.Equals("no-designacion"));
