@@ -11,13 +11,13 @@ public class Designacion : Apariencia
 
     internal Designacion(List<Nombre> nombres, 
         Func<Nombre, double> velocidadGrupo)
-        : base(Vacuidad.Valor, nombres)
+        : base(Mente.Funcion, nombres)
     {
         VelocidadGrupo = velocidadGrupo;
     }
 
     internal Designacion(string texto, Func<string, string> obtenerVerboNucleo)
-        : base(Vacuidad.Valor, Vacuidad.Nombres.ToList())
+        : base(Mente.Funcion, Mente.Nombres.ToList())
     {
         VelocidadGrupo = n => 1;
 

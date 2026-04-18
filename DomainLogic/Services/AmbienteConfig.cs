@@ -27,7 +27,7 @@ namespace DomainLogic.Services
             var nombre = new Nombre(oraciones.Last(), 
                 2 * Math.PI - deltaFasePredicados, 
                 oraciones.Count);
-            return nombre.Mostrarse(Apariencia.Vacuidad, texto);
+            return nombre.Mostrarse(Apariencia.Mente, texto);
         }
     }
 

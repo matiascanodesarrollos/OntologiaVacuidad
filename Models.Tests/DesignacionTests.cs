@@ -15,7 +15,7 @@ public class DesignacionTests
         var palabra = new Nombre("ser", 0, 0) as Palabra;
         var listaEsperada = new List<string> { "gozo", "mente", texto, "ser" };
 
-        var designacionApariencia = nombre.Mostrarse(Apariencia.Vacuidad, texto);        
+        var designacionApariencia = nombre.Mostrarse(Apariencia.Mente, texto);        
         var designacion = designacionApariencia.Designar(nombre, palabra);
 
         designacion.Should().NotBeNull();
@@ -43,9 +43,9 @@ public class DesignacionTests
     public void Equals_ConMismaReferencia_DevuelveTrueYConOtraDesignacion_DevuelveFalse()
     {
         var nombre = new Nombre("logos", Math.PI / 3, 5.0);
-        var designacion = nombre.Mostrarse(Apariencia.Vacuidad, "ser humano. pensar lenguaje");
+        var designacion = nombre.Mostrarse(Apariencia.Mente, "ser humano. pensar lenguaje");
         var mismaReferencia = designacion;
-        var otra = nombre.Mostrarse(Apariencia.Vacuidad, "ser mente. pensar vacuidad");
+        var otra = nombre.Mostrarse(Apariencia.Mente, "ser mente. pensar vacuidad");
 
         designacion.Equals(mismaReferencia).Should().BeTrue();
         designacion.Equals(otra).Should().BeFalse();
@@ -56,7 +56,7 @@ public class DesignacionTests
     public void GetHashCode_SinParametros_GeneraPorId()
     {
         var nombre = new Nombre("logos", Math.PI / 3, 5.0);
-        var designacion = nombre.Mostrarse(Apariencia.Vacuidad, "ser humano. pensar lenguaje");
+        var designacion = nombre.Mostrarse(Apariencia.Mente, "ser humano. pensar lenguaje");
 
         designacion.GetHashCode().Should().Be(designacion.Id.GetHashCode());
     }
@@ -65,11 +65,11 @@ public class DesignacionTests
     public void Valor_ConCualquierTiempo_ConservaLaSemanticaDeVacuidad()
     {
         var nombre = new Nombre("logos", Math.PI / 3, 5.0);
-        var designacion = nombre.Mostrarse(Apariencia.Vacuidad, "ser humano. pensar lenguaje");
+        var designacion = nombre.Mostrarse(Apariencia.Mente, "ser humano. pensar lenguaje");
 
-        designacion.Valor(0d).Should().Be((double.MaxValue, double.MaxValue));
-        designacion.Valor(0.5d).Should().Be((0d, 0d));
-        designacion.Valor(2d).Should().Be((0d, 0d));
+        designacion.Funcion(0d).Should().Be((double.MaxValue, double.MaxValue));
+        designacion.Funcion(0.5d).Should().Be((0d, 0d));
+        designacion.Funcion(2d).Should().Be((0d, 0d));
     }
 
     [Fact]
@@ -78,7 +78,7 @@ public class DesignacionTests
         var frecuencia = 5.0;
         var fase = Math.PI / 3;
         var nombre = new Nombre("logos", fase, frecuencia);
-        var designacion = nombre.Mostrarse(Apariencia.Vacuidad, "ser humano. pensar lenguaje");
+        var designacion = nombre.Mostrarse(Apariencia.Mente, "ser humano. pensar lenguaje");
         var nombreIgualPorContenido = new Nombre("ser humano", 0d, 1d);
 
         designacion.VelocidadGrupo(nombreIgualPorContenido).Should().Be(1d);

@@ -60,8 +60,8 @@ public class Nombre : Palabra
         var designacion = new Designacion(texto, obtenerVerboNucleo);
         var faseInstanea = new Func<double, double>(t => 
         {
-            var valor = apariencia.Valor(t);
-            var valorAnterior = apariencia.Valor(t - 0.001);
+            var valor = apariencia.Funcion(t);
+            var valorAnterior = apariencia.Funcion(t - 0.001);
             var diferencial = (
                 EjeReal: valor.EjeReal - valorAnterior.EjeReal,
                 EjeImaginario: valor.EjeImaginario - valorAnterior.EjeImaginario); //Derivada

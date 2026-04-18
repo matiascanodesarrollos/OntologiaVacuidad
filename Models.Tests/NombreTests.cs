@@ -33,7 +33,7 @@ public class NombreTests
         nombre.Esencia.Nombres.Should().ContainSingle().Which.Should().BeSameAs(nombre);
         for(var t = 0d; t <= 4d; t += 0.25d)
         {
-            var valor = nombre.Esencia.Valor(t);
+            var valor = nombre.Esencia.Funcion(t);
             valor.EjeReal.Should().BeApproximately(Math.Cos(frecuencia * t), 1e-10);
             valor.EjeImaginario.Should().BeApproximately(Math.Sin(frecuencia * t), 1e-10);
         }
@@ -47,7 +47,7 @@ public class NombreTests
         var nombre = new Nombre("logos", fase, frecuencia);
         var predicados = new List<string> { "ser humano", "ser lenguaje", "pensar humano" };
         var texto = string.Join(". ", predicados);
-        var apariencia = Apariencia.Vacuidad;
+        var apariencia = Apariencia.Mente;
 
         var designacion = nombre.Mostrarse(apariencia, texto);
 
@@ -68,14 +68,14 @@ public class NombreTests
         var predicados = new List<string> { "ser humano", "ser lenguaje", "pensar humano" };
         var texto = string.Join(". ", predicados);
 
-        var designacion = nombre.Mostrarse(Apariencia.Vacuidad, texto, null);
+        var designacion = nombre.Mostrarse(Apariencia.Mente, texto, null);
 
         var nombresPredicados = designacion.Nombres.SkipLast(1).ToList();
         nombresPredicados.Select(n => n.Frecuencia).Should().Equal(2d, 2d, 1d);
         nombresPredicados.Select(n => n.Fase).Should().Equal(0d, 2d * Math.PI / 3d, 4d * Math.PI / 3d);
-        nombresPredicados[0].Esencia.Valor(0d).EjeReal.Should().BeApproximately(2d, 1e-10);
-        nombresPredicados[1].Esencia.Valor(2d * Math.PI / 3d).EjeReal.Should().BeApproximately(1d, 1e-10);
-        nombresPredicados[2].Esencia.Valor(2d * Math.PI / 3d).EjeReal.Should().BeApproximately(2d, 1e-10);
+        nombresPredicados[0].Esencia.Funcion(0d).EjeReal.Should().BeApproximately(2d, 1e-10);
+        nombresPredicados[1].Esencia.Funcion(2d * Math.PI / 3d).EjeReal.Should().BeApproximately(1d, 1e-10);
+        nombresPredicados[2].Esencia.Funcion(2d * Math.PI / 3d).EjeReal.Should().BeApproximately(2d, 1e-10);
     }
 
     [Fact]
@@ -88,7 +88,7 @@ public class NombreTests
         var texto = string.Join(". ", predicados);
         var predicadosApariencia = new List<string> { "vacuidad", "mente" };
         var textoApariencia = string.Join(". ", predicadosApariencia);
-        var designacionApariencia = nombre.Mostrarse(Apariencia.Vacuidad, textoApariencia);
+        var designacionApariencia = nombre.Mostrarse(Apariencia.Mente, textoApariencia);
         var apariencia = Apariencia.Aparecer(designacionApariencia);
 
         var designacion = nombre.Mostrarse(apariencia, texto);
@@ -100,8 +100,8 @@ public class NombreTests
         var ultimoNombre = designacion.Nombres.Last();
         ultimoNombre.Frecuencia.Should().Be(frecuencia);
         ultimoNombre.Fase.Should().BeApproximately(Math.Abs(Math.Atan2(
-            apariencia.Valor(0d).EjeImaginario - apariencia.Valor(-0.001d).EjeImaginario,
-            apariencia.Valor(0d).EjeReal - apariencia.Valor(-0.001d).EjeReal)) % (2 * Math.PI), 1e-10);
+            apariencia.Funcion(0d).EjeImaginario - apariencia.Funcion(-0.001d).EjeImaginario,
+            apariencia.Funcion(0d).EjeReal - apariencia.Funcion(-0.001d).EjeReal)) % (2 * Math.PI), 1e-10);
         ultimoNombre.Texto.Should().Be(texto);
     }
 
@@ -125,7 +125,7 @@ public class NombreTests
         };
         var texto = string.Join(". ", predicados);
 
-        var designacion = nombre.Mostrarse(Apariencia.Vacuidad, texto, obtenerVerboNucleo);
+        var designacion = nombre.Mostrarse(Apariencia.Mente, texto, obtenerVerboNucleo);
 
         designacion.Should().NotBeNull();
         designacion.Nombres.Should().HaveCount(predicados.Count + 1);
@@ -134,9 +134,9 @@ public class NombreTests
         var nombresPredicados = designacion.Nombres.SkipLast(1).ToList();
         nombresPredicados.Select(n => n.Frecuencia).Should().Equal(3d, 3d, 3d);
         nombresPredicados.Select(n => n.Fase).Should().Equal(0d, 2d * Math.PI / 3d, 4d * Math.PI / 3d);
-        nombresPredicados[0].Esencia.Valor(0d).EjeReal.Should().BeApproximately(2d, 1e-10);
-        nombresPredicados[1].Esencia.Valor(4d * Math.PI / 9d).EjeReal.Should().BeApproximately(2d, 1e-10);
-        nombresPredicados[2].Esencia.Valor(2d * Math.PI / 9d).EjeReal.Should().BeApproximately(1d, 1e-10);
+        nombresPredicados[0].Esencia.Funcion(0d).EjeReal.Should().BeApproximately(2d, 1e-10);
+        nombresPredicados[1].Esencia.Funcion(4d * Math.PI / 9d).EjeReal.Should().BeApproximately(2d, 1e-10);
+        nombresPredicados[2].Esencia.Funcion(2d * Math.PI / 9d).EjeReal.Should().BeApproximately(1d, 1e-10);
 
         var ultimoNombre = designacion.Nombres.Last();
         ultimoNombre.Texto.Should().Be(texto);
@@ -163,15 +163,15 @@ public class NombreTests
         };
         var texto = string.Join(". ", predicados);
 
-        var designacion = nombre.Mostrarse(Apariencia.Vacuidad, texto, obtenerVerboNucleo);
+        var designacion = nombre.Mostrarse(Apariencia.Mente, texto, obtenerVerboNucleo);
 
         var nombresPredicados = designacion.Nombres.SkipLast(1).ToList();
         nombresPredicados.Select(n => n.Frecuencia).Should().Equal(2d, 2d, 2d, 2d);
         nombresPredicados.Select(n => n.Fase).Should().Equal(0d, Math.PI / 2d, Math.PI, 3d * Math.PI / 2d);
-        nombresPredicados[0].Esencia.Valor(0d).EjeReal.Should().BeApproximately(2d, 1e-10);
-        nombresPredicados[1].Esencia.Valor(3d * Math.PI / 4d).EjeReal.Should().BeApproximately(2d, 1e-10);
-        nombresPredicados[2].Esencia.Valor(Math.PI / 2d).EjeReal.Should().BeApproximately(2d, 1e-10);
-        nombresPredicados[3].Esencia.Valor(Math.PI / 4d).EjeReal.Should().BeApproximately(1d, 1e-10);
+        nombresPredicados[0].Esencia.Funcion(0d).EjeReal.Should().BeApproximately(2d, 1e-10);
+        nombresPredicados[1].Esencia.Funcion(3d * Math.PI / 4d).EjeReal.Should().BeApproximately(2d, 1e-10);
+        nombresPredicados[2].Esencia.Funcion(Math.PI / 2d).EjeReal.Should().BeApproximately(2d, 1e-10);
+        nombresPredicados[3].Esencia.Funcion(Math.PI / 4d).EjeReal.Should().BeApproximately(1d, 1e-10);
     }
 
     [Fact]
@@ -186,13 +186,13 @@ public class NombreTests
         };
         var texto = string.Join(". ", predicados);
 
-        var designacion = nombre.Mostrarse(Apariencia.Vacuidad, texto);
+        var designacion = nombre.Mostrarse(Apariencia.Mente, texto);
 
         var nombresPredicados = designacion.Nombres.SkipLast(1).ToList();
         nombresPredicados.Select(n => n.Frecuencia).Should().Equal(3d, 3d, 3d);
-        nombresPredicados[0].Esencia.Valor(0d).EjeReal.Should().BeApproximately(3d, 1e-10);
-        nombresPredicados[1].Esencia.Valor(4d * Math.PI / 9d).EjeReal.Should().BeApproximately(4d, 1e-10);
-        nombresPredicados[2].Esencia.Valor(2d * Math.PI / 9d).EjeReal.Should().BeApproximately(2d, 1e-10);
+        nombresPredicados[0].Esencia.Funcion(0d).EjeReal.Should().BeApproximately(3d, 1e-10);
+        nombresPredicados[1].Esencia.Funcion(4d * Math.PI / 9d).EjeReal.Should().BeApproximately(4d, 1e-10);
+        nombresPredicados[2].Esencia.Funcion(2d * Math.PI / 9d).EjeReal.Should().BeApproximately(2d, 1e-10);
     }
 
     [Fact]
@@ -208,14 +208,14 @@ public class NombreTests
         };
         var texto = string.Join(". ", predicados);
 
-        var designacion = nombre.Mostrarse(Apariencia.Vacuidad, texto);
+        var designacion = nombre.Mostrarse(Apariencia.Mente, texto);
 
         var nombresPredicados = designacion.Nombres.SkipLast(1).ToList();
         nombresPredicados.Select(n => n.Fase).Should().Equal(0d, Math.PI / 2d, Math.PI, 3d * Math.PI / 2d);
-        nombresPredicados[0].Esencia.Valor(0d).EjeReal.Should().BeApproximately(1d, 1e-10);
-        nombresPredicados[1].Esencia.Valor(3d * Math.PI / 8d).EjeReal.Should().BeApproximately(1d, 1e-10);
-        nombresPredicados[2].Esencia.Valor(Math.PI / 4d).EjeReal.Should().BeApproximately(1d, 1e-10);
-        nombresPredicados[3].Esencia.Valor(5d * Math.PI / 8d).EjeReal.Should().BeApproximately(1d, 1e-10);
+        nombresPredicados[0].Esencia.Funcion(0d).EjeReal.Should().BeApproximately(1d, 1e-10);
+        nombresPredicados[1].Esencia.Funcion(3d * Math.PI / 8d).EjeReal.Should().BeApproximately(1d, 1e-10);
+        nombresPredicados[2].Esencia.Funcion(Math.PI / 4d).EjeReal.Should().BeApproximately(1d, 1e-10);
+        nombresPredicados[3].Esencia.Funcion(5d * Math.PI / 8d).EjeReal.Should().BeApproximately(1d, 1e-10);
     }
 
     [Fact]

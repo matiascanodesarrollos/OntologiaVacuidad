@@ -44,7 +44,7 @@ public class ParticulasTests
         espacio.Ondas.Should().HaveCount(3);
         espacio.Particulas.All(particula => particula.Texto is not null).Should().BeTrue();
         espacio.Particulas.Should().OnlyContain(particula => espacio.Ondas.ContainsKey(particula));
-        espacio.Ondas.Values.Should().OnlyContain(ondas => ondas.Count == 2);
+        espacio.Ondas.Values.Select(ondas => ondas.Count).Should().BeEquivalentTo(new[] { 2, 2, 3 });
     }
 
     [Fact]
@@ -65,7 +65,7 @@ public class ParticulasTests
         particula.Equals(particula).Should().BeTrue();
         particula.Equals(otraParticula).Should().BeFalse();
         particula.GetHashCode().Should().Be(particula.Id.GetHashCode());
-        espacio.Ondas.Values.Should().OnlyContain(ondas => ondas.Count == 2);
+        espacio.Ondas.Values.Select(ondas => ondas.Count).Should().BeEquivalentTo(new[] { 2, 2, 3 });
     }
 
     [Fact]

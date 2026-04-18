@@ -75,7 +75,7 @@ namespace ConsoleApp
 
                         foreach (var particula in espacio.Particulas)
                         {
-                            var valor = particula.Esencia.Valor(espacio.Tiempo);
+                            var valor = particula.Esencia.Funcion(espacio.Tiempo);
                             var color = FuncionAmplitudAColor(Math.Sqrt(valor.EjeReal * valor.EjeReal + valor.EjeImaginario * valor.EjeImaginario));                     
                             var x = CENTROX + (float) particula.Posicion2D.X;
                             var y = CENTROY - (float) particula.Posicion2D.Y;

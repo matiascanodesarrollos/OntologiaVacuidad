@@ -7,12 +7,12 @@ public class Apariencia
     public Guid Id { get; }
     protected List<Nombre> _nombres { get; set; }
     public IEnumerable<Nombre> Nombres => _nombres.AsReadOnly();
-    public Func<double, (double EjeReal, double EjeImaginario)> Valor { get; }
+    public Func<double, (double EjeReal, double EjeImaginario)> Funcion { get; }
 
-    internal Apariencia(Func<double, (double EjeReal, double EjeImaginario)> valor, List<Nombre> esencia)
+    internal Apariencia(Func<double, (double EjeReal, double EjeImaginario)> funcion, List<Nombre> esencia)
     {
         Id = Guid.NewGuid();
-        Valor = valor;
+        Funcion = funcion;
         _nombres = esencia;
     }
 
@@ -26,7 +26,7 @@ public class Apariencia
         var nombres = designacion.Nombres.ToList();
         var apariencia = new Apariencia(t => //Fourrier
             nombres
-                .Select(n => n.Esencia.Valor(t))
+                .Select(n => n.Esencia.Funcion(t))
                 .Aggregate((a, b) => (a.EjeReal + b.EjeReal, a.EjeImaginario + b.EjeImaginario)),
             nombres);
         return apariencia;
@@ -55,7 +55,7 @@ public class Apariencia
     /// <summary>
     /// Apariencia base.
     /// </summary>
-    public static Apariencia Vacuidad = new Apariencia(
+    public static Apariencia Mente = new Apariencia(
         t => t == 0 
             ? (double.MaxValue, double.MaxValue) 
             : (0, 0), 

@@ -6,7 +6,7 @@ public class AparienciaTests
     public void Aparecer_ConUnaDesignacionDeUnSoloNombre_ConservaLaEsenciaDelNombre()
     {
         var nombre = new Nombre("logos", 0d, 2d);
-        var designacion = nombre.Mostrarse(Apariencia.Vacuidad, "ser humano");
+        var designacion = nombre.Mostrarse(Apariencia.Mente, "ser humano");
 
         var apariencia = Apariencia.Aparecer(designacion);
 
@@ -14,10 +14,10 @@ public class AparienciaTests
         for(var t = 0d; t <= 2d; t += 0.25d)
         {
             var valorEsperado = designacion.Nombres
-                .Select(n => n.Esencia.Valor(t))
+                .Select(n => n.Esencia.Funcion(t))
                 .Aggregate((a, b) => (a.EjeReal + b.EjeReal, a.EjeImaginario + b.EjeImaginario));
-            apariencia.Valor(t).EjeReal.Should().BeApproximately(valorEsperado.EjeReal, 1e-10);
-            apariencia.Valor(t).EjeImaginario.Should().BeApproximately(valorEsperado.EjeImaginario, 1e-10);
+            apariencia.Funcion(t).EjeReal.Should().BeApproximately(valorEsperado.EjeReal, 1e-10);
+            apariencia.Funcion(t).EjeImaginario.Should().BeApproximately(valorEsperado.EjeImaginario, 1e-10);
         }
     }
 
@@ -25,7 +25,7 @@ public class AparienciaTests
     public void Aparecer_ConMultiplesNombres_SumaLasEsenciasDeTodosLosNombres()
     {
         var nombre = new Nombre("logos", 0d, 2d);
-        var designacion = nombre.Mostrarse(Apariencia.Vacuidad, "ser humano. ser lenguaje. pensar mente");
+        var designacion = nombre.Mostrarse(Apariencia.Mente, "ser humano. ser lenguaje. pensar mente");
 
         var apariencia = Apariencia.Aparecer(designacion);
 
@@ -33,9 +33,9 @@ public class AparienciaTests
         for(var t = 0d; t <= 2d; t += 0.25d)
         {
             var valorEsperado = designacion.Nombres
-                .Select(n => n.Esencia.Valor(t))
+                .Select(n => n.Esencia.Funcion(t))
                 .Aggregate((a, b) => (a.EjeReal + b.EjeReal, a.EjeImaginario + b.EjeImaginario));
-            var valor = apariencia.Valor(t);
+            var valor = apariencia.Funcion(t);
 
             valor.EjeReal.Should().BeApproximately(valorEsperado.EjeReal, 1e-10);
             valor.EjeImaginario.Should().BeApproximately(valorEsperado.EjeImaginario, 1e-10);
@@ -58,7 +58,7 @@ public class AparienciaTests
     [Fact]
     public void Vacuidad_DevuelveMaximoEnTiempoCeroYCeroFueraDeEseInstante()
     {
-        Apariencia.Vacuidad.Valor(0d).Should().Be((double.MaxValue, double.MaxValue));
-        Apariencia.Vacuidad.Valor(1d).Should().Be((0d, 0d));
+        Apariencia.Mente.Funcion(0d).Should().Be((double.MaxValue, double.MaxValue));
+        Apariencia.Mente.Funcion(1d).Should().Be((0d, 0d));
     }
 }
