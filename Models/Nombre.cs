@@ -4,7 +4,7 @@ using System.Linq;
 
 public class Nombre : Palabra
 {
-    public Apariencia Esencia { get; private set; }
+    public Apariencia Esencia { get; internal set; }
     public double Frecuencia { get; private set; }
 
     /// <summary>
@@ -40,21 +40,26 @@ public class Nombre : Palabra
     }
 
     /// <summary>
-    /// Crea una nueva designación al proyectar una apariencia sobre una lista de predicados.
-    /// Cada predicado se convierte en un nombre con una apariencia asociada.
+    /// Crea una nueva designación al proyectar una apariencia sobre un texto.
+    /// Cada predicado en el texto se convierte en un nombre con una apariencia asociada.
     /// La frecuencia se determina por la cantidad de nombres que comparten el mismo verbo núcleo (se asume la primer palabra del predicado),
     /// la amplitud por la cantidad de complementos del sujeto que comparten (se asume las palabras restantes del predicado),
     /// y la fase por la posición del predicado en la lista (distribuido en 360º).
     /// </summary>
     /// <param name="apariencia">La apariencia proyectada.</param>
-    /// <param name="predicados">La lista de predicados que funciona como espacio.</param>
+    /// <param name="texto">El texto que funciona como espacio, cada oración se considera un predicado.</param>
+    /// <param name="obtenerVerboNucleo">Función que determina el verbo núcleo de un predicado. Si es null, se asume que es la primer palabra.</param>
     /// <returns>La nueva designación creada.</returns>
-    public Designacion Mostrarse(Apariencia apariencia, List<string> predicados)
+    public Designacion Mostrarse(Apariencia apariencia, string texto, Func<string, string> obtenerVerboNucleo = null)
     {
-        var designacion = new Designacion(predicados);
-        var palabra = ReferenceEquals(apariencia, Apariencia.Vacuidad)
-            ? this
-            : apariencia.Esencia.Last();
+        if(obtenerVerboNucleo == null)
+        {
+            // Se asume que la primer palabra de cada predicado es el verbo núcleo
+            obtenerVerboNucleo = predicado => predicado.Split(' ').First(); 
+        }
+        var designacion = new Designacion(texto, obtenerVerboNucleo);
+        var palabra = apariencia.Nombres.SkipLast(1).LastOrDefault() //Derivada
+            ?? new Palabra(null, 0, t => 0);
         return designacion.Designar(this, palabra);
     }
 
@@ -65,7 +70,7 @@ public class Nombre : Palabra
     public override string ToString() => $"{Texto} ({Fase * (180 / Math.PI):F2}º, {Frecuencia:F2} Hz)";
 
     /// <summary>
-    /// Sobreescribe Equals para comparar nombres por su Id.
+    /// Sobreescribe Equals para comparar nombres por su texto y frecuencia.
     /// </summary>
     /// <returns>True si los nombres son iguales, false en caso contrario.</returns>
     public override bool Equals(object obj)
@@ -78,7 +83,7 @@ public class Nombre : Palabra
     }
 
     /// <summary>
-    /// Sobreescribe GetHashCode para comparar nombres por su Id.
+    /// Sobreescribe GetHashCode para generar el hash code del Id del nombre.
     /// </summary>
     /// <returns>El hash code del nombre.</returns>
     public override int GetHashCode() => Id.GetHashCode();

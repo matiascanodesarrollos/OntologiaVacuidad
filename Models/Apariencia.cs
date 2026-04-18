@@ -6,7 +6,7 @@ public class Apariencia
 {
     public Guid Id { get; }
     protected List<Nombre> _nombres { get; set; }
-    public IEnumerable<Nombre> Esencia => _nombres.AsReadOnly();
+    public IEnumerable<Nombre> Nombres => _nombres.AsReadOnly();
     public Func<double, (double Amplitud, double Fase)> Valor { get; }
 
     internal Apariencia(Func<double, (double Amplitud, double Fase)> valor, List<Nombre> esencia)
@@ -23,7 +23,7 @@ public class Apariencia
     /// <returns>Una nueva apariencia creada a partir de la designación.</returns>
     public static Apariencia Aparecer(Designacion designacion)
     {
-        var nombres = designacion.Esencia.ToList();
+        var nombres = designacion.Nombres.ToList();
         var apariencia = new Apariencia(t => //Fourrier
             nombres
                 .Select(n => n.Esencia.Valor(t))
@@ -61,5 +61,4 @@ public class Apariencia
             : (0, 0), 
         new List<Nombre>());
 }
-
 

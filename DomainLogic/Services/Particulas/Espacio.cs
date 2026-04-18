@@ -34,7 +34,7 @@ public class Espacio : Nombre
     {
         Ondas = Particulas.ToDictionary(
             p => p,
-            p => p.Mostrarse(Designacion, new List<string>(){ p.Texto })
+            p => p.Mostrarse(Designacion, p.Texto)
                 .Nombres
                 .Select(n => n.Esencia.Valor(Tiempo))
                 .ToList());

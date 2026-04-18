@@ -1,87 +1,265 @@
+using FluentAssertions;
+
 public class NombreTests
 {
     [Fact]
-    public void Mostrarse_ConPredicadosCreaDesignacionYAgregaElNombreActual()
+    public void Constructor_ConFrecuencia_CreaFaseInstanea()
     {
-        var frecuencia = 1d;
+        var frecuencia = 5.0;
         var nombre = new Nombre("logos", Math.PI / 3, frecuencia);
+        var palabra = nombre as Palabra;
 
-        var resultado = nombre.Mostrarse(Apariencia.Vacuidad, new List<string> { "ser humano", "ser lenguaje" });
-        var nombres = resultado.Nombres.ToList();
-
-        Assert.Equal(3, nombres.Count);
-        Assert.Equal("ser humano", nombres[0].Texto);
-        Assert.Equal(nombre.Frecuencia, nombres.Last().Frecuencia);
-        Assert.Equal(1d, resultado.VelocidadGrupo(nombre), 10);
-        Assert.Equal(frecuencia, nombre.Frecuencia);
+        palabra.Should().NotBeNull();
     }
 
     [Fact]
-    public void Mostrarse_ConAparienciaExistenteProyectaSuEsenciaConLaFrecuenciaDelNombre()
+    public void Constructor_ConDatos_Crea()
     {
-        var predicados = new List<string> { "ser humano", "pensar humano" };
-        var baseDesignacion = new Nombre("origen", 0d, 1d)
-            .Mostrarse(Apariencia.Vacuidad, predicados);
-        var nombre = new Nombre("logos", Math.PI / 2, 1d);
+        var texto = "logos";
+        var fase = Math.PI / 3;
+        var frecuencia = 5.0;
+        var nombre = new Nombre(texto, fase, frecuencia);
 
-        var resultado = nombre.Mostrarse(baseDesignacion, predicados);
-        var nombres = resultado.Nombres.ToList();
-
-        Assert.Equal(3, nombres.Count);
-        Assert.Equal(baseDesignacion.Nombres.First().Texto, nombres[0].Texto);
-        Assert.Equal(baseDesignacion.Esencia.Last().Texto, nombres.Last().Texto);
-        Assert.Equal(nombre.Frecuencia, nombres.Last().Frecuencia);
+        nombre.Should().NotBeNull();
+        nombre.Texto.Should().Be(texto);
+        nombre.Fase.Should().Be(fase);
+        nombre.Frecuencia.Should().Be(frecuencia);
+        nombre.FaseInstanea.Should().NotBeNull();
+        for(var t = 0d; t <= 4d; t += 0.25d)
+        {
+            nombre.FaseInstanea!(t).Should().BeApproximately(frecuencia * t, 1e-10);
+        }
+        nombre.Esencia.Should().NotBeNull();
+        nombre.Esencia.Nombres.Should().ContainSingle().Which.Should().BeSameAs(nombre);
+        for(var t = 0d; t <= 4d; t += 0.25d)
+        {
+            var valor = nombre.Esencia.Valor(t);
+            valor.Amplitud.Should().BeApproximately(Math.Cos(frecuencia * t), 1e-10);
+            valor.Fase.Should().BeApproximately(Math.Sin(frecuencia * t), 1e-10);
+        }
     }
 
     [Fact]
-    public void Mostrarse_SinPredicadosLanzaExcepcion()
+    public void Mostrarse_ConAparienciaSinNombres_CreaDesignacion()
     {
-        var nombre = new Nombre("logos", 0d, 1d);
-
-        Assert.ThrowsAny<Exception>(() => nombre.Mostrarse(Apariencia.Vacuidad, null));
-    }
-
-    [Fact]
-    public void ConstructoresYComparaciones_ConservanValoresEsperados()
-    {
-        var nombre = new Nombre("ser", -Math.PI / 2, 1d);
-        var copia = new Nombre(nombre);
-        var otro = new Nombre("otro", 0d, 1d);
-
-        Assert.Equal(Math.PI / 2, nombre.Fase, 10);
-        Assert.Equal(nombre.Texto, copia.Texto);
-        Assert.Same(nombre.Esencia, copia.Esencia);
-        Assert.Equal((1d, 0d), nombre.Esencia.Valor(0d));
-        Assert.Equal((Math.Cos(1d), Math.Sin(1d)), nombre.Esencia.Valor(1d));
-        Assert.Equal($"ser ({nombre.Fase * (180 / Math.PI):F2}º, {nombre.Frecuencia:F2} Hz)", nombre.ToString());
-        Assert.True(nombre.Equals(copia));
-        Assert.False(nombre.Equals(otro));
-        Assert.False(nombre.Equals("no-nombre"));
-        Assert.Equal(nombre.Id.GetHashCode(), nombre.GetHashCode());
-    }
-
-    [Fact]
-    public void Designacion_CreaPredicadosYAgregaElNombreProyectado()
-    {
+        var frecuencia = 5.0;
+        var fase = Math.PI / 3;
+        var nombre = new Nombre("logos", fase, frecuencia);
         var predicados = new List<string> { "ser humano", "ser lenguaje", "pensar humano" };
-        var designacion = new Nombre("origen", 0d, 1d)
-            .Mostrarse(Apariencia.Vacuidad, predicados);
-        var otra = new Nombre("origen", 0d, 1d)
-            .Mostrarse(Apariencia.Vacuidad, predicados);
-        var nombres = designacion.Nombres.ToList();
+        var texto = string.Join(". ", predicados);
+        var apariencia = Apariencia.Vacuidad;
 
-        Assert.Equal(4, nombres.Count);
-        Assert.Equal(0d, nombres[0].Fase, 10);
-        Assert.Equal(2 * Math.PI / 3, nombres[1].Fase, 10);
-        Assert.Equal(4 * Math.PI / 3, nombres[2].Fase, 10);
-        Assert.Equal("pensar humano", nombres[2].Texto);
-        Assert.Equal((1d, 0d), nombres[0].Esencia.Valor(0d));
-        Assert.Equal((1d, 0d), nombres[1].Esencia.Valor(0d));
-        Assert.Equal((1d, 0d), nombres[2].Esencia.Valor(0d));
-        Assert.Equal((double.MaxValue, double.MaxValue), designacion.Valor(0d));
-        Assert.True(designacion.Equals(designacion));
-        Assert.False(designacion.Equals(otra));
-        Assert.False(designacion.Equals("no-designacion"));
-        Assert.Equal(designacion.Id.GetHashCode(), designacion.GetHashCode());
+        var designacion = nombre.Mostrarse(apariencia, texto);
+
+        designacion.Should().NotBeNull();
+        designacion.Nombres.Should().HaveCount(predicados.Count + 1);
+        designacion.Nombres.Select(n => n.Texto).SkipLast(1).Should()
+            .BeEquivalentTo(predicados);
+        var ultimoNombre = designacion.Nombres.Last();
+        ultimoNombre.Texto.Should().Be("Vacuidad");
+        ultimoNombre.Fase.Should().Be(0);
+        ultimoNombre.Frecuencia.Should().Be(frecuencia);
+    }
+
+    [Fact]
+    public void Mostrarse_ConFuncionObtenerVerboNucleoNull_UsaLaPrimerPalabraDelPredicado()
+    {
+        var nombre = new Nombre("logos", Math.PI / 3, 5.0);
+        var predicados = new List<string> { "ser humano", "ser lenguaje", "pensar humano" };
+        var texto = string.Join(". ", predicados);
+
+        var designacion = nombre.Mostrarse(Apariencia.Vacuidad, texto, null);
+
+        var nombresPredicados = designacion.Nombres.SkipLast(1).ToList();
+        nombresPredicados.Select(n => n.Frecuencia).Should().Equal(2d, 2d, 1d);
+        nombresPredicados.Select(n => n.Fase).Should().Equal(0d, 2d * Math.PI / 3d, 4d * Math.PI / 3d);
+        nombresPredicados[0].Esencia.Valor(0d).Amplitud.Should().BeApproximately(2d, 1e-10);
+        nombresPredicados[1].Esencia.Valor(2d * Math.PI / 3d).Amplitud.Should().BeApproximately(1d, 1e-10);
+        nombresPredicados[2].Esencia.Valor(2d * Math.PI / 3d).Amplitud.Should().BeApproximately(2d, 1e-10);
+    }
+
+    [Fact]
+    public void Mostrarse_ConAparienciaNormal_CreaDesignacion()
+    {
+        var frecuencia = 5.0;
+        var fase = Math.PI / 3;
+        var nombre = new Nombre("logos", fase, frecuencia);
+        var predicados = new List<string> { "ser humano", "ser lenguaje", "pensar humano" };
+        var texto = string.Join(". ", predicados);
+        var predicadosApariencia = new List<string> { "vacuidad", "mente" };
+        var textoApariencia = string.Join(". ", predicadosApariencia);
+        var designacionApariencia = nombre.Mostrarse(Apariencia.Vacuidad, textoApariencia);
+        var apariencia = Apariencia.Aparecer(designacionApariencia);
+
+        var designacion = nombre.Mostrarse(apariencia, texto);
+
+        designacion.Should().NotBeNull();
+        designacion.Nombres.Should().HaveCount(predicados.Count + 1);
+        designacion.Nombres.Select(n => n.Texto).SkipLast(1).Should()
+            .BeEquivalentTo(predicados);
+        var ultimoNombre = designacion.Nombres.Last();
+        ultimoNombre.Frecuencia.Should().Be(frecuencia);
+        ultimoNombre.Fase.Should().Be(designacionApariencia.Nombres.SkipLast(1).Last().Fase);
+        ultimoNombre.Texto.Should().Be(designacionApariencia.Nombres.SkipLast(1).Last().Texto);
+    }
+
+    [Fact]
+    public void Mostrarse_ConFuncionObtenerVerboNucleo_CreaDesignacion()
+    {
+        var frecuencia = 5.0;
+        var fase = Math.PI / 3;
+        var nombre = new Nombre("logos", fase, frecuencia);
+        var verbosNucleo = new HashSet<string> { "ser" };
+        var obtenerVerboNucleo = new Func<string, string>(predicado =>
+            predicado
+            .Split(' ')
+            .FirstOrDefault(p => verbosNucleo.Contains(p))
+            ?? predicado.Split(' ').First());
+        var predicados = new List<string>
+        {
+            "quiero ser humano",
+            "puedo ser lenguaje",
+            "ser pensamiento"
+        };
+        var texto = string.Join(". ", predicados);
+
+        var designacion = nombre.Mostrarse(Apariencia.Vacuidad, texto, obtenerVerboNucleo);
+
+        designacion.Should().NotBeNull();
+        designacion.Nombres.Should().HaveCount(predicados.Count + 1);
+        designacion.Nombres.Select(n => n.Texto).SkipLast(1).Should().Equal(predicados);
+
+        var nombresPredicados = designacion.Nombres.SkipLast(1).ToList();
+        nombresPredicados.Select(n => n.Frecuencia).Should().Equal(3d, 3d, 3d);
+        nombresPredicados.Select(n => n.Fase).Should().Equal(0d, 2d * Math.PI / 3d, 4d * Math.PI / 3d);
+        nombresPredicados[0].Esencia.Valor(0d).Amplitud.Should().BeApproximately(2d, 1e-10);
+        nombresPredicados[1].Esencia.Valor(4d * Math.PI / 9d).Amplitud.Should().BeApproximately(2d, 1e-10);
+        nombresPredicados[2].Esencia.Valor(2d * Math.PI / 9d).Amplitud.Should().BeApproximately(1d, 1e-10);
+
+        var ultimoNombre = designacion.Nombres.Last();
+        ultimoNombre.Texto.Should().Be("Vacuidad");
+        ultimoNombre.Frecuencia.Should().Be(frecuencia);
+    }
+
+    [Fact]
+    public void Mostrarse_ConVerbosNucleoMixtos_AgrupaFrecuenciasPorCadaVerbo()
+    {
+        var nombre = new Nombre("logos", Math.PI / 3, 5.0);
+        var verbosNucleo = new HashSet<string> { "ser", "pensar" };
+        var obtenerVerboNucleo = new Func<string, string>(predicado =>
+            predicado
+            .Split(' ')
+            .FirstOrDefault(p => verbosNucleo.Contains(p))
+            ?? predicado.Split(' ').First());
+        var predicados = new List<string>
+        {
+            "quiero ser humano",
+            "decido pensar lenguaje",
+            "puedo ser mente",
+            "pensar vacuidad"
+        };
+        var texto = string.Join(". ", predicados);
+
+        var designacion = nombre.Mostrarse(Apariencia.Vacuidad, texto, obtenerVerboNucleo);
+
+        var nombresPredicados = designacion.Nombres.SkipLast(1).ToList();
+        nombresPredicados.Select(n => n.Frecuencia).Should().Equal(2d, 2d, 2d, 2d);
+        nombresPredicados.Select(n => n.Fase).Should().Equal(0d, Math.PI / 2d, Math.PI, 3d * Math.PI / 2d);
+        nombresPredicados[0].Esencia.Valor(0d).Amplitud.Should().BeApproximately(2d, 1e-10);
+        nombresPredicados[1].Esencia.Valor(3d * Math.PI / 4d).Amplitud.Should().BeApproximately(2d, 1e-10);
+        nombresPredicados[2].Esencia.Valor(Math.PI / 2d).Amplitud.Should().BeApproximately(2d, 1e-10);
+        nombresPredicados[3].Esencia.Valor(Math.PI / 4d).Amplitud.Should().BeApproximately(1d, 1e-10);
+    }
+
+    [Fact]
+    public void Mostrarse_ConComplementosParcialmenteCompartidos_CalculaAmplitudesDistintas()
+    {
+        var nombre = new Nombre("logos", Math.PI / 3, 5.0);
+        var predicados = new List<string>
+        {
+            "ser humano lenguaje",
+            "ser humano mente",
+            "ser mente"
+        };
+        var texto = string.Join(". ", predicados);
+
+        var designacion = nombre.Mostrarse(Apariencia.Vacuidad, texto);
+
+        var nombresPredicados = designacion.Nombres.SkipLast(1).ToList();
+        nombresPredicados.Select(n => n.Frecuencia).Should().Equal(3d, 3d, 3d);
+        nombresPredicados[0].Esencia.Valor(0d).Amplitud.Should().BeApproximately(3d, 1e-10);
+        nombresPredicados[1].Esencia.Valor(4d * Math.PI / 9d).Amplitud.Should().BeApproximately(4d, 1e-10);
+        nombresPredicados[2].Esencia.Valor(2d * Math.PI / 9d).Amplitud.Should().BeApproximately(2d, 1e-10);
+    }
+
+    [Fact]
+    public void Mostrarse_ConCuatroPredicados_DistribuyeFasesUniformemente()
+    {
+        var nombre = new Nombre("logos", Math.PI / 3, 5.0);
+        var predicados = new List<string>
+        {
+            "ser humano",
+            "ser lenguaje",
+            "ser mente",
+            "ser vacuidad"
+        };
+        var texto = string.Join(". ", predicados);
+
+        var designacion = nombre.Mostrarse(Apariencia.Vacuidad, texto);
+
+        var nombresPredicados = designacion.Nombres.SkipLast(1).ToList();
+        nombresPredicados.Select(n => n.Fase).Should().Equal(0d, Math.PI / 2d, Math.PI, 3d * Math.PI / 2d);
+        nombresPredicados[0].Esencia.Valor(0d).Amplitud.Should().BeApproximately(1d, 1e-10);
+        nombresPredicados[1].Esencia.Valor(3d * Math.PI / 8d).Amplitud.Should().BeApproximately(1d, 1e-10);
+        nombresPredicados[2].Esencia.Valor(Math.PI / 4d).Amplitud.Should().BeApproximately(1d, 1e-10);
+        nombresPredicados[3].Esencia.Valor(5d * Math.PI / 8d).Amplitud.Should().BeApproximately(1d, 1e-10);
+    }
+
+    [Fact]
+    public void ToString_ConDatos_DevuelveRepresentacionEsperada()
+    {
+        var nombre = new Nombre("logos", Math.PI / 3, 5.0);
+
+        nombre.ToString().Should().Be("logos (60.00º, 5.00 Hz)");
+    }
+
+    [Fact]
+    public void Equals_ConMismoTextoYFrecuencia_DevuelveTrue()
+    {
+        var primero = new Nombre("logos", 0d, 5.0);
+        var segundo = new Nombre("logos", Math.PI / 3, 5.0);
+
+        primero.Equals(segundo).Should().BeTrue();
+    }
+
+    [Fact]
+    public void Equals_ConInstanciasDistintasPeroMismoTextoYFrecuencia_UsaIgualdadSemantica()
+    {
+        var primero = new Nombre("logos", 0d, 5.0);
+        var segundo = new Nombre("logos", 0d, 5.0);
+
+        ReferenceEquals(primero, segundo).Should().BeFalse();
+        primero.Id.Should().NotBe(segundo.Id);
+        primero.Equals(segundo).Should().BeTrue();
+    }
+
+    [Fact]
+    public void Equals_ConDistintoTextoOFrecuencia_DevuelveFalse()
+    {
+        var nombre = new Nombre("logos", 0d, 5.0);
+        var distintoTexto = new Nombre("ethos", 0d, 5.0);
+        var distintaFrecuencia = new Nombre("logos", 0d, 3.0);
+
+        nombre.Equals(distintoTexto).Should().BeFalse();
+        nombre.Equals(distintaFrecuencia).Should().BeFalse();
+        nombre.Equals("no-nombre").Should().BeFalse();
+    }
+
+    [Fact]
+    public void GetHashCode_SinParametros_GeneraPorId()
+    {
+        var nombre = new Nombre("logos", Math.PI / 3, 5.0);
+
+        nombre.GetHashCode().Should().Be(nombre.Id.GetHashCode());
     }
 }
