@@ -53,7 +53,7 @@ public class Apariencia
     }
 
     /// <summary>
-    /// Apariencia base.
+    /// Apariencia base. Delta de Dirac.
     /// </summary>
     public static Apariencia Mente = new Apariencia(
         t => t == 0 
