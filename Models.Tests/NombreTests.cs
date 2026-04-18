@@ -24,10 +24,10 @@ public class NombreTests
         nombre.Texto.Should().Be(texto);
         nombre.Fase.Should().Be(fase);
         nombre.Frecuencia.Should().Be(frecuencia);
-        nombre.FaseInstanea.Should().NotBeNull();
+        nombre.FuncionFaseInstanea.Should().NotBeNull();
         for(var t = 0d; t <= 4d; t += 0.25d)
         {
-            nombre.FaseInstanea!(t).Should().BeApproximately(frecuencia * t, 1e-10);
+            nombre.FuncionFaseInstanea!(t).Should().BeApproximately(frecuencia * t, 1e-10);
         }
         nombre.Esencia.Should().NotBeNull();
         nombre.Esencia.Nombres.Should().ContainSingle().Which.Should().BeSameAs(nombre);

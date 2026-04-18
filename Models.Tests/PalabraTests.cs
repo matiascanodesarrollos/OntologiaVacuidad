@@ -13,7 +13,7 @@ public class PalabraTests
         palabra.Should().NotBeNull();
         palabra!.Texto.Should().Be("logos");
         palabra.Fase.Should().Be(Math.PI / 3);
-        palabra.FaseInstanea.Should().NotBeNull();
+        palabra.FuncionFaseInstanea.Should().NotBeNull();
     }
 
     [Fact]
@@ -36,7 +36,7 @@ public class PalabraTests
 
         palabra.Should().NotBeNull();
         palabra!.Fase.Should().Be(faseEsperada);
-        palabra.FaseInstanea.Should().NotBeNull();
+        palabra.FuncionFaseInstanea.Should().NotBeNull();
     }
 
     [Fact]

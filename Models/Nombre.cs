@@ -8,12 +8,12 @@ public class Nombre : Palabra
     public double Frecuencia { get; private set; }
 
     /// <summary>
-    /// Crea un nuevo nombre con el texto, fase y esencia dados. El Id se genera automáticamente.
+    /// Crea un nuevo nombre con el texto, fase y frecuencia dados. 
+    /// La esencia o apariencia se calcula como una exponencial compleja con la frecuencia dada.
     /// </summary>
     /// <param name="texto">El texto del nombre.</param>
     /// <param name="fase">La fase del nombre.</param>
     /// <param name="frecuencia">La frecuencia del nombre.</param>
-    /// <param name="esencia">La esencia del nombre. Si es null, se crea una vacuidad.</param>
     public Nombre(string texto, 
         double fase,
         double frecuencia)
@@ -33,7 +33,7 @@ public class Nombre : Palabra
     public Nombre(Nombre nombre) 
         : base(nombre.Texto, 
             nombre.Fase,
-            nombre.FaseInstanea)
+            nombre.FuncionFaseInstanea)
     {
         Frecuencia = nombre.Frecuencia;
         Esencia = nombre.Esencia;
@@ -50,7 +50,9 @@ public class Nombre : Palabra
     /// <param name="texto">El texto que funciona como espacio, cada oración se considera un predicado.</param>
     /// <param name="obtenerVerboNucleo">Función que determina el verbo núcleo de un predicado. Si es null, se asume que es la primer palabra.</param>
     /// <returns>La nueva designación creada.</returns>
-    public Designacion Mostrarse(Apariencia apariencia, string texto, Func<string, string> obtenerVerboNucleo = null)
+    public Designacion Mostrarse(Apariencia apariencia, 
+        string texto, 
+        Func<string, string> obtenerVerboNucleo = null)
     {
         if(obtenerVerboNucleo == null)
         {
@@ -62,9 +64,9 @@ public class Nombre : Palabra
         {
             var valor = apariencia.Funcion(t);
             var valorAnterior = apariencia.Funcion(t - 0.001);
-            var diferencial = (
+            var diferencial = (//Derivada
                 EjeReal: valor.EjeReal - valorAnterior.EjeReal,
-                EjeImaginario: valor.EjeImaginario - valorAnterior.EjeImaginario); //Derivada
+                EjeImaginario: valor.EjeImaginario - valorAnterior.EjeImaginario); 
             return Math.Atan2(diferencial.EjeImaginario, diferencial.EjeReal);
         });
         var palabra = new Palabra(texto, faseInstanea(0), faseInstanea);
