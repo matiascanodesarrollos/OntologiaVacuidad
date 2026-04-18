@@ -1,15 +1,19 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 public class Apariencia
 {
-    public virtual Guid Id { get; }
-    public Func<double, (double, double)> Amplitud { get; internal set; }
+    public Guid Id { get; }
+    protected List<Nombre> _nombres { get; set; }
+    public IEnumerable<Nombre> Nombres => _nombres.AsReadOnly();
+    public Func<double, (double EjeReal, double EjeImaginario)> Funcion { get; }
 
-    internal Apariencia(Func<double, (double, double)> amplitud)
+    internal Apariencia(Func<double, (double EjeReal, double EjeImaginario)> funcion, List<Nombre> esencia)
     {
         Id = Guid.NewGuid();
-        Amplitud = amplitud;
+        Funcion = funcion;
+        _nombres = esencia;
     }
 
     /// <summary>
@@ -19,11 +23,12 @@ public class Apariencia
     /// <returns>Una nueva apariencia creada a partir de la designación.</returns>
     public static Apariencia Aparecer(Designacion designacion)
     {
+        var nombres = designacion.Nombres.ToList();
         var apariencia = new Apariencia(t => //Fourrier
-            designacion
-                .Nombres
-                .Select(n => n.Esencia.Amplitud(t))
-                .Aggregate((a, b) => (a.Item1 + b.Item1, a.Item2 + b.Item2)));
+            nombres
+                .Select(n => n.Esencia.Funcion(t))
+                .Aggregate((a, b) => (a.EjeReal + b.EjeReal, a.EjeImaginario + b.EjeImaginario)),
+            nombres);
         return apariencia;
     }
 
@@ -46,4 +51,14 @@ public class Apariencia
         }
         return false;
     }
+
+    /// <summary>
+    /// Apariencia base. Delta de Dirac.
+    /// </summary>
+    public static Apariencia Mente = new Apariencia(
+        t => t == 0 
+            ? (double.MaxValue, double.MaxValue) 
+            : (0, 0), 
+        new List<Nombre>());
 }
+

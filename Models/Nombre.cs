@@ -1,26 +1,28 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 public class Nombre : Palabra
 {
-    public Apariencia Esencia { get; private set; }
+    public Apariencia Esencia { get; internal set; }
     public double Frecuencia { get; private set; }
 
     /// <summary>
-    /// Crea un nuevo nombre con el texto, fase y esencia dados. El Id se genera automáticamente.
+    /// Crea un nuevo nombre con el texto, fase y frecuencia dados. 
+    /// La esencia o apariencia se calcula como una exponencial compleja con la frecuencia dada.
     /// </summary>
     /// <param name="texto">El texto del nombre.</param>
     /// <param name="fase">La fase del nombre.</param>
     /// <param name="frecuencia">La frecuencia del nombre.</param>
-    /// <param name="esencia">La esencia del nombre. Si es null, se crea una vacuidad.</param>
     public Nombre(string texto, 
         double fase,
-        double frecuencia,
-        Apariencia esencia)
-        : base(texto, fase)
+        double frecuencia)
+        : base(texto, fase, t => frecuencia * t)
     {
         Frecuencia = frecuencia;
-        Esencia = esencia ?? new Apariencia(t => Vacuidad(t));
+        Esencia = new Apariencia(
+            t => (Math.Cos(frecuencia * t), Math.Sin(frecuencia * t)), 
+            new List<Nombre> { this });
     }
 
     /// <summary>
@@ -30,34 +32,45 @@ public class Nombre : Palabra
     /// <param name="nombre">El nombre del cual se copiarán las propiedades.</param>
     public Nombre(Nombre nombre) 
         : base(nombre.Texto, 
-            nombre.Fase)
+            nombre.Fase,
+            nombre.FuncionFaseInstanea)
     {
         Frecuencia = nombre.Frecuencia;
         Esencia = nombre.Esencia;
     }
 
     /// <summary>
-    /// Crea una nueva designación al proyectar el nombre + una lista de predicados sobre la apariencia.
-    /// Cada predicado se convierte en un nombre con una apariencia asociada.
+    /// Crea una nueva designación al proyectar una apariencia sobre un texto.
+    /// Cada predicado en el texto se convierte en un nombre con una apariencia asociada.
     /// La frecuencia se determina por la cantidad de nombres que comparten el mismo verbo núcleo (se asume la primer palabra del predicado),
     /// la amplitud por la cantidad de complementos del sujeto que comparten (se asume las palabras restantes del predicado),
     /// y la fase por la posición del predicado en la lista (distribuido en 360º).
     /// </summary>
-    /// <param name="apariencia">La apariencia que funciona como espacio.</param>
-    /// <param name="predicados">Los predicados que se utilizarán para crear la nueva designación si la apariencia no es una designación.</param>
+    /// <param name="apariencia">La apariencia proyectada.</param>
+    /// <param name="texto">El texto que funciona como espacio, cada oración se considera un predicado.</param>
+    /// <param name="obtenerVerboNucleo">Función que determina el verbo núcleo de un predicado. Si es null, se asume que es la primer palabra.</param>
     /// <returns>La nueva designación creada.</returns>
-    public Designacion Mostrarse(Apariencia apariencia, List<string> predicados)
+    public Designacion Mostrarse(Apariencia apariencia, 
+        string texto, 
+        Func<string, string> obtenerVerboNucleo = null)
     {
-        var designacion = predicados == null
-            ? apariencia as Designacion
-            : new Designacion(predicados);
-
-        if (designacion == null)
+        if(obtenerVerboNucleo == null)
         {
-            throw new ArgumentNullException(nameof(predicados), "Se requieren predicados cuando la apariencia no es una designacion.");
+            // Se asume que la primer palabra de cada predicado es el verbo núcleo
+            obtenerVerboNucleo = predicado => predicado.Split(' ').First(); 
         }
-
-        return designacion.Designar(apariencia, this);
+        var designacion = new Designacion(texto, obtenerVerboNucleo);
+        var faseInstanea = new Func<double, double>(t => 
+        {
+            var valor = apariencia.Funcion(t);
+            var valorAnterior = apariencia.Funcion(t - 0.001);
+            var diferencial = (//Derivada
+                EjeReal: valor.EjeReal - valorAnterior.EjeReal,
+                EjeImaginario: valor.EjeImaginario - valorAnterior.EjeImaginario); 
+            return Math.Atan2(diferencial.EjeImaginario, diferencial.EjeReal);
+        });
+        var palabra = new Palabra(texto, faseInstanea(0), faseInstanea);
+        return designacion.Designar(this, palabra);
     }
 
     /// <summary>
@@ -67,20 +80,20 @@ public class Nombre : Palabra
     public override string ToString() => $"{Texto} ({Fase * (180 / Math.PI):F2}º, {Frecuencia:F2} Hz)";
 
     /// <summary>
-    /// Sobreescribe Equals para comparar nombres por su Id.
+    /// Sobreescribe Equals para comparar nombres por su texto y frecuencia.
     /// </summary>
     /// <returns>True si los nombres son iguales, false en caso contrario.</returns>
     public override bool Equals(object obj)
     {
         if (obj is Nombre other)
         {
-            return Texto == other.Texto;
+            return Texto == other.Texto && Frecuencia == other.Frecuencia;
         }
         return false;
     }
 
     /// <summary>
-    /// Sobreescribe GetHashCode para comparar nombres por su Id.
+    /// Sobreescribe GetHashCode para generar el hash code del Id del nombre.
     /// </summary>
     /// <returns>El hash code del nombre.</returns>
     public override int GetHashCode() => Id.GetHashCode();

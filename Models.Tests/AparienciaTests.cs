@@ -1,31 +1,64 @@
+using FluentAssertions;
+
 public class AparienciaTests
 {
     [Fact]
-    public void Aparecer_SumaLasAmplitudesDeLaDesignacionEnElTiempoDado()
+    public void Aparecer_ConUnaDesignacionDeUnSoloNombre_ConservaLaEsenciaDelNombre()
     {
-        var designacion = new Nombre("observador", 0d, 1d, null)
-            .Mostrarse(null, new List<string> { "ser humano", "pensar humano" });
+        var nombre = new Nombre("logos", 0d, 2d);
+        var designacion = nombre.Mostrarse(Apariencia.Mente, "ser humano");
 
         var apariencia = Apariencia.Aparecer(designacion);
-        var amplitudEsperada = designacion.Nombres
-            .Select(n => n.Esencia.Amplitud(0.5d))
-            .Aggregate((a, b) => (a.Item1 + b.Item1, a.Item2 + b.Item2));
-        
-        Assert.Equal(amplitudEsperada, apariencia.Amplitud(0.5d));
+
+        apariencia.Nombres.Should().BeEquivalentTo(designacion.Nombres);
+        for(var t = 0d; t <= 2d; t += 0.25d)
+        {
+            var valorEsperado = designacion.Nombres
+                .Select(n => n.Esencia.Funcion(t))
+                .Aggregate((a, b) => (a.EjeReal + b.EjeReal, a.EjeImaginario + b.EjeImaginario));
+            apariencia.Funcion(t).EjeReal.Should().BeApproximately(valorEsperado.EjeReal, 1e-10);
+            apariencia.Funcion(t).EjeImaginario.Should().BeApproximately(valorEsperado.EjeImaginario, 1e-10);
+        }
+    }
+
+    [Fact]
+    public void Aparecer_ConMultiplesNombres_SumaLasEsenciasDeTodosLosNombres()
+    {
+        var nombre = new Nombre("logos", 0d, 2d);
+        var designacion = nombre.Mostrarse(Apariencia.Mente, "ser humano. ser lenguaje. pensar mente");
+
+        var apariencia = Apariencia.Aparecer(designacion);
+
+        apariencia.Nombres.Should().BeEquivalentTo(designacion.Nombres);
+        for(var t = 0d; t <= 2d; t += 0.25d)
+        {
+            var valorEsperado = designacion.Nombres
+                .Select(n => n.Esencia.Funcion(t))
+                .Aggregate((a, b) => (a.EjeReal + b.EjeReal, a.EjeImaginario + b.EjeImaginario));
+            var valor = apariencia.Funcion(t);
+
+            valor.EjeReal.Should().BeApproximately(valorEsperado.EjeReal, 1e-10);
+            valor.EjeImaginario.Should().BeApproximately(valorEsperado.EjeImaginario, 1e-10);
+        }
     }
 
     [Fact]
     public void EqualsYGetHashCode_ComparanPorId()
     {
-        var designacion = new Nombre("observador", 0d, 1d, null)
-            .Mostrarse(null, new List<string> { "ser humano", "pensar humano" });
-        var apariencia = Apariencia.Aparecer(designacion);
+        var apariencia = new Nombre("logos", 0d, 1d).Esencia;
         var mismaReferencia = apariencia;
-        var otra = Apariencia.Aparecer(designacion);
+        var otra = new Nombre("ethos", Math.PI / 3, 1d).Esencia;
 
-        Assert.True(apariencia.Equals(mismaReferencia));
-        Assert.False(apariencia.Equals(otra));
-        Assert.False(apariencia.Equals("no-apariencia"));
-        Assert.Equal(apariencia.Id.GetHashCode(), apariencia.GetHashCode());
+        apariencia.Equals(mismaReferencia).Should().BeTrue();
+        apariencia.Equals(otra).Should().BeFalse();
+        apariencia.Equals("no-apariencia").Should().BeFalse();
+        apariencia.GetHashCode().Should().Be(apariencia.Id.GetHashCode());
+    }
+
+    [Fact]
+    public void Vacuidad_DevuelveMaximoEnTiempoCeroYCeroFueraDeEseInstante()
+    {
+        Apariencia.Mente.Funcion(0d).Should().Be((double.MaxValue, double.MaxValue));
+        Apariencia.Mente.Funcion(1d).Should().Be((0d, 0d));
     }
 }

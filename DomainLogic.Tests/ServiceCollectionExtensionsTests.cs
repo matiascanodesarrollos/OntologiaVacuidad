@@ -1,4 +1,5 @@
 using DomainLogic.Services;
+using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -15,7 +16,7 @@ public class ServiceCollectionExtensionsTests
         var loggerFactory = provider.GetService<ILoggerFactory>();
         var logger = provider.GetService<ILogger<ServiceCollectionExtensionsTests>>();
 
-        Assert.NotNull(loggerFactory);
-        Assert.NotNull(logger);
+        loggerFactory.Should().NotBeNull();
+        logger.Should().NotBeNull();
     }
 }

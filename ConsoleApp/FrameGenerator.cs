@@ -73,17 +73,10 @@ namespace ConsoleApp
                             canvas.DrawText("Y", PADDING + 30, PADDING - 30, font, paint);
                         }
 
-                        var particulas = espacio
-                            .Particulas
-                            .OrderByDescending(p => p.Esencia.Amplitud(espacio.Tiempo))
-                            .GroupBy(p => p.Posicion2D)
-                            .Select(g => g.First())
-                            .ToList();
-                        foreach (var particula in particulas)
+                        foreach (var particula in espacio.Particulas)
                         {
-                            var amplitudFase = particula.Esencia.Amplitud(espacio.Tiempo);
-                            var amplitud = Math.Abs(Math.Sqrt(amplitudFase.Item1 * amplitudFase.Item1 + amplitudFase.Item2 * amplitudFase.Item2));
-                            var color = FuncionAmplitudAColor(amplitud);                     
+                            var valor = particula.Esencia.Funcion(espacio.Tiempo);
+                            var color = FuncionAmplitudAColor(Math.Sqrt(valor.EjeReal * valor.EjeReal + valor.EjeImaginario * valor.EjeImaginario));                     
                             var x = CENTROX + (float) particula.Posicion2D.X;
                             var y = CENTROY - (float) particula.Posicion2D.Y;
 
@@ -130,7 +123,7 @@ namespace ConsoleApp
                             using (var font = new SKFont(typeface, 12f))
                             using (var paint = new SKPaint { Color = SKColors.Black, IsAntialias = true })
                             {
-                                canvas.DrawText($"{amplitud} A {particula}", x, y, font, paint);
+                                canvas.DrawText(particula.ToString(), x, y, font, paint);
                             }
                         }
 

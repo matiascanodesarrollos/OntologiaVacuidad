@@ -4,10 +4,6 @@ using System.Linq;
 
 public class Designacion : Apariencia
 {
-    public override Guid Id { get; }
-    private List<Nombre> _nombres { get; set; }
-    public IEnumerable<Nombre> Nombres => _nombres.AsReadOnly();
-
     /// <summary>
     /// Función que determina la velocidad de grupo dada un nombre.
     /// </summary>
@@ -15,74 +11,76 @@ public class Designacion : Apariencia
 
     internal Designacion(List<Nombre> nombres, 
         Func<Nombre, double> velocidadGrupo)
-        : base(Palabra.Vacuidad)
+        : base(Mente.Funcion, nombres)
     {
-        Id = Guid.NewGuid();
-        _nombres = nombres;
         VelocidadGrupo = velocidadGrupo;
     }
 
-    internal Designacion(List<string> predicados)
-        : base(Palabra.Vacuidad)
+    internal Designacion(string texto, Func<string, string> obtenerVerboNucleo)
+        : base(Mente.Funcion, Mente.Nombres.ToList())
     {
-        Id = Guid.NewGuid();
-        _nombres = new List<Nombre>();
+        VelocidadGrupo = n => 1;
 
+        var predicados = texto
+            .Split('.')
+            .Select(p => p.Trim())
+            .Where(p => !string.IsNullOrEmpty(p))
+            .ToList();
         var deltaFasePredicados = 2 * Math.PI / predicados.Count;
         var diccionarioVerbos = predicados
-            .Select(p => p.Split(' ').First())
+            .Select(p => obtenerVerboNucleo(p))
             .GroupBy(p => p)
             .ToDictionary(g => g.Key, g => g.Count());
         
-        var diccionarioComplementos = predicados
-            .SelectMany(p => p.Split(' ').Skip(1))
+        var palabras = predicados.SelectMany(p => p.Split(' ')).ToList();
+        var diccionarioComplementos = palabras
+            .Where(p => !diccionarioVerbos.ContainsKey(p)) //Solo los complementos
             .GroupBy(p => p)
             .ToDictionary(g => g.Key, g => Math.Max(1,g.Count()));
 
         for(var i = 0; i < predicados.Count; i++)
         {
-            var palabras = predicados[i].Split(' ');
+            var palabrasPredicado = predicados[i].Split(' ');
+            var verboNucleo = obtenerVerboNucleo(predicados[i]);
 
-            var frecuencia = diccionarioVerbos[palabras.First()];
-            var amplitud = palabras.Skip(1).Sum(p => diccionarioComplementos[p]);
+            var frecuencia = diccionarioVerbos[verboNucleo];
+            var amplitud = palabrasPredicado
+                .Where(p => p != verboNucleo)
+                .Sum(p => diccionarioComplementos[p]);
             var fase = i * deltaFasePredicados;
 
+            var nombre = new Nombre(predicados[i], 
+                fase, 
+                frecuencia);
             var apariencia = new Apariencia(t => 
-                (amplitud * Math.Cos(frecuencia * Math.PI * t + fase), 
-                frecuencia * Math.Sin(frecuencia * Math.PI * t + fase)));
-            var nombre = new Nombre(predicados[i], fase, frecuencia, apariencia);
+                (amplitud * Math.Cos(frecuencia * t + fase), 
+                frecuencia * Math.Sin(frecuencia * t + fase))
+                , new List<Nombre> { nombre });
+            nombre.Esencia = apariencia;
+            
             _nombres.Add(nombre);
         }
-
-        VelocidadGrupo = n => 1;
     }
 
     /// <summary>
     /// Crea una nueva designación al proyectar el nombre sobre la apariencia.
     /// Si la apariencia no es una designación, se toma la designación actual como apariencia.
     /// </summary>
-    /// <param name="apariencia">La apariencia sobre la cual proyectar el nombre.</param>
     /// <param name="nombre">El nombre a proyectar.</param>
+    /// <param name="palabra">La palabra sobre la cual se proyecta el nombre.</param>
     /// <returns>La nueva designación creada.</returns>
-    public Designacion Designar(Apariencia apariencia, 
-        Nombre nombre)
-    {
-        var designacion = apariencia as Designacion;
-        if (designacion == null)
-        {
-            designacion = this;
-        }
-        var nombres = designacion
-            .Nombres
-            .SkipLast(1) //Analogo a derivar
-            .ToList();
-        nombres.Add(nombre);
+    public Designacion Designar(Nombre nombre, Palabra palabra)
+    {        
+        var nombres = Nombres.ToList();
+        var nombreProyectado = new Nombre(palabra.Texto, palabra.Fase, nombre.Frecuencia);
+        nombres.Add(nombreProyectado);
         var nuevaDesignacion = new Designacion(nombres, n =>
         {
+            var nombreActual = nombres.Contains(n);
             var velocidad = VelocidadGrupo(n);
-            return velocidad != 0 
+            return nombreActual
                 ? velocidad 
-                : velocidad + 2; //Si el nombre no es el correcto va a una velocidad más alta
+                : velocidad + 1; //Si el nombre no es el correcto va a una velocidad más alta
         });        
         return nuevaDesignacion;
     }
