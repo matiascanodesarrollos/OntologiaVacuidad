@@ -58,8 +58,16 @@ public class Nombre : Palabra
             obtenerVerboNucleo = predicado => predicado.Split(' ').First(); 
         }
         var designacion = new Designacion(texto, obtenerVerboNucleo);
-        var palabra = apariencia.Nombres.SkipLast(1).LastOrDefault() //Derivada
-            ?? new Palabra(null, 0, t => 0);
+        var faseInstanea = new Func<double, double>(t => 
+        {
+            var valor = apariencia.Valor(t);
+            var valorAnterior = apariencia.Valor(t - 0.001);
+            var diferencial = (
+                EjeReal: valor.EjeReal - valorAnterior.EjeReal,
+                EjeImaginario: valor.EjeImaginario - valorAnterior.EjeImaginario); //Derivada
+            return Math.Atan2(diferencial.EjeImaginario, diferencial.EjeReal);
+        });
+        var palabra = new Palabra(texto, faseInstanea(0), faseInstanea);
         return designacion.Designar(this, palabra);
     }
 

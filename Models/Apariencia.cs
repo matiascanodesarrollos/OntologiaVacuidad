@@ -7,9 +7,9 @@ public class Apariencia
     public Guid Id { get; }
     protected List<Nombre> _nombres { get; set; }
     public IEnumerable<Nombre> Nombres => _nombres.AsReadOnly();
-    public Func<double, (double Amplitud, double Fase)> Valor { get; }
+    public Func<double, (double EjeReal, double EjeImaginario)> Valor { get; }
 
-    internal Apariencia(Func<double, (double Amplitud, double Fase)> valor, List<Nombre> esencia)
+    internal Apariencia(Func<double, (double EjeReal, double EjeImaginario)> valor, List<Nombre> esencia)
     {
         Id = Guid.NewGuid();
         Valor = valor;
@@ -27,7 +27,7 @@ public class Apariencia
         var apariencia = new Apariencia(t => //Fourrier
             nombres
                 .Select(n => n.Esencia.Valor(t))
-                .Aggregate((a, b) => (a.Amplitud + b.Amplitud, a.Fase + b.Fase)),
+                .Aggregate((a, b) => (a.EjeReal + b.EjeReal, a.EjeImaginario + b.EjeImaginario)),
             nombres);
         return apariencia;
     }

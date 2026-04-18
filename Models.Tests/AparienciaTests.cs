@@ -15,9 +15,9 @@ public class AparienciaTests
         {
             var valorEsperado = designacion.Nombres
                 .Select(n => n.Esencia.Valor(t))
-                .Aggregate((a, b) => (a.Amplitud + b.Amplitud, a.Fase + b.Fase));
-            apariencia.Valor(t).Amplitud.Should().BeApproximately(valorEsperado.Amplitud, 1e-10);
-            apariencia.Valor(t).Fase.Should().BeApproximately(valorEsperado.Fase, 1e-10);
+                .Aggregate((a, b) => (a.EjeReal + b.EjeReal, a.EjeImaginario + b.EjeImaginario));
+            apariencia.Valor(t).EjeReal.Should().BeApproximately(valorEsperado.EjeReal, 1e-10);
+            apariencia.Valor(t).EjeImaginario.Should().BeApproximately(valorEsperado.EjeImaginario, 1e-10);
         }
     }
 
@@ -34,11 +34,11 @@ public class AparienciaTests
         {
             var valorEsperado = designacion.Nombres
                 .Select(n => n.Esencia.Valor(t))
-                .Aggregate((a, b) => (a.Amplitud + b.Amplitud, a.Fase + b.Fase));
+                .Aggregate((a, b) => (a.EjeReal + b.EjeReal, a.EjeImaginario + b.EjeImaginario));
             var valor = apariencia.Valor(t);
 
-            valor.Amplitud.Should().BeApproximately(valorEsperado.Amplitud, 1e-10);
-            valor.Fase.Should().BeApproximately(valorEsperado.Fase, 1e-10);
+            valor.EjeReal.Should().BeApproximately(valorEsperado.EjeReal, 1e-10);
+            valor.EjeImaginario.Should().BeApproximately(valorEsperado.EjeImaginario, 1e-10);
         }
     }
 

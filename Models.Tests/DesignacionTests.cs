@@ -13,7 +13,7 @@ public class DesignacionTests
         var predicadosApariencia = new List<string> { "gozo", "mente" };
         var texto = string.Join(". ", predicadosApariencia);
         var palabra = new Nombre("ser", 0, 0) as Palabra;
-        var listaEsperada = new List<string> { "gozo", "mente", "Vacuidad", "ser" };
+        var listaEsperada = new List<string> { "gozo", "mente", texto, "ser" };
 
         var designacionApariencia = nombre.Mostrarse(Apariencia.Vacuidad, texto);        
         var designacion = designacionApariencia.Designar(nombre, palabra);
