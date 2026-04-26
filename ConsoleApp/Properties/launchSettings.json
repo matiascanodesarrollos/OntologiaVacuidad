@@ -3,7 +3,7 @@
   "profiles": {
     "ConsoleApp": {
       "commandName": "Project",
-      "commandLineArgs": "Fluir agua pura y vibrante. Permanecer tierra. Mover gas puro sutil. Plasmar fuego caliente puro."
+      "commandLineArgs": "Fluir agua pura y vibrante. Permanecer tierra firme. Mover gas puro sutil. Plasmar fuego."
     }
   }
 }

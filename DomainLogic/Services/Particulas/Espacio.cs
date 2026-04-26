@@ -8,7 +8,6 @@ public class Espacio : Nombre
     public double Tiempo { get; private set; }
     public Designacion Designacion { get; private set; }
     public List<Particula> Particulas { get; private set; }
-    public Dictionary<Particula, List<(double Amplitud, double Fase)>> Ondas { get; private set; }
 
 
     public Espacio(Designacion designacion) 
@@ -17,7 +16,6 @@ public class Espacio : Nombre
         Particulas = designacion.Nombres.Select(n => new Particula(n)).ToList();
         Designacion = designacion;
         Tiempo = 0.0;
-        CalcularOndas();
     }           
 
     public void MoverParticulas(double deltaTime)
@@ -27,16 +25,17 @@ public class Espacio : Nombre
         {
             particula.Mover(deltaTime);
         }
-        CalcularOndas();
-    }
 
-    public void CalcularOndas()
-    {
-        Ondas = Particulas.ToDictionary(
-            p => p,
-            p => p.Mostrarse(Designacion, p.Texto)
-                .Nombres
-                .Select(n => n.Esencia.Funcion(Tiempo))
-                .ToList());
+        foreach (var grupo in Particulas.GroupBy(p => p.Posicion2D).Where(g => g.Count() > 1))
+        {
+            var nuevasDesignaciones = grupo
+                .Zip(grupo.Skip(1), (p1, p2) => Designacion.Designar(p1, p2.Causa.Efecto.Apariencia))
+                .ToList();
+            foreach (var designacion in nuevasDesignaciones)
+            {
+                var nuevaParticula = new Particula(designacion.Efecto.Nombre);
+                Particulas.Add(nuevaParticula);
+            }
+        }
     }
 }

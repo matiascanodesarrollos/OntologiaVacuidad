@@ -1,19 +1,27 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 
-public class Apariencia
+public class Apariencia : Designacion
 {
-    public Guid Id { get; }
-    protected List<Nombre> _nombres { get; set; }
-    public IEnumerable<Nombre> Nombres => _nombres.AsReadOnly();
     public Func<double, (double EjeReal, double EjeImaginario)> Funcion { get; }
 
-    internal Apariencia(Func<double, (double EjeReal, double EjeImaginario)> funcion, List<Nombre> esencia)
+    internal Apariencia(Designacion designacion)
+        : base(designacion.Nombres.ToList())
     {
-        Id = Guid.NewGuid();
-        Funcion = funcion;
-        _nombres = esencia;
+        Funcion = t => Nombres.Count() > 1 
+            ? Nombres
+                .Select(nombre =>
+                {
+                    var frecuencia = nombre.Frecuencia;
+                    var fase = nombre.Fase;
+                    var amplitud = nombre.Amplitud;
+                    return (amplitud * Math.Cos(frecuencia * t + fase),
+                            amplitud * Math.Sin(frecuencia * t + fase));
+                })
+                .Aggregate((acumulado, actual) => 
+                    (acumulado.Item1 + actual.Item1, 
+                    acumulado.Item2 + actual.Item2))
+            : t == 0 ? (double.PositiveInfinity, double.PositiveInfinity) : (0.0, 0.0);
     }
 
     /// <summary>
@@ -23,12 +31,7 @@ public class Apariencia
     /// <returns>Una nueva apariencia creada a partir de la designación.</returns>
     public static Apariencia Aparecer(Designacion designacion)
     {
-        var nombres = designacion.Nombres.ToList();
-        var apariencia = new Apariencia(t => //Fourrier
-            nombres
-                .Select(n => n.Esencia.Funcion(t))
-                .Aggregate((a, b) => (a.EjeReal + b.EjeReal, a.EjeImaginario + b.EjeImaginario)),
-            nombres);
+        var apariencia = new Apariencia(designacion);
         return apariencia;
     }
 
@@ -55,10 +58,6 @@ public class Apariencia
     /// <summary>
     /// Apariencia base. Delta de Dirac.
     /// </summary>
-    public static Apariencia Mente = new Apariencia(
-        t => t == 0 
-            ? (double.MaxValue, double.MaxValue) 
-            : (0, 0), 
-        new List<Nombre>());
+    public static Apariencia Mente = new Apariencia(Vacuidad);
 }
 
