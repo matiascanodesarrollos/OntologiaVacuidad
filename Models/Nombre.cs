@@ -110,4 +110,12 @@ public class Nombre : Palabra
     /// </summary>
     /// <returns>El hash code del nombre.</returns>
     public override int GetHashCode() => Id.GetHashCode();
+
+    /// <summary>
+    /// Crea un nuevo nombre con el texto "Vacuidad", fase 0, frecuencia 0 y la amplitud dada, asociado a la causa Vacuidad.
+    /// </summary>
+    /// <param name="amplitud">La amplitud del nuevo nombre.</param>
+    /// <param name="designacion">La designación asociada al nuevo nombre.</param>
+    /// <returns>Un nuevo nombre asociado a la causa Vacuidad.</returns>
+    public static Nombre Cuerpo(double amplitud, Designacion designacion) => new Nombre(nameof(Designacion.Vacuidad), 0, 0, amplitud, designacion);
 }

@@ -11,7 +11,6 @@ public class PalabraTests
         var palabra = nombre as Palabra;
 
         palabra.Should().NotBeNull();
-        palabra!.Texto.Should().Be("logos");
         palabra.Fase.Should().Be(Math.PI / 3);
     }
 

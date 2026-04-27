@@ -6,10 +6,7 @@ public class Designacion
 {
     public Guid Id { get; }
     public (Nombre Nombre, Apariencia Apariencia) Efecto => (
-        new Nombre(
-            "Vacuidad",
-            0,
-            0,
+        Nombre.Cuerpo(
             _nombres.Sum(f => f.Value.Sum(n => n.Amplitud)), 
             this),
         new Apariencia(this));
