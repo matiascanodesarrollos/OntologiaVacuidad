@@ -10,7 +10,7 @@ public class DesignacionTests
         var frecuencia = 5.0;
         var fase = Math.PI / 3;
         var amplitud = 2.0;
-        var nombre = new Nombre("logos", fase, frecuencia, amplitud, Designacion.Vacuidad);
+        var nombre = Nombre.Imaginar(fase, frecuencia, amplitud);
         var texto = "gozo. mente";
         var designacionApariencia = nombre.Mostrarse(texto);
 
@@ -24,7 +24,7 @@ public class DesignacionTests
     [Fact]
     public void Equals_ConMismaReferencia_DevuelveTrueYConOtraDesignacion_DevuelveFalse()
     {
-        var nombre = new Nombre("logos", Math.PI / 3, 5.0, 1.0, Designacion.Vacuidad);
+        var nombre = Nombre.Imaginar(Math.PI / 3, 5.0, 1.0);
         var designacion = nombre.Mostrarse("ser humano. pensar lenguaje");
         var mismaReferencia = designacion;
         var otra = nombre.Mostrarse("ser mente. pensar vacuidad");
@@ -37,7 +37,7 @@ public class DesignacionTests
     [Fact]
     public void GetHashCode_SinParametros_GeneraPorId()
     {
-        var nombre = new Nombre("logos", Math.PI / 3, 5.0, 1.0, Designacion.Vacuidad);
+        var nombre = Nombre.Imaginar(Math.PI / 3, 5.0, 1.0);
         var designacion = nombre.Mostrarse("ser humano. pensar lenguaje");
 
         designacion.GetHashCode().Should().Be(designacion.Id.GetHashCode());
@@ -46,7 +46,7 @@ public class DesignacionTests
     [Fact]
     public void Efecto_ExponeNombreAgregadoYLaAparienciaDeLaDesignacion()
     {
-        var nombre = new Nombre("logos", Math.PI / 3, 5.0, 2.0, Designacion.Vacuidad);
+        var nombre = Nombre.Imaginar(Math.PI / 3, 5.0, 2.0);
         var designacion = nombre.Mostrarse("ser humano. pensar lenguaje");
 
         var efecto = designacion.Efecto;
@@ -61,12 +61,12 @@ public class DesignacionTests
     [Fact]
     public void VelocidadGrupo_UsaLaCantidadDeNombresConLaMismaFrecuencia()
     {
-        var nombre = new Nombre("logos", Math.PI / 3, 5.0, 1.0, Designacion.Vacuidad);
+        var nombre = Nombre.Imaginar(Math.PI / 3, 5.0, 1.0);
         var designacion = nombre.Mostrarse("ser humano. ser lenguaje. pensar mente");
 
         var frecuencias = designacion.Nombres.Select(n => designacion.VelocidadGrupo(n)).ToList();
 
         frecuencias.Should().Equal(2d, 2d, 1d, 1d);
-        designacion.VelocidadGrupo(new Nombre("ajeno", 0d, 99d, 1d, Designacion.Vacuidad)).Should().Be(0d);
+        designacion.VelocidadGrupo(Nombre.Imaginar(0d, 99d, 1d)).Should().Be(0d);
     }
 }

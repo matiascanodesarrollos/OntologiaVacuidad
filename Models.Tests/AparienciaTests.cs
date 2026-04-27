@@ -5,7 +5,7 @@ public class AparienciaTests
     [Fact]
     public void Aparecer_ConUnaDesignacionDeUnSoloNombre_ConservaLosNombresYLaSemanticaDeDirac()
     {
-        var nombre = new Nombre("logos", 0d, 2d, 3d, Designacion.Vacuidad);
+        var nombre = Nombre.Imaginar(0d, 2d, 3d);
         var designacion = Designacion.Designar(nombre, Apariencia.Mente);
 
         var apariencia = Apariencia.Aparecer(designacion);
@@ -18,7 +18,7 @@ public class AparienciaTests
     [Fact]
     public void Aparecer_ConMultiplesNombres_SumaLasAmplitudesDeTodosLosNombres()
     {
-        var nombre = new Nombre("logos", 0d, 2d, 3d, Designacion.Vacuidad);
+        var nombre = Nombre.Imaginar(0d, 2d, 3d);
         var designacion = nombre.Mostrarse("ser humano. ser lenguaje. pensar mente");
 
         var apariencia = Apariencia.Aparecer(designacion);
@@ -47,9 +47,9 @@ public class AparienciaTests
     [Fact]
     public void EqualsYGetHashCode_ComparanPorId()
     {
-        var apariencia = Apariencia.Aparecer(new Nombre("logos", 0d, 1d, 1d, Designacion.Vacuidad).Mostrarse("ser humano"));
+        var apariencia = Apariencia.Aparecer(Nombre.Imaginar(0d, 1d, 1d).Mostrarse("ser humano"));
         var mismaReferencia = apariencia;
-        var otra = Apariencia.Aparecer(new Nombre("ethos", Math.PI / 3d, 1d, 2d, Designacion.Vacuidad).Mostrarse("ser mente"));
+        var otra = Apariencia.Aparecer(Nombre.Imaginar(Math.PI / 3d, 1d, 2d).Mostrarse("ser mente"));
 
         apariencia.Equals(mismaReferencia).Should().BeTrue();
         apariencia.Equals(otra).Should().BeFalse();

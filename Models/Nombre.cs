@@ -14,7 +14,7 @@ public class Nombre : Palabra
     /// <param name="texto">El texto del nombre.</param>
     /// <param name="fase">La fase del nombre.</param>
     /// <param name="frecuencia">La frecuencia del nombre.</param>
-    public Nombre(string texto, 
+    internal Nombre(string texto, 
         double fase,
         double frecuencia,
         double amplitud,
@@ -24,6 +24,29 @@ public class Nombre : Palabra
         Frecuencia = frecuencia;
         Amplitud = amplitud;
         Causa = esencia;
+    }
+
+    /// <summary>
+    /// Funcion para crear un nombre y su apariencia. Análogo a imaginar.
+    /// </summary>
+    /// <param name="texto">Texto o palabra asociada.</param>
+    /// <param name="fase">Fase del nuevo nombre.</param>
+    /// <param name="frecuencia">Frecuencia principal.</param>
+    /// <param name="amplitud">Amplitud deseada.</param>
+    /// <returns>Un nuevo nombre</returns>
+    public static Nombre Imaginar(
+        double fase,
+        double frecuencia,
+        double amplitud)
+    {
+        var nombre = new Nombre(
+            nameof(Designacion.Vacuidad),
+            fase,
+            frecuencia,
+            amplitud,
+            Designacion.Vacuidad
+        );
+        return nombre;
     }
 
     /// <summary>

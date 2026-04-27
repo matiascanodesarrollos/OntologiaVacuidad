@@ -43,14 +43,14 @@ public class ParticulasTests
         espacio.Particulas.Should().HaveCount(3);
         espacio.Particulas.All(particula => particula.Texto is not null).Should().BeTrue();
         espacio.Designacion.Should().Be(designacion);
-        espacio.Particulas.Select(particula => particula.Texto).Should().Equal("ser humano", "pensar lenguaje", "ser humano. pensar lenguaje");
+        espacio.Particulas.Select(particula => particula.Texto).Should().Equal("ser humano", "pensar lenguaje", nameof(Designacion.Vacuidad));
     }
 
     [Fact]
     public void MoverParticulas_ActualizaTiempoYPosicionesSinCrearParticulasCuandoNoHayColision()
     {
-        var primera = new Nombre("uno", 0d, 1d, 2d, Designacion.Vacuidad);
-        var segunda = new Nombre("dos", Math.PI / 2d, 2d, 3d, Designacion.Vacuidad);
+        var primera = Nombre.Imaginar(0d, 1d, 2d);
+        var segunda = Nombre.Imaginar(Math.PI / 2d, 2d, 3d);
         var designacion = Designacion.Designar(segunda, Apariencia.Aparecer(Designacion.Designar(primera, Apariencia.Mente)));
         var espacio = new Espacio(designacion);
         var particula = espacio.Particulas.First();
@@ -72,8 +72,8 @@ public class ParticulasTests
     [Fact]
     public void MoverParticulas_CuandoDosParticulasCoinciden_CreaUnaNuevaParticula()
     {
-        var primera = new Nombre("uno", 0d, 1d, 2d, Designacion.Vacuidad);
-        var segunda = new Nombre("dos", 0d, 2d, 3d, Designacion.Vacuidad);
+        var primera = Nombre.Imaginar(0d, 1d, 2d);
+        var segunda = Nombre.Imaginar(0d, 2d, 3d);
         var designacion = Designacion.Designar(segunda, Apariencia.Aparecer(Designacion.Designar(primera, Apariencia.Mente)));
         var espacio = new Espacio(designacion);
 
@@ -93,7 +93,7 @@ public class ParticulasTests
 
         designacion.Nombres.Should().HaveCount(3);
         designacion.Nombres.Take(2).Select(nombre => nombre.Texto).Should().Equal("ser humano", "pensar lenguaje");
-        designacion.Nombres.Last().Texto.Should().Be(" ser humano .. pensar lenguaje . ");
+        designacion.Nombres.Last().Texto.Should().Be(nameof(Designacion.Vacuidad));
         designacion.Nombres.Last().Amplitud.Should().Be(2d);
     }
 }

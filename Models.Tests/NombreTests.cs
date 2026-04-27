@@ -5,14 +5,12 @@ public class NombreTests
     [Fact]
     public void Constructor_ConDatos_Crea()
     {
-        var texto = "logos";
         var fase = Math.PI / 3;
         var frecuencia = 5.0;
         var amplitud = 2.5;
-        var nombre = new Nombre(texto, fase, frecuencia, amplitud, Designacion.Vacuidad);
+        var nombre = Nombre.Imaginar(fase, frecuencia, amplitud);
 
         nombre.Should().NotBeNull();
-        nombre.Texto.Should().Be(texto);
         nombre.Fase.Should().Be(fase);
         nombre.Frecuencia.Should().Be(frecuencia);
         nombre.Amplitud.Should().Be(amplitud);
@@ -22,7 +20,7 @@ public class NombreTests
     [Fact]
     public void Constructor_Copia_ReplicaLasPropiedadesDelNombreOriginal()
     {
-        var original = new Nombre("logos", Math.PI / 3, 5.0, 2.5, Designacion.Vacuidad);
+        var original = Nombre.Imaginar(Math.PI / 3, 5.0, 2.5);
 
         var copia = new Nombre(original);
 
@@ -40,7 +38,7 @@ public class NombreTests
         var frecuencia = 5.0;
         var fase = Math.PI / 3;
         var amplitud = 2.0;
-        var nombre = new Nombre("logos", fase, frecuencia, amplitud, Designacion.Vacuidad);
+        var nombre = Nombre.Imaginar(fase, frecuencia, amplitud);
         var predicados = new List<string> { "ser humano", "ser lenguaje", "pensar humano" };
         var texto = string.Join(". ", predicados);
 
@@ -48,7 +46,7 @@ public class NombreTests
 
         designacion.Should().NotBeNull();
         designacion.Nombres.Should().HaveCount(predicados.Count + 1);
-        designacion.Nombres.Select(n => n.Texto).Should().Equal(predicados.Append("logos"));
+        designacion.Nombres.Select(n => n.Texto).Should().Equal(predicados.Append(nameof(Designacion.Vacuidad)));
         var ultimoNombre = designacion.Nombres.Last();
         ultimoNombre.Texto.Should().Be(nombre.Texto);
         ultimoNombre.Fase.Should().BeApproximately(nombre.Fase, 1e-10);
@@ -59,7 +57,7 @@ public class NombreTests
     [Fact]
     public void Mostrarse_ConFuncionObtenerVerboNucleoNull_UsaLaPrimerPalabraDelPredicado()
     {
-        var nombre = new Nombre("logos", Math.PI / 3, 5.0, 2.0, Designacion.Vacuidad);
+        var nombre = Nombre.Imaginar(Math.PI / 3, 5.0, 2.0);
         var predicados = new List<string> { "ser humano", "ser lenguaje", "pensar humano" };
         var texto = string.Join(". ", predicados);
 
@@ -77,7 +75,7 @@ public class NombreTests
         var frecuencia = 5.0;
         var fase = Math.PI / 3;
         var amplitud = 2.0;
-        var nombre = new Nombre("logos", fase, frecuencia, amplitud, Designacion.Vacuidad);
+        var nombre = Nombre.Imaginar(fase, frecuencia, amplitud);
         var verbosNucleo = new HashSet<string> { "ser" };
         var obtenerVerboNucleo = new Func<string, string>(predicado =>
             predicado
@@ -113,7 +111,7 @@ public class NombreTests
     [Fact]
     public void Mostrarse_ConVerbosNucleoMixtos_AgrupaFrecuenciasPorCadaVerbo()
     {
-        var nombre = new Nombre("logos", Math.PI / 3, 5.0, 2.0, Designacion.Vacuidad);
+        var nombre = Nombre.Imaginar(Math.PI / 3, 5.0, 2.0);
         var verbosNucleo = new HashSet<string> { "ser", "pensar" };
         var obtenerVerboNucleo = new Func<string, string>(predicado =>
             predicado
@@ -140,7 +138,7 @@ public class NombreTests
     [Fact]
     public void Mostrarse_ConComplementosParcialmenteCompartidos_CalculaAmplitudesDistintas()
     {
-        var nombre = new Nombre("logos", Math.PI / 3, 5.0, 2.0, Designacion.Vacuidad);
+        var nombre = Nombre.Imaginar(Math.PI / 3, 5.0, 2.0);
         var predicados = new List<string>
         {
             "ser humano lenguaje",
@@ -159,7 +157,7 @@ public class NombreTests
     [Fact]
     public void Mostrarse_ConCuatroPredicados_DistribuyeFasesUniformemente()
     {
-        var nombre = new Nombre("logos", Math.PI / 3, 5.0, 2.0, Designacion.Vacuidad);
+        var nombre = Nombre.Imaginar(Math.PI / 3, 5.0, 2.0);
         var predicados = new List<string>
         {
             "ser humano",
@@ -179,16 +177,16 @@ public class NombreTests
     [Fact]
     public void ToString_ConDatos_DevuelveRepresentacionEsperada()
     {
-        var nombre = new Nombre("logos", Math.PI / 3, 5.0, 2.0, Designacion.Vacuidad);
+        var nombre = Nombre.Imaginar(Math.PI / 3, 5.0, 2.0);
 
-        nombre.ToString().Should().Be("logos (60.00º, 5.00 Hz)");
+        nombre.ToString().Should().Be($"{nameof(Designacion.Vacuidad)} (60.00º, 5.00 Hz)");
     }
 
     [Fact]
     public void Equals_ConMismoTextoYFrecuencia_DevuelveTrue()
     {
-        var primero = new Nombre("logos", 0d, 5.0, 1.0, Designacion.Vacuidad);
-        var segundo = new Nombre("logos", Math.PI / 3, 5.0, 4.0, Designacion.Vacuidad);
+        var primero = Nombre.Imaginar(0d, 5.0, 1.0);
+        var segundo = Nombre.Imaginar(Math.PI / 3, 5.0, 4.0);
 
         primero.Equals(segundo).Should().BeTrue();
     }
@@ -196,8 +194,8 @@ public class NombreTests
     [Fact]
     public void Equals_ConInstanciasDistintasPeroMismoTextoYFrecuencia_UsaIgualdadSemantica()
     {
-        var primero = new Nombre("logos", 0d, 5.0, 1.0, Designacion.Vacuidad);
-        var segundo = new Nombre("logos", 0d, 5.0, 1.0, Designacion.Vacuidad);
+        var primero = Nombre.Imaginar(0d, 5.0, 1.0);
+        var segundo = Nombre.Imaginar(0d, 5.0, 1.0);
 
         ReferenceEquals(primero, segundo).Should().BeFalse();
         primero.Id.Should().NotBe(segundo.Id);
@@ -205,13 +203,11 @@ public class NombreTests
     }
 
     [Fact]
-    public void Equals_ConDistintoTextoOFrecuencia_DevuelveFalse()
+    public void Equals_ConDistintaFrecuencia_DevuelveFalse()
     {
-        var nombre = new Nombre("logos", 0d, 5.0, 1.0, Designacion.Vacuidad);
-        var distintoTexto = new Nombre("ethos", 0d, 5.0, 1.0, Designacion.Vacuidad);
-        var distintaFrecuencia = new Nombre("logos", 0d, 3.0, 1.0, Designacion.Vacuidad);
+        var nombre = Nombre.Imaginar(0d, 5.0, 1.0);
+        var distintaFrecuencia = Nombre.Imaginar(0d, 3.0, 1.0);
 
-        nombre.Equals(distintoTexto).Should().BeFalse();
         nombre.Equals(distintaFrecuencia).Should().BeFalse();
         nombre.Equals("no-nombre").Should().BeFalse();
     }
@@ -219,7 +215,7 @@ public class NombreTests
     [Fact]
     public void GetHashCode_SinParametros_GeneraPorId()
     {
-        var nombre = new Nombre("logos", Math.PI / 3, 5.0, 2.0, Designacion.Vacuidad);
+        var nombre = Nombre.Imaginar(Math.PI / 3, 5.0, 2.0);
 
         nombre.GetHashCode().Should().Be(nombre.Id.GetHashCode());
     }

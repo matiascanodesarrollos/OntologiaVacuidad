@@ -112,5 +112,8 @@ public class Designacion
     /// <returns>El hash code de la designación.</returns>
     public override int GetHashCode() => Id.GetHashCode();
 
+    /// <summary>
+    /// Designación base. Vacuidad.
+    /// </summary>
     public static Designacion Vacuidad = new Designacion(new List<Nombre>());
 }

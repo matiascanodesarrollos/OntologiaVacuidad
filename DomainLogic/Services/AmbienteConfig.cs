@@ -18,13 +18,11 @@ namespace DomainLogic.Services
         /// <returns>Una designación que representa el ambiente creado a partir del texto.</returns>
         public static Designacion CrearAmbiente(string texto)
         {         
-            var nombre = new Nombre(texto, 
+            var nombre = Nombre.Imaginar(
                 0, 
-                0,
-                texto.Split('.')
+                0, texto.Split('.')
                     .Select(p => p.Trim())
-                    .Count(p => !string.IsNullOrEmpty(p)),
-                Designacion.Vacuidad);
+                    .Count(p => !string.IsNullOrEmpty(p)));
             return nombre.Mostrarse(texto);
         }
     }
