@@ -2,7 +2,7 @@ using System;
 public class Palabra
 {
     public Guid Id { get; }
-    public double Fase { get; internal set; }
+    public double Fase { get; }
     public string Texto { get; }
 
     internal Palabra(string texto, double fase)

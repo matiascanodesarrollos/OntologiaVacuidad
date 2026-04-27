@@ -3,9 +3,9 @@ using System.Linq;
 
 public class Nombre : Palabra
 {
-    public Designacion Causa { get; internal set; }
-    public double Frecuencia { get; private set; }
-    public double Amplitud { get; private set; }
+    public Designacion Causa { get; }
+    public double Frecuencia { get; }
+    public double Amplitud { get; }
 
     /// <summary>
     /// Crea un nuevo nombre con el texto, fase y frecuencia dados. 
@@ -77,12 +77,9 @@ public class Nombre : Palabra
     public Designacion Mostrarse(string texto, 
         Func<string, string> obtenerVerboNucleo = null)
     {
-        if(obtenerVerboNucleo == null)
-        {
-            // Se asume que la primer palabra de cada predicado es el verbo núcleo
-            obtenerVerboNucleo = predicado => predicado.Split(' ').First(); 
-        }
-        var designacion = new Designacion(texto, obtenerVerboNucleo);
+        var designacion = new Designacion(
+            texto, 
+            obtenerVerboNucleo ?? (predicado => predicado.Split(' ').First()));
         return Designacion.Designar(this, new Apariencia(designacion));
     }
 

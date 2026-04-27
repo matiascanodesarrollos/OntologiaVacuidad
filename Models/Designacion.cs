@@ -9,16 +9,13 @@ public class Designacion
         Nombre.Cuerpo(
             _nombres.Sum(f => f.Value.Sum(n => n.Amplitud)), 
             this),
-        new Apariencia(this));
-    /// <summary>
-    /// Función que determina la velocidad de grupo dada un nombre.
-    /// </summary>
+        new Apariencia(this));    
     public Func<Nombre, double> VelocidadGrupo => n => 
         _nombres.ContainsKey(n.Frecuencia) 
             ? _nombres[n.Frecuencia].Count 
             : 0.0;
 
-    protected Dictionary<double, List<Nombre>> _nombres { get; set; }
+    protected Dictionary<double, List<Nombre>> _nombres { get; }
     public IEnumerable<Nombre> Nombres => _nombres.Values.SelectMany(list => list);
 
     internal Designacion(List<Nombre> nombres)
