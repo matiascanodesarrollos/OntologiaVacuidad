@@ -35,19 +35,18 @@ public class Designacion
             .Split('.')
             .Select(p => p.Trim())
             .Where(p => !string.IsNullOrEmpty(p))
-            .ToList();
-        var deltaFasePredicados = 2 * Math.PI / predicados.Count;
+            .ToList();        
         var diccionarioVerbos = predicados
             .Select(p => obtenerVerboNucleo(p))
             .GroupBy(p => p)
-            .ToDictionary(g => g.Key, g => g.Count());
-        
+            .ToDictionary(g => g.Key, g => g.Count());        
         var palabras = predicados.SelectMany(p => p.Split(' ')).ToList();
         var diccionarioComplementos = palabras
             .Where(p => !diccionarioVerbos.ContainsKey(p)) //Solo los complementos
             .GroupBy(p => p)
             .ToDictionary(g => g.Key, g => Math.Max(1,g.Count()));
 
+        var deltaFasePredicados = 2 * Math.PI / predicados.Count;
         for(var i = 0; i < predicados.Count; i++)
         {
             var palabrasPredicado = predicados[i].Split(' ');
