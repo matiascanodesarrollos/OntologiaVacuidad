@@ -1,11 +1,11 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 
 public class Nombre : Palabra
 {
-    public Apariencia Esencia { get; internal set; }
-    public double Frecuencia { get; private set; }
+    public Designacion Causa { get; }
+    public double Frecuencia { get; }
+    public double Amplitud { get; }
 
     /// <summary>
     /// Crea un nuevo nombre con el texto, fase y frecuencia dados. 
@@ -14,15 +14,39 @@ public class Nombre : Palabra
     /// <param name="texto">El texto del nombre.</param>
     /// <param name="fase">La fase del nombre.</param>
     /// <param name="frecuencia">La frecuencia del nombre.</param>
-    public Nombre(string texto, 
+    internal Nombre(string texto, 
         double fase,
-        double frecuencia)
-        : base(texto, fase, t => frecuencia * t)
+        double frecuencia,
+        double amplitud,
+        Designacion esencia)
+        : base(texto, fase)
     {
         Frecuencia = frecuencia;
-        Esencia = new Apariencia(
-            t => (Math.Cos(frecuencia * t), Math.Sin(frecuencia * t)), 
-            new List<Nombre> { this });
+        Amplitud = amplitud;
+        Causa = esencia;
+    }
+
+    /// <summary>
+    /// Funcion para crear un nombre y su apariencia. Análogo a imaginar.
+    /// </summary>
+    /// <param name="texto">Texto o palabra asociada.</param>
+    /// <param name="fase">Fase del nuevo nombre.</param>
+    /// <param name="frecuencia">Frecuencia principal.</param>
+    /// <param name="amplitud">Amplitud deseada.</param>
+    /// <returns>Un nuevo nombre</returns>
+    public static Nombre Imaginar(
+        double fase,
+        double frecuencia,
+        double amplitud)
+    {
+        var nombre = new Nombre(
+            nameof(Designacion.Vacuidad),
+            fase,
+            frecuencia,
+            amplitud,
+            Designacion.Vacuidad
+        );
+        return nombre;
     }
 
     /// <summary>
@@ -32,11 +56,11 @@ public class Nombre : Palabra
     /// <param name="nombre">El nombre del cual se copiarán las propiedades.</param>
     public Nombre(Nombre nombre) 
         : base(nombre.Texto, 
-            nombre.Fase,
-            nombre.FuncionFaseInstanea)
+            nombre.Fase)
     {
         Frecuencia = nombre.Frecuencia;
-        Esencia = nombre.Esencia;
+        Amplitud = nombre.Amplitud;
+        Causa = nombre.Causa;
     }
 
     /// <summary>
@@ -50,27 +74,13 @@ public class Nombre : Palabra
     /// <param name="texto">El texto que funciona como espacio, cada oración se considera un predicado.</param>
     /// <param name="obtenerVerboNucleo">Función que determina el verbo núcleo de un predicado. Si es null, se asume que es la primer palabra.</param>
     /// <returns>La nueva designación creada.</returns>
-    public Designacion Mostrarse(Apariencia apariencia, 
-        string texto, 
+    public Designacion Mostrarse(string texto, 
         Func<string, string> obtenerVerboNucleo = null)
     {
-        if(obtenerVerboNucleo == null)
-        {
-            // Se asume que la primer palabra de cada predicado es el verbo núcleo
-            obtenerVerboNucleo = predicado => predicado.Split(' ').First(); 
-        }
-        var designacion = new Designacion(texto, obtenerVerboNucleo);
-        var faseInstanea = new Func<double, double>(t => 
-        {
-            var valor = apariencia.Funcion(t);
-            var valorAnterior = apariencia.Funcion(t - 0.001);
-            var diferencial = (//Derivada
-                EjeReal: valor.EjeReal - valorAnterior.EjeReal,
-                EjeImaginario: valor.EjeImaginario - valorAnterior.EjeImaginario); 
-            return Math.Atan2(diferencial.EjeImaginario, diferencial.EjeReal);
-        });
-        var palabra = new Palabra(texto, faseInstanea(0), faseInstanea);
-        return designacion.Designar(this, palabra);
+        var designacion = new Designacion(
+            texto, 
+            obtenerVerboNucleo ?? (predicado => predicado.Split(' ').First()));
+        return Designacion.Designar(this, new Apariencia(designacion));
     }
 
     /// <summary>
@@ -97,4 +107,12 @@ public class Nombre : Palabra
     /// </summary>
     /// <returns>El hash code del nombre.</returns>
     public override int GetHashCode() => Id.GetHashCode();
+
+    /// <summary>
+    /// Crea un nuevo nombre con el texto "Vacuidad", fase 0, frecuencia 0 y la amplitud dada, asociado a la causa Vacuidad.
+    /// </summary>
+    /// <param name="amplitud">La amplitud del nuevo nombre.</param>
+    /// <param name="designacion">La designación asociada al nuevo nombre.</param>
+    /// <returns>Un nuevo nombre asociado a la causa Vacuidad.</returns>
+    public static Nombre Cuerpo(double amplitud, Designacion designacion) => new Nombre(nameof(Designacion.Vacuidad), 0, 0, amplitud, designacion);
 }

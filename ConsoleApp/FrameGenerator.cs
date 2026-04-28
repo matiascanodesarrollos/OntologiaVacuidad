@@ -15,17 +15,17 @@ namespace ConsoleApp
         private const int CENTROY = 450;
         private const int PADDING = 20;
         private const int CANTIDAD_RAYOS = 36;
-        private const float RADIO_RAYO_MAXIMO = 200f;
-        private const float RADIO_RAYO_MINIMO = 12f;
+        private const float RADIO_RAYO_MAXIMO = 220f;
+        private const float RADIO_RAYO_MINIMO = 18f;
 
         public static Func<double, SKColor> FuncionAmplitudAColor = (amp) =>
         {
             return amp switch
             {
-                <= 0.5 => SKColor.Parse("#cc0000"),
-                <= 1.5 => SKColor.Parse("#0011ff"),
-                <= 4 => SKColor.Parse("#036603"),                
-                <= 6 => SKColor.Parse("#ffe60a"),
+                <= 1 => SKColor.Parse("#cc0000"),
+                <= 2 => SKColor.Parse("#0011ff"),
+                <= 3 => SKColor.Parse("#036603"),                
+                <= 4 => SKColor.Parse("#ffe60a"),
                 _ => SKColor.Parse("#FFFFFF")
             };
         };
@@ -75,55 +75,31 @@ namespace ConsoleApp
 
                         foreach (var particula in espacio.Particulas)
                         {
-                            var valor = particula.Esencia.Funcion(espacio.Tiempo);
-                            var color = FuncionAmplitudAColor(Math.Sqrt(valor.EjeReal * valor.EjeReal + valor.EjeImaginario * valor.EjeImaginario));                     
+                            var valor = particula.Causa.Efecto.Apariencia.Funcion(particula.Tiempo);
+                            var amplitud = Math.Sqrt(valor.EjeReal * valor.EjeReal + valor.EjeImaginario * valor.EjeImaginario);
+                            var color = FuncionAmplitudAColor(amplitud);
+                            var faseActual = (particula.Tiempo * particula.Frecuencia) + particula.Fase;
+                            var amplitudRayo = 0.85d + (0.35d * ((Math.Sin(faseActual) + 1d) / 2d));
                             var x = CENTROX + (float) particula.Posicion2D.X;
                             var y = CENTROY - (float) particula.Posicion2D.Y;
 
+                            DibujarRayosParticula(canvas, x, y, color, amplitudRayo, faseActual);
+
                             // Dibujar círculo
-                            using (var paint = new SKPaint { Color = color, IsAntialias = true })
+                            using (var paint = new SKPaint { Color = FuncionAmplitudAColor(particula.Amplitud), IsAntialias = true })
                             {
                                 canvas.DrawCircle(x, y, 6f, paint);
                             }
 
-                            var ondasParticula = espacio.Ondas.TryGetValue(particula, out var ondas)
-                                ? ondas
-                                : Enumerable.Empty<(double Amplitud, double Fase)>().ToList();
-                            var amplitudMaxima = CalcularAmplitudMaxima(ondasParticula);
-
-                            // Dibujar rayos cuya longitud depende de la suma de ondas de la partícula.
-                            for (int i = 0; i < CANTIDAD_RAYOS; i++)
+                            if(particula.Texto != "Vacuidad")
                             {
-                                double angulo = 2 * Math.PI * i / CANTIDAD_RAYOS;
-                                var intensidad = CalcularIntensidadRayo(ondasParticula, angulo);
-
-                                if (intensidad <= 0)
+                                // Dibujar los textos
+                                using (var typeface = SKTypeface.FromFamilyName("Arial", SKFontStyle.Bold))
+                                using (var font = new SKFont(typeface, 12f))
+                                using (var paint = new SKPaint { Color = SKColors.Black, IsAntialias = true })
                                 {
-                                    continue;
+                                    canvas.DrawText(particula.ToString(), x + 12f, y - 12f, font, paint);
                                 }
-
-                                var radioRayo = CalcularLongitudRayo(intensidad, amplitudMaxima);
-                                float x1 = x + radioRayo * (float)Math.Cos(angulo);
-                                float y1 = y - radioRayo * (float)Math.Sin(angulo);
-                                byte alpha = CalcularAlphaRayo(intensidad, amplitudMaxima);
-
-                                using (var paint = new SKPaint
-                                {
-                                    Color = new SKColor(color.Red, color.Green, color.Blue, alpha),
-                                    StrokeWidth = 2f,
-                                    IsAntialias = true
-                                })
-                                {
-                                    canvas.DrawLine(x, y, x1, y1, paint);
-                                }
-                            }
-
-                             // Dibujar los textos
-                            using (var typeface = SKTypeface.FromFamilyName("Arial", SKFontStyle.Bold))
-                            using (var font = new SKFont(typeface, 12f))
-                            using (var paint = new SKPaint { Color = SKColors.Black, IsAntialias = true })
-                            {
-                                canvas.DrawText(particula.ToString(), x, y, font, paint);
                             }
                         }
 
@@ -172,10 +148,56 @@ namespace ConsoleApp
             return ondas.Sum(onda => Math.Abs(onda.Amplitud) * Math.Max(0d, Math.Cos(angulo - onda.Fase)));
         }
 
-        private static double CalcularAmplitudMaxima(IEnumerable<(double Amplitud, double Fase)> ondas)
+        private static void DibujarRayosParticula(SKCanvas canvas, float x, float y, SKColor color, double amplitud, double faseActual)
         {
+            if (amplitud <= 0d)
+            {
+                return;
+            }
+
+            var ondas = new[]
+            {
+                (Amplitud: amplitud, Fase: faseActual),
+                (Amplitud: amplitud * 0.35d, Fase: faseActual + Math.PI)
+            };
             var amplitudMaxima = ondas.Sum(onda => Math.Abs(onda.Amplitud));
-            return amplitudMaxima <= 0 ? 1d : amplitudMaxima;
+
+            using var paint = new SKPaint
+            {
+                IsAntialias = true,
+                Style = SKPaintStyle.Stroke,
+                StrokeCap = SKStrokeCap.Round
+            };
+
+            using var nucleoPaint = new SKPaint
+            {
+                Color = color.WithAlpha(180),
+                IsAntialias = true,
+                Style = SKPaintStyle.Fill
+            };
+
+            canvas.DrawCircle(x, y, 10f, nucleoPaint);
+
+            for (int i = 0; i < CANTIDAD_RAYOS; i++)
+            {
+                var angulo = (Math.PI * 2d * i) / CANTIDAD_RAYOS;
+                var intensidad = CalcularIntensidadRayo(ondas, angulo);
+
+                if (intensidad <= 0.01d)
+                {
+                    continue;
+                }
+
+                var proporcion = Math.Clamp(intensidad / amplitudMaxima, 0d, 1d);
+                var longitud = CalcularLongitudRayo(intensidad, amplitudMaxima);
+                var alpha = CalcularAlphaRayo(intensidad, amplitudMaxima);
+                paint.Color = color.WithAlpha(alpha);
+                paint.StrokeWidth = 1.5f + (3.5f * (float)proporcion);
+
+                var destinoX = x + (float)(Math.Cos(angulo) * longitud);
+                var destinoY = y - (float)(Math.Sin(angulo) * longitud);
+                canvas.DrawLine(x, y, destinoX, destinoY, paint);
+            }
         }
 
         private static float CalcularLongitudRayo(double intensidad, double amplitudMaxima)
@@ -187,7 +209,7 @@ namespace ConsoleApp
         private static byte CalcularAlphaRayo(double intensidad, double amplitudMaxima)
         {
             var proporcion = Math.Clamp(intensidad / amplitudMaxima, 0d, 1d);
-            return (byte)(40 + (160 * proporcion));
+            return (byte)(140 + (115 * proporcion));
         }
     }
 }
