@@ -19,11 +19,13 @@ namespace DomainLogic.Services
         public static Designacion CrearAmbiente(string texto)
         {         
             var nombre = Nombre.Imaginar(
+                texto,
                 0, 
-                0, texto.Split('.')
+                0, 
+                texto.Split('.')
                     .Select(p => p.Trim())
                     .Count(p => !string.IsNullOrEmpty(p)));
-            return nombre.Mostrarse(texto);
+            return nombre.ProcesarTexto(texto);
         }
     }
 

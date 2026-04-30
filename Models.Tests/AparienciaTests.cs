@@ -5,10 +5,10 @@ public class AparienciaTests
     [Fact]
     public void Aparecer_ConUnaDesignacionDeUnSoloNombre_ConservaLosNombresYLaSemanticaDeDirac()
     {
-        var nombre = Nombre.Imaginar(0d, 2d, 3d);
+        var nombre = Nombre.Imaginar("Vacuidad", 0d, 2d, 3d);
         var designacion = Designacion.Designar(nombre, Apariencia.Mente);
 
-        var apariencia = Apariencia.Aparecer(designacion);
+        var apariencia = Apariencia.Aparecer(designacion.Nombres.ToList());
 
         apariencia.Nombres.Should().BeEquivalentTo(designacion.Nombres);
         apariencia.Funcion(0d).Should().Be((double.PositiveInfinity, double.PositiveInfinity));
@@ -18,10 +18,15 @@ public class AparienciaTests
     [Fact]
     public void Aparecer_ConMultiplesNombres_SumaLasAmplitudesDeTodosLosNombres()
     {
-        var nombre = Nombre.Imaginar(0d, 2d, 3d);
-        var designacion = nombre.Mostrarse("ser humano. ser lenguaje. pensar mente");
+        var nombre = Nombre.Imaginar("Vacuidad", 0d, 2d, 3d);
+        var designacion = Designacion.Designar(nombre, Apariencia.Aparecer(new List<Nombre>
+        {
+            Nombre.Imaginar("ser humano", 0d, 2d, 1d),
+            Nombre.Imaginar("ser lenguaje", 2d * Math.PI / 3d, 2d, 1d),
+            Nombre.Imaginar("pensar mente", 4d * Math.PI / 3d, 1d, 1d)
+        }));
 
-        var apariencia = Apariencia.Aparecer(designacion);
+        var apariencia = Apariencia.Aparecer(designacion.Nombres.ToList());
 
         apariencia.Nombres.Should().BeEquivalentTo(designacion.Nombres);
         for (var t = 0d; t <= 2d; t += 0.25d)
@@ -47,9 +52,9 @@ public class AparienciaTests
     [Fact]
     public void EqualsYGetHashCode_ComparanPorId()
     {
-        var apariencia = Apariencia.Aparecer(Nombre.Imaginar(0d, 1d, 1d).Mostrarse("ser humano"));
+        var apariencia = Apariencia.Aparecer(new List<Nombre> { Nombre.Imaginar("ser humano", 0d, 1d, 1d) });
         var mismaReferencia = apariencia;
-        var otra = Apariencia.Aparecer(Nombre.Imaginar(Math.PI / 3d, 1d, 2d).Mostrarse("ser mente"));
+        var otra = Apariencia.Aparecer(new List<Nombre> { Nombre.Imaginar("ser mente", Math.PI / 3d, 1d, 2d) });
 
         apariencia.Equals(mismaReferencia).Should().BeTrue();
         apariencia.Equals(otra).Should().BeFalse();

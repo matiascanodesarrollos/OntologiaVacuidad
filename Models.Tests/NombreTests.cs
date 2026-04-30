@@ -2,13 +2,55 @@ using FluentAssertions;
 
 public class NombreTests
 {
+    private static Dictionary<double, List<Nombre>> MapearNombres(string texto, Func<string, string>? obtenerVerboNucleo = null)
+    {
+        obtenerVerboNucleo ??= predicado => predicado.Split(' ').First();
+        var nombres = new Dictionary<double, List<Nombre>>();
+        var predicados = texto
+            .Split('.')
+            .Select(p => p.Trim())
+            .Where(p => !string.IsNullOrEmpty(p))
+            .ToList();
+        var diccionarioVerbos = predicados
+            .Select(obtenerVerboNucleo)
+            .GroupBy(p => p)
+            .ToDictionary(g => g.Key, g => g.Count());
+        var palabras = predicados.SelectMany(p => p.Split(' ')).ToList();
+        var diccionarioComplementos = palabras
+            .Where(p => !diccionarioVerbos.ContainsKey(p))
+            .GroupBy(p => p)
+            .ToDictionary(g => g.Key, g => Math.Max(1, g.Count()));
+
+        var deltaFasePredicados = 2 * Math.PI / predicados.Count;
+        for (var i = 0; i < predicados.Count; i++)
+        {
+            var palabrasPredicado = predicados[i].Split(' ');
+            var verboNucleo = obtenerVerboNucleo(predicados[i]);
+            var frecuencia = diccionarioVerbos[verboNucleo];
+
+            if (!nombres.ContainsKey(frecuencia))
+            {
+                nombres[frecuencia] = new List<Nombre>();
+            }
+
+            var amplitud = palabrasPredicado
+                .Where(p => p != verboNucleo)
+                .Sum(p => diccionarioComplementos[p]);
+            var fase = i * deltaFasePredicados;
+
+            nombres[frecuencia].Add(Nombre.Imaginar(predicados[i], fase, frecuencia, amplitud));
+        }
+
+        return nombres;
+    }
+
     [Fact]
     public void Constructor_ConDatos_Crea()
     {
         var fase = Math.PI / 3;
         var frecuencia = 5.0;
         var amplitud = 2.5;
-        var nombre = Nombre.Imaginar(fase, frecuencia, amplitud);
+        var nombre = Nombre.Imaginar("Vacuidad", fase, frecuencia, amplitud);
 
         nombre.Should().NotBeNull();
         nombre.Fase.Should().Be(fase);
@@ -20,7 +62,7 @@ public class NombreTests
     [Fact]
     public void Constructor_Copia_ReplicaLasPropiedadesDelNombreOriginal()
     {
-        var original = Nombre.Imaginar(Math.PI / 3, 5.0, 2.5);
+        var original = Nombre.Imaginar("Vacuidad", Math.PI / 3, 5.0, 2.5);
 
         var copia = new Nombre(original);
 
@@ -38,11 +80,11 @@ public class NombreTests
         var frecuencia = 5.0;
         var fase = Math.PI / 3;
         var amplitud = 2.0;
-        var nombre = Nombre.Imaginar(fase, frecuencia, amplitud);
+        var nombre = Nombre.Imaginar("Vacuidad", fase, frecuencia, amplitud);
         var predicados = new List<string> { "ser humano", "ser lenguaje", "pensar humano" };
         var texto = string.Join(". ", predicados);
 
-        var designacion = nombre.Mostrarse(texto);
+        var designacion = nombre.Mostrarse(texto, t => MapearNombres(t));
 
         designacion.Should().NotBeNull();
         designacion.Nombres.Should().HaveCount(predicados.Count + 1);
@@ -57,11 +99,11 @@ public class NombreTests
     [Fact]
     public void Mostrarse_ConFuncionObtenerVerboNucleoNull_UsaLaPrimerPalabraDelPredicado()
     {
-        var nombre = Nombre.Imaginar(Math.PI / 3, 5.0, 2.0);
+        var nombre = Nombre.Imaginar("Vacuidad", Math.PI / 3, 5.0, 2.0);
         var predicados = new List<string> { "ser humano", "ser lenguaje", "pensar humano" };
         var texto = string.Join(". ", predicados);
 
-        var designacion = nombre.Mostrarse(texto, null);
+        var designacion = nombre.Mostrarse(texto, t => MapearNombres(t));
 
         var nombresPredicados = designacion.Nombres.Take(predicados.Count).ToList();
         nombresPredicados.Select(n => n.Frecuencia).Should().Equal(2d, 2d, 1d);
@@ -75,7 +117,7 @@ public class NombreTests
         var frecuencia = 5.0;
         var fase = Math.PI / 3;
         var amplitud = 2.0;
-        var nombre = Nombre.Imaginar(fase, frecuencia, amplitud);
+        var nombre = Nombre.Imaginar("Vacuidad", fase, frecuencia, amplitud);
         var verbosNucleo = new HashSet<string> { "ser" };
         var obtenerVerboNucleo = new Func<string, string>(predicado =>
             predicado
@@ -90,7 +132,7 @@ public class NombreTests
         };
         var texto = string.Join(". ", predicados);
 
-        var designacion = nombre.Mostrarse(texto, obtenerVerboNucleo);
+        var designacion = nombre.Mostrarse(texto, t => MapearNombres(t, obtenerVerboNucleo));
 
         designacion.Should().NotBeNull();
         designacion.Nombres.Should().HaveCount(predicados.Count + 1);
@@ -111,7 +153,7 @@ public class NombreTests
     [Fact]
     public void Mostrarse_ConVerbosNucleoMixtos_AgrupaFrecuenciasPorCadaVerbo()
     {
-        var nombre = Nombre.Imaginar(Math.PI / 3, 5.0, 2.0);
+        var nombre = Nombre.Imaginar("Vacuidad", Math.PI / 3, 5.0, 2.0);
         var verbosNucleo = new HashSet<string> { "ser", "pensar" };
         var obtenerVerboNucleo = new Func<string, string>(predicado =>
             predicado
@@ -127,7 +169,7 @@ public class NombreTests
         };
         var texto = string.Join(". ", predicados);
 
-        var designacion = nombre.Mostrarse(texto, obtenerVerboNucleo);
+        var designacion = nombre.Mostrarse(texto, t => MapearNombres(t, obtenerVerboNucleo));
 
         var nombresPredicados = designacion.Nombres.Take(predicados.Count).ToList();
         nombresPredicados.Select(n => n.Frecuencia).Should().Equal(2d, 2d, 2d, 2d);
@@ -138,7 +180,7 @@ public class NombreTests
     [Fact]
     public void Mostrarse_ConComplementosParcialmenteCompartidos_CalculaAmplitudesDistintas()
     {
-        var nombre = Nombre.Imaginar(Math.PI / 3, 5.0, 2.0);
+        var nombre = Nombre.Imaginar("Vacuidad", Math.PI / 3, 5.0, 2.0);
         var predicados = new List<string>
         {
             "ser humano lenguaje",
@@ -147,7 +189,7 @@ public class NombreTests
         };
         var texto = string.Join(". ", predicados);
 
-        var designacion = nombre.Mostrarse(texto);
+        var designacion = nombre.Mostrarse(texto, t => MapearNombres(t));
 
         var nombresPredicados = designacion.Nombres.Take(predicados.Count).ToList();
         nombresPredicados.Select(n => n.Frecuencia).Should().Equal(3d, 3d, 3d);
@@ -157,7 +199,7 @@ public class NombreTests
     [Fact]
     public void Mostrarse_ConCuatroPredicados_DistribuyeFasesUniformemente()
     {
-        var nombre = Nombre.Imaginar(Math.PI / 3, 5.0, 2.0);
+        var nombre = Nombre.Imaginar("Vacuidad", Math.PI / 3, 5.0, 2.0);
         var predicados = new List<string>
         {
             "ser humano",
@@ -167,7 +209,7 @@ public class NombreTests
         };
         var texto = string.Join(". ", predicados);
 
-        var designacion = nombre.Mostrarse(texto);
+        var designacion = nombre.Mostrarse(texto, t => MapearNombres(t));
 
         var nombresPredicados = designacion.Nombres.Take(predicados.Count).ToList();
         nombresPredicados.Select(n => n.Fase).Should().Equal(0d, Math.PI / 2d, Math.PI, 3d * Math.PI / 2d);
@@ -177,7 +219,7 @@ public class NombreTests
     [Fact]
     public void ToString_ConDatos_DevuelveRepresentacionEsperada()
     {
-        var nombre = Nombre.Imaginar(Math.PI / 3, 5.0, 2.0);
+        var nombre = Nombre.Imaginar("Vacuidad", Math.PI / 3, 5.0, 2.0);
 
         nombre.ToString().Should().Be($"{nameof(Designacion.Vacuidad)} (60.00º, 5.00 Hz)");
     }
@@ -185,8 +227,8 @@ public class NombreTests
     [Fact]
     public void Equals_ConMismoTextoYFrecuencia_DevuelveTrue()
     {
-        var primero = Nombre.Imaginar(0d, 5.0, 1.0);
-        var segundo = Nombre.Imaginar(Math.PI / 3, 5.0, 4.0);
+        var primero = Nombre.Imaginar("Vacuidad", 0d, 5.0, 1.0);
+        var segundo = Nombre.Imaginar("Vacuidad", Math.PI / 3, 5.0, 4.0);
 
         primero.Equals(segundo).Should().BeTrue();
     }
@@ -194,8 +236,8 @@ public class NombreTests
     [Fact]
     public void Equals_ConInstanciasDistintasPeroMismoTextoYFrecuencia_UsaIgualdadSemantica()
     {
-        var primero = Nombre.Imaginar(0d, 5.0, 1.0);
-        var segundo = Nombre.Imaginar(0d, 5.0, 1.0);
+        var primero = Nombre.Imaginar("Vacuidad", 0d, 5.0, 1.0);
+        var segundo = Nombre.Imaginar("Vacuidad", 0d, 5.0, 1.0);
 
         ReferenceEquals(primero, segundo).Should().BeFalse();
         primero.Id.Should().NotBe(segundo.Id);
@@ -205,8 +247,8 @@ public class NombreTests
     [Fact]
     public void Equals_ConDistintaFrecuencia_DevuelveFalse()
     {
-        var nombre = Nombre.Imaginar(0d, 5.0, 1.0);
-        var distintaFrecuencia = Nombre.Imaginar(0d, 3.0, 1.0);
+        var nombre = Nombre.Imaginar("Vacuidad", 0d, 5.0, 1.0);
+        var distintaFrecuencia = Nombre.Imaginar("Vacuidad", 0d, 3.0, 1.0);
 
         nombre.Equals(distintaFrecuencia).Should().BeFalse();
         nombre.Equals("no-nombre").Should().BeFalse();
@@ -215,7 +257,7 @@ public class NombreTests
     [Fact]
     public void GetHashCode_SinParametros_GeneraPorId()
     {
-        var nombre = Nombre.Imaginar(Math.PI / 3, 5.0, 2.0);
+        var nombre = Nombre.Imaginar("Vacuidad", Math.PI / 3, 5.0, 2.0);
 
         nombre.GetHashCode().Should().Be(nombre.Id.GetHashCode());
     }

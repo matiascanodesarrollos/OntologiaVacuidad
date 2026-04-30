@@ -7,7 +7,7 @@ public class PalabraTests
     [Fact]
     public void Constructor_ConTexto_Crea()
     {
-        var nombre = Nombre.Imaginar(Math.PI / 3, 1.0, 2.0);
+        var nombre = Nombre.Imaginar("Vacuidad", Math.PI / 3, 1.0, 2.0);
         var palabra = nombre as Palabra;
 
         palabra.Should().NotBeNull();
@@ -17,7 +17,7 @@ public class PalabraTests
     [Fact]
     public void Constructor_SinTexto_Crea()
     {
-        var nombre = Nombre.Imaginar(Math.PI / 3, 1.0, 2.0);
+        var nombre = Nombre.Imaginar("Vacuidad", Math.PI / 3, 1.0, 2.0);
         var palabra = nombre as Palabra;
 
         palabra.Should().NotBeNull();
@@ -28,7 +28,7 @@ public class PalabraTests
     public void Constructor_ConFaseMayor360_NormalizaFase()
     {
         var fase = 400.0;
-        var nombre = Nombre.Imaginar(fase, 1.0, 2.0);
+        var nombre = Nombre.Imaginar("Vacuidad", fase, 1.0, 2.0);
         var palabra = nombre as Palabra;
         var faseEsperada = fase % (2 * Math.PI);
 
@@ -40,7 +40,7 @@ public class PalabraTests
     public void Constructor_ConFaseNegativa_NormalizaFaseUsandoValorAbsoluto()
     {
         var fase = -Math.PI / 3;
-        var nombre = Nombre.Imaginar(fase, 1.0, 2.0);
+        var nombre = Nombre.Imaginar("Vacuidad", fase, 1.0, 2.0);
         var palabra = nombre as Palabra;
 
         palabra.Should().NotBeNull();
