@@ -15,4 +15,8 @@
     <PackageReference Include="SkiaSharp" Version="3.116.1" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Include="..\AIPrototype\**\*" CopyToOutputDirectory="PreserveNewest" LinkBase="AIPrototype" />
+  </ItemGroup>
+
 </Project>
