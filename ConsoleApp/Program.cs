@@ -22,13 +22,6 @@ namespace ConsoleApp
 
             try
             {
-                if (args.Length > 0 && args[0].Equals("ai", StringComparison.OrdinalIgnoreCase))
-                {
-                    var exitCode = await AiPrototypeRunner.RunAsync(args.Skip(1).ToArray(), logger);
-                    Environment.ExitCode = exitCode;
-                    return;
-                }
-
                 logger.LogInformation("═══ INICIANDO VIBRACIÓN DE PARTÍCULAS ═══\n");
                 var ambiente = AmbienteConfig.CrearAmbiente(string.Join(' ', args));
                 
