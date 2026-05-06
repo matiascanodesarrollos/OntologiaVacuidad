@@ -9,7 +9,10 @@ public static class ProcesadorTexto
     public static Designacion ProcesarTexto(this Nombre nombre, string texto)
     {
         Func<string, string> obtenerVerboNucleo = predicado => predicado.Split(' ').First();
-        var nombres = new Dictionary<double, List<Nombre>>();
+        var nombres = new Dictionary<double, List<Nombre>>
+        {
+            { nombre.Frecuencia, new List<Nombre> { nombre } }
+        };
         var predicados = texto
             .Split('.')
             .Select(p => p.Trim())

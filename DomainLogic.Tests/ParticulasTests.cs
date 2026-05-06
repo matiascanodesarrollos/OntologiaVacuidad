@@ -40,10 +40,10 @@ public class ParticulasTests
         var espacio = new Espacio(designacion);
 
         espacio.Tiempo.Should().BeApproximately(0d, 1e-10);
-        espacio.Particulas.Should().HaveCount(2);
+        espacio.Particulas.Should().HaveCount(3);
         espacio.Particulas.All(particula => particula.Texto is not null).Should().BeTrue();
         espacio.Designacion.Should().Be(designacion);
-        espacio.Particulas.Select(particula => particula.Texto).Should().Equal("ser humano", "pensar lenguaje");
+        espacio.Particulas.Select(particula => particula.Texto).Should().Equal("ser humano. pensar lenguaje", "ser humano", "pensar lenguaje");
     }
 
     [Fact]
@@ -91,8 +91,8 @@ public class ParticulasTests
     {
         var designacion = AmbienteConfig.CrearAmbiente(" ser humano .. pensar lenguaje . ");
 
-        designacion.Nombres.Should().HaveCount(2);
-        designacion.Nombres.Select(nombre => nombre.Texto).Should().Equal("ser humano", "pensar lenguaje");
-        designacion.Nombres.Select(nombre => nombre.Amplitud).Should().Equal(1d, 1d);
+        designacion.Nombres.Should().HaveCount(3);
+        designacion.Nombres.Select(nombre => nombre.Texto).Should().Equal(" ser humano .. pensar lenguaje . ","ser humano", "pensar lenguaje");
+        designacion.Nombres.Select(nombre => nombre.Amplitud).Should().Equal(2d,1d, 1d);
     }
 }

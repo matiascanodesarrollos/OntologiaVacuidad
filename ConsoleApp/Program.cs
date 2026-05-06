@@ -15,14 +15,16 @@ namespace ConsoleApp
         
         static async Task Main(string[] args)
         {
+            // Configuración DI con extensión
             var services = new ServiceCollection();
             services.AddDharmaServices();
             var serviceProvider = services.BuildServiceProvider();
             var logger = serviceProvider.GetRequiredService<ILogger<Program>>();
 
+            logger.LogInformation("═══ INICIANDO VIBRACIÓN DE PARTÍCULAS ═══\n");
+
             try
-            {
-                logger.LogInformation("═══ INICIANDO VIBRACIÓN DE PARTÍCULAS ═══\n");
+            {                
                 var ambiente = AmbienteConfig.CrearAmbiente(string.Join(' ', args));
                 
                 logger.LogInformation($"[ESPACIO basado en amplitud (apariencia)] Creado para: {ambiente}\n");
@@ -42,7 +44,6 @@ namespace ConsoleApp
             catch (Exception ex)
             {
                 logger.LogError(ex, $"Error durante la simulación: {ex.Message}");
-                Environment.ExitCode = 1;
             }
         }
     }

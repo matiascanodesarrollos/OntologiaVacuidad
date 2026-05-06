@@ -72,7 +72,6 @@ public class Nombre : Palabra
     /// la amplitud por la cantidad de complementos del sujeto que comparten (se asume las palabras restantes del predicado),
     /// y la fase por la posición del predicado en la lista (distribuido en 360º).
     /// </summary>
-    /// <param name="apariencia">La apariencia proyectada.</param>
     /// <param name="texto">El texto que funciona como espacio, cada oración se considera un predicado.</param>
     /// <param name="mapeoNombres">Función que determina el mapeo de nombres a partir del texto .</param>
     /// <returns>La nueva designación creada.</returns>

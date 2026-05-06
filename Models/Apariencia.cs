@@ -26,7 +26,7 @@ public class Apariencia : Designacion
     }
 
     /// <summary>
-    /// Crea una nueva apariencia a partir de una designación, sumando las amplitudes de las apariencias de los nombres que componen la designación (Fourrier).
+    /// Crea una nueva apariencia a partir de una lista de nombres, sumando las amplitudes de las apariencias de los nombres que componen la designación (Fourrier).
     /// </summary>
     /// <param name="nombres">Los nombres a partir de los cuales se crea la apariencia.</param>
     /// <returns>Una nueva apariencia creada a partir de la designación.</returns>
