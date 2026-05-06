@@ -24,7 +24,7 @@ namespace ConsoleApp
             logger.LogInformation("═══ INICIANDO VIBRACIÓN DE PARTÍCULAS ═══\n");
 
             try
-            {                
+            {
                 var ambiente = AmbienteConfig.CrearAmbiente(string.Join(' ', args));
                 
                 logger.LogInformation($"[ESPACIO basado en amplitud (apariencia)] Creado para: {ambiente}\n");
