@@ -75,7 +75,7 @@ namespace ConsoleApp
 
                         foreach (var particula in espacio.Particulas)
                         {
-                            var valor = particula.Causa.Efecto.Apariencia.Funcion(particula.Tiempo);
+                            var valor = particula.Causa.Esencia.Apariencia.Funcion(particula.Tiempo);
                             var amplitud = Math.Sqrt(valor.EjeReal * valor.EjeReal + valor.EjeImaginario * valor.EjeImaginario);
                             var color = FuncionAmplitudAColor(amplitud);
                             var faseActual = (particula.Tiempo * particula.Frecuencia) + particula.Fase;

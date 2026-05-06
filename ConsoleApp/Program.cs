@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging;
 using DomainLogic.Services;
 using DomainLogic.Services.Particulas;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace ConsoleApp
 {
@@ -19,9 +20,9 @@ namespace ConsoleApp
             services.AddDharmaServices();
             var serviceProvider = services.BuildServiceProvider();
             var logger = serviceProvider.GetRequiredService<ILogger<Program>>();
-            
+
             logger.LogInformation("═══ INICIANDO VIBRACIÓN DE PARTÍCULAS ═══\n");
-            
+
             try
             {
                 var ambiente = AmbienteConfig.CrearAmbiente(string.Join(' ', args));

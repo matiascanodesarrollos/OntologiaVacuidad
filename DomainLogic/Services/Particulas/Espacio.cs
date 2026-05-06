@@ -29,11 +29,11 @@ public class Espacio : Nombre
         foreach (var grupo in Particulas.GroupBy(p => p.Posicion2D).Where(g => g.Count() > 1))
         {
             var nuevasDesignaciones = grupo
-                .Zip(grupo.Skip(1), (p1, p2) => Designacion.Designar(p1, p2.Causa.Efecto.Apariencia))
+                .Zip(grupo.Skip(1), (p1, p2) => Designacion.Designar(p1, p2.Causa.Esencia.Apariencia))
                 .ToList();
             foreach (var designacion in nuevasDesignaciones)
             {
-                var nuevaParticula = new Particula(designacion.Efecto.Nombre);
+                var nuevaParticula = new Particula(designacion.Esencia.Nombre);
                 Particulas.Add(nuevaParticula);
             }
         }

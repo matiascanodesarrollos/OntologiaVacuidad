@@ -43,15 +43,15 @@ public class ParticulasTests
         espacio.Particulas.Should().HaveCount(3);
         espacio.Particulas.All(particula => particula.Texto is not null).Should().BeTrue();
         espacio.Designacion.Should().Be(designacion);
-        espacio.Particulas.Select(particula => particula.Texto).Should().Equal("ser humano", "pensar lenguaje", nameof(Designacion.Vacuidad));
+        espacio.Particulas.Select(particula => particula.Texto).Should().Equal("ser humano. pensar lenguaje", "ser humano", "pensar lenguaje");
     }
 
     [Fact]
     public void MoverParticulas_ActualizaTiempoYPosicionesSinCrearParticulasCuandoNoHayColision()
     {
-        var primera = Nombre.Imaginar(0d, 1d, 2d);
-        var segunda = Nombre.Imaginar(Math.PI / 2d, 2d, 3d);
-        var designacion = Designacion.Designar(segunda, Apariencia.Aparecer(Designacion.Designar(primera, Apariencia.Mente)));
+        var primera = Nombre.Imaginar("primera", 0d, 1d, 2d);
+        var segunda = Nombre.Imaginar("segunda", Math.PI / 2d, 2d, 3d);
+        var designacion = Designacion.Designar(segunda, Apariencia.Aparecer(new List<Nombre> { primera }));
         var espacio = new Espacio(designacion);
         var particula = espacio.Particulas.First();
         var posicionInicial = particula.Posicion2D;
@@ -72,9 +72,9 @@ public class ParticulasTests
     [Fact]
     public void MoverParticulas_CuandoDosParticulasCoinciden_CreaUnaNuevaParticula()
     {
-        var primera = Nombre.Imaginar(0d, 1d, 2d);
-        var segunda = Nombre.Imaginar(0d, 2d, 3d);
-        var designacion = Designacion.Designar(segunda, Apariencia.Aparecer(Designacion.Designar(primera, Apariencia.Mente)));
+        var primera = Nombre.Imaginar("primera", 0d, 1d, 2d);
+        var segunda = Nombre.Imaginar("segunda", 0d, 2d, 3d);
+        var designacion = Designacion.Designar(segunda, Apariencia.Aparecer(new List<Nombre> { primera }));
         var espacio = new Espacio(designacion);
 
         espacio.MoverParticulas(1d);
@@ -92,8 +92,7 @@ public class ParticulasTests
         var designacion = AmbienteConfig.CrearAmbiente(" ser humano .. pensar lenguaje . ");
 
         designacion.Nombres.Should().HaveCount(3);
-        designacion.Nombres.Take(2).Select(nombre => nombre.Texto).Should().Equal("ser humano", "pensar lenguaje");
-        designacion.Nombres.Last().Texto.Should().Be(nameof(Designacion.Vacuidad));
-        designacion.Nombres.Last().Amplitud.Should().Be(2d);
+        designacion.Nombres.Select(nombre => nombre.Texto).Should().Equal(" ser humano .. pensar lenguaje . ","ser humano", "pensar lenguaje");
+        designacion.Nombres.Select(nombre => nombre.Amplitud).Should().Equal(2d,1d, 1d);
     }
 }

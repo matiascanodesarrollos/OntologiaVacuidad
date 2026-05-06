@@ -5,11 +5,8 @@ using System.Linq;
 public class Designacion
 {
     public Guid Id { get; }
-    public (Nombre Nombre, Apariencia Apariencia) Efecto => (
-        Nombre.Cuerpo(
-            _nombres.Sum(f => f.Value.Sum(n => n.Amplitud)), 
-            this),
-        new Apariencia(this));    
+    public Nombre Efecto { get; }
+    public (Nombre Nombre, Apariencia Apariencia) Esencia => (Efecto, new Apariencia(this));
     public Func<Nombre, double> VelocidadGrupo => n => 
         _nombres.ContainsKey(n.Frecuencia) 
             ? _nombres[n.Frecuencia].Count 
@@ -24,51 +21,16 @@ public class Designacion
         _nombres = nombres
             .GroupBy(n => n.Frecuencia)
             .ToDictionary(g => g.Key, g => g.ToList());
+        Efecto = Nombre.Cuerpo(
+            _nombres.Sum(f => f.Value.Sum(n => n.Amplitud)), 
+            this);
     }
 
-    internal Designacion(string texto, Func<string, string> obtenerVerboNucleo)
+    internal Designacion(string texto, Func<string, Dictionary<double, List<Nombre>>> mapeoNombres)
     {
         Id = Guid.NewGuid();
-        _nombres = new Dictionary<double, List<Nombre>>();
-
-        var predicados = texto
-            .Split('.')
-            .Select(p => p.Trim())
-            .Where(p => !string.IsNullOrEmpty(p))
-            .ToList();        
-        var diccionarioVerbos = predicados
-            .Select(p => obtenerVerboNucleo(p))
-            .GroupBy(p => p)
-            .ToDictionary(g => g.Key, g => g.Count());        
-        var palabras = predicados.SelectMany(p => p.Split(' ')).ToList();
-        var diccionarioComplementos = palabras
-            .Where(p => !diccionarioVerbos.ContainsKey(p)) //Solo los complementos
-            .GroupBy(p => p)
-            .ToDictionary(g => g.Key, g => Math.Max(1,g.Count()));
-
-        var deltaFasePredicados = 2 * Math.PI / predicados.Count;
-        for(var i = 0; i < predicados.Count; i++)
-        {
-            var palabrasPredicado = predicados[i].Split(' ');
-            var verboNucleo = obtenerVerboNucleo(predicados[i]);
-
-            var frecuencia = diccionarioVerbos[verboNucleo];
-            if(!_nombres.ContainsKey(frecuencia))
-            {
-                _nombres.Add(frecuencia, new List<Nombre>());
-            }
-            var amplitud = palabrasPredicado
-                .Where(p => p != verboNucleo)
-                .Sum(p => diccionarioComplementos[p]);
-            var fase = i * deltaFasePredicados;
-
-            var nombre = new Nombre(predicados[i], 
-                fase, 
-                frecuencia,
-                amplitud,
-                this);            
-            _nombres[nombre.Frecuencia].Add(nombre);
-        }
+        Efecto = Nombre.Cuerpo(1.0, this);
+        _nombres = mapeoNombres(texto);       
     }
 
     /// <summary>

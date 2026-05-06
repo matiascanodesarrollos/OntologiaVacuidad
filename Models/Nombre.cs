@@ -1,9 +1,10 @@
 using System;
-using System.Linq;
+using System.Collections.Generic;
 
 public class Nombre : Palabra
 {
     public Designacion Causa { get; }
+    public Apariencia Esencia => new Apariencia(Causa);
     public double Frecuencia { get; }
     public double Amplitud { get; }
 
@@ -18,12 +19,12 @@ public class Nombre : Palabra
         double fase,
         double frecuencia,
         double amplitud,
-        Designacion esencia)
+        Designacion causa)
         : base(texto, fase)
     {
         Frecuencia = frecuencia;
         Amplitud = amplitud;
-        Causa = esencia;
+        Causa = causa;
     }
 
     /// <summary>
@@ -35,12 +36,13 @@ public class Nombre : Palabra
     /// <param name="amplitud">Amplitud deseada.</param>
     /// <returns>Un nuevo nombre</returns>
     public static Nombre Imaginar(
+        string texto,
         double fase,
         double frecuencia,
         double amplitud)
     {
         var nombre = new Nombre(
-            nameof(Designacion.Vacuidad),
+            texto,
             fase,
             frecuencia,
             amplitud,
@@ -70,16 +72,15 @@ public class Nombre : Palabra
     /// la amplitud por la cantidad de complementos del sujeto que comparten (se asume las palabras restantes del predicado),
     /// y la fase por la posición del predicado en la lista (distribuido en 360º).
     /// </summary>
-    /// <param name="apariencia">La apariencia proyectada.</param>
     /// <param name="texto">El texto que funciona como espacio, cada oración se considera un predicado.</param>
-    /// <param name="obtenerVerboNucleo">Función que determina el verbo núcleo de un predicado. Si es null, se asume que es la primer palabra.</param>
+    /// <param name="mapeoNombres">Función que determina el mapeo de nombres a partir del texto .</param>
     /// <returns>La nueva designación creada.</returns>
     public Designacion Mostrarse(string texto, 
-        Func<string, string> obtenerVerboNucleo = null)
+        Func<string, Dictionary<double, List<Nombre>>> mapeoNombres)
     {
         var designacion = new Designacion(
             texto, 
-            obtenerVerboNucleo ?? (predicado => predicado.Split(' ').First()));
+            mapeoNombres);
         return Designacion.Designar(this, new Apariencia(designacion));
     }
 
