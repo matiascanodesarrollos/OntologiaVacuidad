@@ -1,0 +1,14 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "EpistemicGuard Benchmark",
+      "type": "dotnet",
+      "request": "launch",
+      "projectPath": "EpistemicGuard/EpistemicGuard.csproj",
+      "args": [
+        "--benchmark"
+      ]
+    }
+  ]
+}
