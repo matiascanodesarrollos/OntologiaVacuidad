@@ -5,53 +5,54 @@ namespace Models.Tests;
 public class DesignacionTests
 {
     [Fact]
-    public void Vacuidad_SeInicializaSinExcepcionesYConValoresConsistentes()
+    public void Cuerpo_SeInicializaSinExcepcionesYConValoresConsistentes()
     {
-        var vacuidad = Designacion.Vacuidad;
+        var cuerpo = Designacion.Cuerpo;
 
-        vacuidad.Should().NotBeNull();
-        vacuidad.Id.Should().NotBe(Guid.Empty);
-        vacuidad.FrecuenciaAngular.Should().Be(0.0);
-        vacuidad.Causa.Should().NotBeNull();
+        cuerpo.Should().NotBeNull();
+        cuerpo.Id.Should().NotBe(Guid.Empty);
+        cuerpo.FrecuenciaAngular.Should().Be(-8.0);
+        cuerpo.Causa.Should().NotBeNull();
     }
 
     [Theory]
     [InlineData(0.5)]
     [InlineData(1.0)]
     [InlineData(-2.0)]
-    public void Vacuidad_STFT_RespetaFormulaParaTauNoCero(double tau)
+    public void Cuerpo_STFT_RespetaFormulaDeDeltaPrimaParaFrecuenciaAngular(double tau)
     {
-        var valor = Designacion.Vacuidad.STFT((tau, 999.0));
+        var frecuenciaAngular = 2.0;
+        var valor = Designacion.Cuerpo.STFT((tau, frecuenciaAngular));
 
         valor.Real.Should().BeApproximately(0.0, 1e-12);
-        valor.Imaginary.Should().BeApproximately(1.0 / (2.0 * Math.PI * tau), 1e-12);
+        valor.Imaginary.Should().BeApproximately((frecuenciaAngular / 2.0) * Math.PI, 1e-12);
     }
 
     [Fact]
-    public void Vacuidad_STFT_EnTauCero_TieneComponenteSingular()
+    public void Cuerpo_STFT_NoDependeDeTau()
     {
-        var valor = Designacion.Vacuidad.STFT((0.0, 0.0));
+        var v1 = Designacion.Cuerpo.STFT((0.0, 1.25));
+        var v2 = Designacion.Cuerpo.STFT((10.0, 1.25));
 
-        double.IsPositiveInfinity(valor.Real).Should().BeTrue();
-        double.IsInfinity(valor.Imaginary).Should().BeTrue();
+        (v1 - v2).Magnitude.Should().BeLessThan(1e-12);
     }
 
     [Fact]
-    public void Vacuidad_Causa_QuedaRetroreferenciadaALaMismaEsencia()
+    public void Cuerpo_Causa_QuedaRetroreferenciadaALaMismaEsencia()
     {
-        var vacuidad = Designacion.Vacuidad;
+        var cuerpo = Designacion.Cuerpo;
 
-        vacuidad.Causa.Esencia.Should().BeSameAs(vacuidad);
+        cuerpo.Causa.Esencia.Should().BeSameAs(cuerpo);
     }
 
     [Fact]
     public void Designar_CreaNuevaDesignacionConFrecuenciaAngularDeLaApariencia()
     {
         var apariencia = Apariencia.Aparecer(new[] { Palabra.Yo(1.0) });
-        var designacion = Designacion.Designar(apariencia, Nombre.Cuerpo);
+        var designacion = Designacion.Designar(apariencia, Nombre.Vacuidad);
 
         designacion.Should().NotBeNull();
-        designacion.Texto.Should().Be(Nombre.Cuerpo.Texto);
+        designacion.Texto.Should().Be(Nombre.Vacuidad.Texto);
         designacion.FrecuenciaAngular.Should().Be(apariencia.Esencia.FrecuenciaAngular);
         designacion.Causa.Should().NotBeNull();
     }
@@ -61,8 +62,8 @@ public class DesignacionTests
     {
         var apariencia = Apariencia.Aparecer(new[] { Palabra.Yo(1.0) });
 
-        var d1 = Designacion.Designar(apariencia, Nombre.Cuerpo);
-        var d2 = Designacion.Designar(apariencia, Nombre.Cuerpo);
+        var d1 = Designacion.Designar(apariencia, Nombre.Vacuidad);
+        var d2 = Designacion.Designar(apariencia, Nombre.Vacuidad);
 
         d1.Id.Should().NotBe(d2.Id);
         d1.Equals(d2).Should().BeFalse();
@@ -76,9 +77,9 @@ public class DesignacionTests
     {
         var designacion = Designacion.Designar(
             Apariencia.Aparecer(new[] { Palabra.Yo(1.7) }),
-            Nombre.Cuerpo);
+            Nombre.Vacuidad);
 
-        var esperado = Nombre.Cuerpo.TransformadaFourier(frecuenciaAngular);
+        var esperado = Nombre.Vacuidad.TransformadaFourier(frecuenciaAngular);
         var actual = designacion.STFT((tau, frecuenciaAngular));
 
         (actual - esperado).Magnitude.Should().BeLessThan(1e-10);
@@ -89,7 +90,7 @@ public class DesignacionTests
     {
         var designacion = Designacion.Designar(
             Apariencia.Aparecer(new[] { Palabra.Yo(1.7) }),
-            Nombre.Cuerpo);
+            Nombre.Vacuidad);
 
         var v1 = designacion.STFT((-10.0, 1.25));
         var v2 = designacion.STFT((10.0, 1.25));
@@ -100,12 +101,12 @@ public class DesignacionTests
     [Fact]
     public void Mostrarse_DevuelveAparienciaConTextoDelNombre()
     {
-        var designacion = Designacion.Designar(Apariencia.Aparecer(new[] { Palabra.Yo(1.0) }), Nombre.Cuerpo);
+        var designacion = Designacion.Designar(Apariencia.Aparecer(new[] { Palabra.Yo(1.0) }), Nombre.Vacuidad);
 
         var apariencia = designacion.Mostrarse(2.0);
 
         apariencia.Should().NotBeNull();
-        apariencia.Texto.Should().Be(Nombre.Cuerpo.Texto);
+        apariencia.Texto.Should().Be(Nombre.Vacuidad.Texto);
         apariencia.Esencia.Should().NotBeNull();
     }
 
@@ -113,8 +114,8 @@ public class DesignacionTests
     public void Equals_YHashCode_RespetanSemanticaPorId()
     {
         var apariencia = Apariencia.Aparecer(new[] { Palabra.Yo(1.0) });
-        var d1 = Designacion.Designar(apariencia, Nombre.Cuerpo);
-        var d2 = Designacion.Designar(apariencia, Nombre.Cuerpo);
+        var d1 = Designacion.Designar(apariencia, Nombre.Vacuidad);
+        var d2 = Designacion.Designar(apariencia, Nombre.Vacuidad);
 
         d1.Equals(d1).Should().BeTrue();
         d1.Equals(d2).Should().BeFalse();
@@ -132,7 +133,7 @@ public class DesignacionTests
     {
         var designacion = Designacion.Designar(
             Apariencia.Aparecer(new[] { Palabra.Yo(1.0), Palabra.Yo(-0.4) }),
-            Nombre.Cuerpo);
+            Nombre.Vacuidad);
 
         var valor = designacion.Causa.Funcion(t);
 

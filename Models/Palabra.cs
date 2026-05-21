@@ -21,11 +21,11 @@ public class Palabra
         Ventana = ventana;
     }
 
-    // Palabra base con ventana gaussiana centrada en cero.
+    // Palabra base con ventana gaussiana.
     public static Palabra Yo(double frecuenciaAngular) =>
         new Palabra(
             nameof(Yo), 
             frecuenciaAngular,
-            t => Math.Exp(-(t * t) / 2.0) //Gaussiana
+            t => new Complex(Math.Exp(-(t * t) / 2.0), 0.0) //Gaussiana
     );
 }

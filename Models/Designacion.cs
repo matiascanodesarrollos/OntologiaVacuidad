@@ -86,13 +86,11 @@ public class Designacion : Nombre
     public override int GetHashCode() => Id.GetHashCode();
 
     /// <summary>
-    /// Designación base. Vacuidad.
+    /// Designación base. Cuerpo.
     /// </summary>
-    public static Designacion Vacuidad = new Designacion(
-        Cuerpo, 
-        x => new Complex(
-            x.tau == 0 ? 0.5 * double.PositiveInfinity : 0.0,
-            1 / (2 * Math.PI * x.tau)) //Transformada inversa de u(ω)
+    public static Designacion Cuerpo = new Designacion(
+        Vacuidad,
+        x => new Complex(0.0, (x.FrecuenciaAngular / 2.0) * Math.PI) //Transformada inversa de δ′(ω)
     );
 
     /// <summary>

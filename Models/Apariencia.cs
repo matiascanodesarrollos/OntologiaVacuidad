@@ -80,7 +80,7 @@ public class Apariencia : Palabra
     public static Apariencia Mente => new Apariencia(
         new Palabra(
             nameof(Mente),
-            Designacion.Vacuidad.FrecuenciaAngular,
+            Designacion.Cuerpo.FrecuenciaAngular,
             t => 1.0 / (2 * Math.PI) //Transformada inversa de δ(ω)
         )
     );

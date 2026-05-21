@@ -19,7 +19,7 @@ public class OverridingTests
     [Fact]
     public void Designacion_PermiteSobrescribirEstimadorDeFrecuenciaAngular()
     {
-        var derivada = new DesignacionConEstimadorFijo(Designacion.Vacuidad);
+        var derivada = new DesignacionConEstimadorFijo(Designacion.Cuerpo);
 
         var frecuenciaAngular = derivada.InvocarEstimador((x => new Complex(x.FrecuenciaAngular * x.FrecuenciaAngular, 0.0)));
 

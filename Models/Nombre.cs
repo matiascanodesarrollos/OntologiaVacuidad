@@ -64,14 +64,14 @@ public class Nombre
     public override int GetHashCode() => Texto.GetHashCode();
 
     /// <summary>
-    /// Crea un nuevo nombre con el texto "Vacuidad" igual a derivada de la delta de Dirac, asociado a la causa Vacuidad.
+        /// Crea un nuevo nombre base "Vacuidad" con espectro escalón unitario u(ω).
     /// </summary>
     /// <param name="velocidadGrupo">La velocidad del grupo asociada al nuevo nombre.</param>
     /// <returns>Un nuevo nombre asociado a la causa Vacuidad.</returns>
-    public static Nombre Cuerpo => new Nombre(
-            nameof(Designacion.Vacuidad), 
+        public static Nombre Vacuidad => new Nombre(
+            nameof(Vacuidad),
             0.0,
-            t => new Complex(0.0, t / 2 * Math.PI)); //Transformada inversa de δ′(ω)
+            omega => omega >= 0.0 ? Complex.One : Complex.Zero); //u(ω)
     
     
 
@@ -89,7 +89,7 @@ public class Nombre
     {
         const double limiteFrecuencia = 8.0;
         const int pasos = 4096;
-        var dOmega = (2.0 * limiteFrecuencia) / pasos;
+        var dOmega = 2.0 * limiteFrecuencia / pasos;
         var suma = Complex.Zero;
 
         for (var i = 0; i <= pasos; i++)
