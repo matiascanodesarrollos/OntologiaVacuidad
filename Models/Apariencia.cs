@@ -15,7 +15,7 @@ public class Apariencia : Palabra
     /// /// <param name="otra">La apariencia de la cual se copiarán las propiedades.</param>
     /// </summary>
     public Apariencia(Apariencia otra)
-        : base(otra.Texto, otra.Frecuencia, otra.Ventana)
+        : base(otra.Texto, otra.FrecuenciaAngular, otra.Ventana)
     {
         nombre = new Lazy<Complex>(() => otra.nombre.Value);
         Esencia = otra.Esencia;
@@ -23,18 +23,18 @@ public class Apariencia : Palabra
     
 
     internal Apariencia(Palabra palabra)
-        : base(palabra.Texto, palabra.Frecuencia, palabra.Ventana)
+        : base(palabra.Texto, palabra.FrecuenciaAngular, palabra.Ventana)
     {
-        nombre = new Lazy<Complex>(() => CalcularTransformadaFourier(Frecuencia));
+        nombre = new Lazy<Complex>(() => CalcularTransformadaFourier(FrecuenciaAngular));
         Esencia = new Designacion(
-            new Nombre(palabra.Texto, palabra.Frecuencia, palabra.Ventana),
+            new Nombre(palabra.Texto, palabra.FrecuenciaAngular, palabra.Ventana),
             this);
     }
 
     internal Apariencia(Palabra palabra, Designacion esencia)
-        : base(palabra.Texto, palabra.Frecuencia, palabra.Ventana)
+        : base(palabra.Texto, palabra.FrecuenciaAngular, palabra.Ventana)
     {
-        nombre = new Lazy<Complex>(() => CalcularTransformadaFourier(Frecuencia));
+        nombre = new Lazy<Complex>(() => CalcularTransformadaFourier(FrecuenciaAngular));
         Esencia = esencia;
     }
 
@@ -48,7 +48,7 @@ public class Apariencia : Palabra
         var lista = palabras.ToList();
         var palabra = new Palabra(
             string.Join(" ", lista.Select(p => p.Texto)),
-            lista.Sum(p => p.Frecuencia),
+            lista.Sum(p => p.FrecuenciaAngular),
             t => lista.Aggregate(
                 Complex.One,
                 (acc, p) => acc * (p.Fase(t) * p.Ventana(t))
@@ -80,7 +80,7 @@ public class Apariencia : Palabra
     public static Apariencia Mente => new Apariencia(
         new Palabra(
             nameof(Mente),
-            Designacion.Vacuidad.Frecuencia,
+            Designacion.Vacuidad.FrecuenciaAngular,
             t => 1.0 / (2 * Math.PI) //Transformada inversa de δ(ω)
         )
     );
@@ -88,14 +88,14 @@ public class Apariencia : Palabra
     /// <summary>
     /// Calcula la transformada de Fourier compleja de <see cref="Ventana"/> para una frecuencia dada.
     /// </summary>
-    /// <param name="frecuencia">Frecuencia en la que se evalúa el espectro.</param>
+    /// <param name="frecuenciaAngular">Frecuencia angular en la que se evalúa el espectro.</param>
     /// <returns>Valor complejo de la transformada de Fourier en la frecuencia indicada.</returns>
     /// <remarks>
     /// Al sobreescribir este método se modifica directamente el valor interno usado por
     /// <see cref="Amplitud"/> y <see cref="Funcion"/>. La implementación derivada debería conservar
     /// estabilidad numérica y devolver valores finitos para evitar propagar NaN o infinito.
     /// </remarks>
-    protected virtual Complex CalcularTransformadaFourier(double frecuencia)
+    protected virtual Complex CalcularTransformadaFourier(double frecuenciaAngular)
     {
         const double limiteIntegracion = 8.0;
         const int pasos = 4096;
@@ -109,7 +109,7 @@ public class Apariencia : Palabra
             var ventana = Ventana(t);
             var peso = (i == 0 || i == pasos) ? 0.5 : 1.0;
 
-            var exponente = Complex.FromPolarCoordinates(1.0, -2.0 * Math.PI * frecuencia * t);
+            var exponente = Complex.FromPolarCoordinates(1.0, -frecuenciaAngular * t);
             suma += peso * ventana * exponente;
         }
 

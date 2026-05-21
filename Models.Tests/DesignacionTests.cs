@@ -11,7 +11,7 @@ public class DesignacionTests
 
         vacuidad.Should().NotBeNull();
         vacuidad.Id.Should().NotBe(Guid.Empty);
-        vacuidad.Frecuencia.Should().Be(0.0);
+        vacuidad.FrecuenciaAngular.Should().Be(0.0);
         vacuidad.Causa.Should().NotBeNull();
     }
 
@@ -45,14 +45,14 @@ public class DesignacionTests
     }
 
     [Fact]
-    public void Designar_CreaNuevaDesignacionConFrecuenciaDeLaApariencia()
+    public void Designar_CreaNuevaDesignacionConFrecuenciaAngularDeLaApariencia()
     {
         var apariencia = Apariencia.Aparecer(new[] { Palabra.Yo(1.0) });
         var designacion = Designacion.Designar(apariencia, Nombre.Cuerpo);
 
         designacion.Should().NotBeNull();
         designacion.Texto.Should().Be(Nombre.Cuerpo.Texto);
-        designacion.Frecuencia.Should().Be(apariencia.Esencia.Frecuencia);
+        designacion.FrecuenciaAngular.Should().Be(apariencia.Esencia.FrecuenciaAngular);
         designacion.Causa.Should().NotBeNull();
     }
 
@@ -72,14 +72,14 @@ public class DesignacionTests
     [InlineData(-1.5, 0.5)]
     [InlineData(0.2, 2.0)]
     [InlineData(2.5, -3.0)]
-    public void Designar_STFT_UsaTransformadaDelNombreConFrecuenciaSolicitada(double tau, double frecuencia)
+    public void Designar_STFT_UsaTransformadaDelNombreConFrecuenciaAngularSolicitada(double tau, double frecuenciaAngular)
     {
         var designacion = Designacion.Designar(
             Apariencia.Aparecer(new[] { Palabra.Yo(1.7) }),
             Nombre.Cuerpo);
 
-        var esperado = Nombre.Cuerpo.TransformadaFourier(frecuencia);
-        var actual = designacion.STFT((tau, frecuencia));
+        var esperado = Nombre.Cuerpo.TransformadaFourier(frecuenciaAngular);
+        var actual = designacion.STFT((tau, frecuenciaAngular));
 
         (actual - esperado).Magnitude.Should().BeLessThan(1e-10);
     }

@@ -4,28 +4,28 @@ using System.Numerics;
 public class Palabra
 {
     public Guid Id { get; }
-    public double Frecuencia { get; }
+    public double FrecuenciaAngular { get; }
     public Func<double, Complex> Fase { get; }
     public Func<double, Complex> Ventana { get; }
     public string Texto { get; }
 
     internal Palabra(
         string texto, 
-        double frecuencia, 
+        double frecuenciaAngular,
         Func<double, Complex> ventana)
     {
         Id = Guid.NewGuid();
-        Frecuencia = frecuencia;
+        FrecuenciaAngular = frecuenciaAngular;
         Texto = texto;
-        Fase = t => Complex.FromPolarCoordinates(1.0, 2 * Math.PI * frecuencia * t);
+        Fase = t => Complex.FromPolarCoordinates(1.0, frecuenciaAngular * t);
         Ventana = ventana;
     }
 
     // Palabra base con ventana gaussiana centrada en cero.
-    public static Palabra Yo(double frecuencia) => 
+    public static Palabra Yo(double frecuenciaAngular) =>
         new Palabra(
             nameof(Yo), 
-            frecuencia, 
+            frecuenciaAngular,
             t => Math.Exp(-(t * t) / 2.0) //Gaussiana
     );
 }

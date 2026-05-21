@@ -88,13 +88,13 @@ public class NombreTests
         var valor = apariencia.Funcion(t);
 
         apariencia.Texto.Should().Be(Nombre.Cuerpo.Texto);
-        apariencia.Frecuencia.Should().BeApproximately(1.2, 1e-12);
+        apariencia.FrecuenciaAngular.Should().BeApproximately(1.2, 1e-12);
         double.IsFinite(valor.Real).Should().BeTrue();
         double.IsFinite(valor.Imaginary).Should().BeTrue();
     }
 
     [Fact]
-    public void Mostrarse_ConFrecuenciaCero_MantieneMagnitudEstableConTiempo()
+    public void Mostrarse_ConFrecuenciaAngularCero_MantieneMagnitudEstableConTiempo()
     {
         var apariencia = Nombre.Cuerpo.Mostrarse(0.0);
         var v1 = apariencia.Funcion(0.0);

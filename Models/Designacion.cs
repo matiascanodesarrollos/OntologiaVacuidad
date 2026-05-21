@@ -4,10 +4,10 @@ using System.Numerics;
 public class Designacion : Nombre
 {
     public Guid Id { get; }
-    private readonly Lazy<double> frecuencia;
+    private readonly Lazy<double> frecuenciaAngular;
     private readonly Lazy<Apariencia> causa;
-    public double Frecuencia => frecuencia.Value;
-    public Func<(double tau, double Frecuencia), Complex> STFT { get; }
+    public double FrecuenciaAngular => frecuenciaAngular.Value;
+    public Func<(double tau, double FrecuenciaAngular), Complex> STFT { get; }
     public Apariencia Causa => causa.Value;
 
     /// <summary>
@@ -18,25 +18,25 @@ public class Designacion : Nombre
         : base(otra.Texto, otra.VelocidadGrupo, otra.TransformadaFourier)
     {
         Id = Guid.NewGuid();
-        frecuencia = new Lazy<double>(() => otra.Frecuencia);
+        frecuenciaAngular = new Lazy<double>(() => otra.FrecuenciaAngular);
         STFT = otra.STFT;
         causa = new Lazy<Apariencia>(() => otra.Causa);
     }
 
     internal Designacion(
         Nombre nombre, 
-        Func<(double tau, double Frecuencia), Complex> funcion)
+        Func<(double tau, double FrecuenciaAngular), Complex> funcion)
         : base(nombre.Texto, nombre.VelocidadGrupo, nombre.TransformadaFourier)
     {
         Id = Guid.NewGuid();
         STFT = funcion;
-        frecuencia = new Lazy<double>(() => EstimarFrecuencia(STFT));
+        frecuenciaAngular = new Lazy<double>(() => EstimarFrecuenciaAngular(STFT));
         causa = new Lazy<Apariencia>(() =>
             new Apariencia(
                 new Palabra(
                     nombre.Texto,
-                    Frecuencia,
-                    t => STFT((t, Frecuencia))),
+                    FrecuenciaAngular,
+                    t => STFT((t, FrecuenciaAngular))),
                 this));
     }
 
@@ -46,15 +46,15 @@ public class Designacion : Nombre
         : base(nombre.Texto, nombre.VelocidadGrupo, nombre.TransformadaFourier)
     {
         Id = Guid.NewGuid();
-        frecuencia = new Lazy<double>(() => causa.Frecuencia);
-        STFT = x => nombre.TransformadaFourier(x.Frecuencia);
+        frecuenciaAngular = new Lazy<double>(() => causa.FrecuenciaAngular);
+        STFT = x => nombre.TransformadaFourier(x.FrecuenciaAngular);
         this.causa = new Lazy<Apariencia>(() => causa);
     }
 
     /// <summary>
-    /// Crea una designación usando la frecuencia de la esencia de la apariencia y el espectro del nombre.
+    /// Crea una designación usando la frecuencia angular de la esencia de la apariencia y el espectro del nombre.
     /// </summary>
-    /// <param name="apariencia">Apariencia desde la que se toma la frecuencia base.</param>
+    /// <param name="apariencia">Apariencia desde la que se toma la frecuencia angular base.</param>
     /// <param name="nombre">Nombre que aporta texto, velocidad de grupo y transformada.</param>
     /// <returns>Una nueva designación vinculada a la apariencia de entrada.</returns>
     public static Designacion Designar(Apariencia apariencia, Nombre nombre)
@@ -96,31 +96,31 @@ public class Designacion : Nombre
     );
 
     /// <summary>
-    /// Estima la frecuencia característica de la designación a partir de su función espectral.
+    /// Estima la frecuencia angular característica de la designación a partir de su función espectral.
     /// </summary>
     /// <param name="funcion">Función espectral compleja usada para muestrear magnitudes.</param>
-    /// <returns>Frecuencia estimada; devuelve 0 cuando el espectro es plano o no identificable.</returns>
+    /// <returns>Frecuencia angular estimada; devuelve 0 cuando el espectro es plano o no identificable.</returns>
     /// <remarks>
-    /// Este método se invoca de forma diferida por <see cref="Frecuencia"/> (lazy). Si se sobreescribe,
-    /// la nueva estrategia impacta la frecuencia materializada en el primer acceso y la construcción de
-    /// <see cref="Causa"/>, que depende de dicha frecuencia.
+    /// Este método se invoca de forma diferida por <see cref="FrecuenciaAngular"/> (lazy). Si se sobreescribe,
+    /// la nueva estrategia impacta la frecuencia angular materializada en el primer acceso y la construcción de
+    /// <see cref="Causa"/>, que depende de dicha frecuencia angular.
     /// </remarks>
-    protected virtual double EstimarFrecuencia(Func<(double tau, double Frecuencia), Complex> funcion)
+    protected virtual double EstimarFrecuenciaAngular(Func<(double tau, double FrecuenciaAngular), Complex> funcion)
     {
-        const double minFrecuencia = -8.0;
-        const double maxFrecuencia = 8.0;
+        const double minFrecuenciaAngular = -8.0;
+        const double maxFrecuenciaAngular = 8.0;
         const int pasos = 256;
         const double tauMuestreo = 1.0;
 
-        var delta = (maxFrecuencia - minFrecuencia) / pasos;
-        var mejorFrecuencia = 0.0;
+        var delta = (maxFrecuenciaAngular - minFrecuenciaAngular) / pasos;
+        var mejorFrecuenciaAngular = 0.0;
         var maxMagnitud = double.NegativeInfinity;
         var minMagnitud = double.PositiveInfinity;
 
         for (var i = 0; i <= pasos; i++)
         {
-            var frecuencia = minFrecuencia + (i * delta);
-            var valor = funcion((tauMuestreo, frecuencia));
+            var frecuenciaAngular = minFrecuenciaAngular + (i * delta);
+            var valor = funcion((tauMuestreo, frecuenciaAngular));
             var magnitud = valor.Magnitude;
 
             if (!double.IsFinite(magnitud))
@@ -131,7 +131,7 @@ public class Designacion : Nombre
             if (magnitud > maxMagnitud)
             {
                 maxMagnitud = magnitud;
-                mejorFrecuencia = frecuencia;
+                mejorFrecuenciaAngular = frecuenciaAngular;
             }
 
             if (magnitud < minMagnitud)
@@ -146,6 +146,6 @@ public class Designacion : Nombre
         }
 
         var espectroPlano = Math.Abs(maxMagnitud - minMagnitud) <= 1e-9 * (1.0 + Math.Abs(maxMagnitud));
-        return espectroPlano ? 0.0 : mejorFrecuencia;
+        return espectroPlano ? 0.0 : mejorFrecuenciaAngular;
     }
 }

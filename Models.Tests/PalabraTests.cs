@@ -12,7 +12,7 @@ public class PalabraTests
 
         palabra.Texto.Should().Be("Yo");
         palabra.Id.Should().NotBe(Guid.Empty);
-        palabra.Frecuencia.Should().Be(2.0);
+        palabra.FrecuenciaAngular.Should().Be(2.0);
     }
 
     [Theory]
@@ -20,10 +20,10 @@ public class PalabraTests
     [InlineData(1.5, 0.2)]
     [InlineData(-3.0, 0.125)]
     [InlineData(0.0, 10.0)]
-    public void Yo_UsaFaseComplejaUnitariaConFrecuenciaIndicada(double frecuencia, double t)
+    public void Yo_UsaFaseComplejaUnitariaConFrecuenciaAngularIndicada(double frecuenciaAngular, double t)
     {
-        var palabra = Palabra.Yo(frecuencia);
-        var esperado = Complex.FromPolarCoordinates(1.0, 2 * Math.PI * frecuencia * t);
+        var palabra = Palabra.Yo(frecuenciaAngular);
+        var esperado = Complex.FromPolarCoordinates(1.0, frecuenciaAngular * t);
 
         palabra.Fase(t).Magnitude.Should().BeApproximately(1.0, 1e-12);
         palabra.Fase(t).Real.Should().BeApproximately(esperado.Real, 1e-12);
@@ -34,7 +34,7 @@ public class PalabraTests
     [InlineData(0.25)]
     [InlineData(0.75)]
     [InlineData(10.0)]
-    public void Yo_ConFrecuenciaCero_DevuelveFaseConstante(double t)
+    public void Yo_ConFrecuenciaAngularCero_DevuelveFaseConstante(double t)
     {
         var palabra = Palabra.Yo(0.0);
 
@@ -46,10 +46,10 @@ public class PalabraTests
     [InlineData(1.0, 0.25)]
     [InlineData(2.5, 0.1)]
     [InlineData(-0.75, 0.4)]
-    public void Yo_RespetaPeriodicidadDeLaFase(double frecuencia, double t)
+    public void Yo_RespetaPeriodicidadDeLaFase(double frecuenciaAngular, double t)
     {
-        var palabra = Palabra.Yo(frecuencia);
-        var periodo = 1.0 / Math.Abs(frecuencia);
+        var palabra = Palabra.Yo(frecuenciaAngular);
+        var periodo = (2.0 * Math.PI) / Math.Abs(frecuenciaAngular);
 
         var actual = palabra.Fase(t);
         var desplazada = palabra.Fase(t + periodo);

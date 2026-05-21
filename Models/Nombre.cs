@@ -23,16 +23,16 @@ public class Nombre
     }
 
     /// <summary>
-    /// Proyecta esta designación en una nueva apariencia evaluando su función en una frecuencia dada.
+    /// Proyecta esta designación en una nueva apariencia evaluando su función en una frecuencia angular dada.
     /// </summary>
-    /// <param name="frecuencia">Frecuencia usada para evaluar la función de la designación.</param>
+    /// <param name="frecuenciaAngular">Frecuencia angular usada para evaluar la función de la designación.</param>
     /// <returns>Una apariencia construida a partir de la función de esta designación.</returns>
-    public Apariencia Mostrarse(double frecuencia)
+    public Apariencia Mostrarse(double frecuenciaAngular)
     {
         var apariencia = new Apariencia(
             new Palabra(
                 Texto,
-                frecuencia,
+                frecuenciaAngular,
                 t => CalcularTransformadaInversaFourier(t))
         );
         return apariencia;
@@ -83,7 +83,7 @@ public class Nombre
     /// <remarks>
     /// Al sobreescribir este método se altera la señal de ventana usada por <see cref="Mostrarse(double)"/>,
     /// y por lo tanto cambia la <see cref="Apariencia"/> resultante. La implementación derivada debería
-    /// respetar coherencia de unidades entre tiempo y frecuencia para evitar reconstrucciones inestables.
+    /// respetar coherencia de unidades entre tiempo y frecuencia angular para evitar reconstrucciones inestables.
     /// </remarks>
     protected virtual Complex CalcularTransformadaInversaFourier(double t)
     {
@@ -97,7 +97,7 @@ public class Nombre
             var omega = -limiteFrecuencia + (i * dOmega);
             var valor = TransformadaFourier(omega);
             var peso = (i == 0 || i == pasos) ? 0.5 : 1.0;
-            var exponente = Complex.FromPolarCoordinates(1.0, 2.0 * Math.PI * omega * t);
+            var exponente = Complex.FromPolarCoordinates(1.0, omega * t);
             suma += peso * valor * exponente;
         }
 

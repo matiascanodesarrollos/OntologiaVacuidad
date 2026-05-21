@@ -17,13 +17,13 @@ public class OverridingTests
     }
 
     [Fact]
-    public void Designacion_PermiteSobrescribirEstimadorDeFrecuencia()
+    public void Designacion_PermiteSobrescribirEstimadorDeFrecuenciaAngular()
     {
         var derivada = new DesignacionConEstimadorFijo(Designacion.Vacuidad);
 
-        var frecuencia = derivada.InvocarEstimador((x => new Complex(x.Frecuencia * x.Frecuencia, 0.0)));
+        var frecuenciaAngular = derivada.InvocarEstimador((x => new Complex(x.FrecuenciaAngular * x.FrecuenciaAngular, 0.0)));
 
-        frecuencia.Should().Be(3.5);
+        frecuenciaAngular.Should().Be(3.5);
     }
 
     private sealed class AparienciaConTransformadaFija : Apariencia
@@ -33,14 +33,14 @@ public class OverridingTests
         {
         }
 
-        protected override Complex CalcularTransformadaFourier(double frecuencia)
+        protected override Complex CalcularTransformadaFourier(double frecuenciaAngular)
         {
             return new Complex(42.0, -7.0);
         }
 
-        public Complex InvocarCalculo(double frecuencia)
+        public Complex InvocarCalculo(double frecuenciaAngular)
         {
-            return CalcularTransformadaFourier(frecuencia);
+            return CalcularTransformadaFourier(frecuenciaAngular);
         }
     }
 
@@ -51,14 +51,14 @@ public class OverridingTests
         {
         }
 
-        protected override double EstimarFrecuencia(Func<(double tau, double Frecuencia), Complex> funcion)
+        protected override double EstimarFrecuenciaAngular(Func<(double tau, double FrecuenciaAngular), Complex> funcion)
         {
             return 3.5;
         }
 
-        public double InvocarEstimador(Func<(double tau, double Frecuencia), Complex> funcion)
+        public double InvocarEstimador(Func<(double tau, double FrecuenciaAngular), Complex> funcion)
         {
-            return EstimarFrecuencia(funcion);
+            return EstimarFrecuenciaAngular(funcion);
         }
     }
 }

@@ -28,7 +28,7 @@ public class AparienciaTests
     }
 
     [Fact]
-    public void Amplitud_CoincideConTransformadaFourierDeVentanaGaussianaEnFrecuenciaCero()
+    public void Amplitud_CoincideConTransformadaFourierDeVentanaGaussianaEnFrecuenciaAngularCero()
     {
         var apariencia = Apariencia.Aparecer(new[] { Palabra.Yo(0.0) });
         var esperado = Math.Sqrt(2.0 * Math.PI);
@@ -67,21 +67,21 @@ public class AparienciaTests
         var valor = apariencia.Funcion(0.2);
 
         apariencia.Texto.Should().BeEmpty();
-        apariencia.Frecuencia.Should().Be(0.0);
+        apariencia.FrecuenciaAngular.Should().Be(0.0);
         double.IsFinite(valor.Real).Should().BeTrue();
         double.IsFinite(valor.Imaginary).Should().BeTrue();
         apariencia.Amplitud.Should().BePositive();
     }
 
     [Fact]
-    public void Aparecer_PalabraUnica_PreservaTextoYFrecuencia()
+    public void Aparecer_PalabraUnica_PreservaTextoYFrecuenciaAngular()
     {
         var palabra = Palabra.Yo(3.0);
 
         var apariencia = Apariencia.Aparecer(new[] { palabra });
 
         apariencia.Texto.Should().Be("Yo");
-        apariencia.Frecuencia.Should().BeApproximately(3.0, 1e-12);
+        apariencia.FrecuenciaAngular.Should().BeApproximately(3.0, 1e-12);
     }
 
     [Theory]
@@ -115,7 +115,7 @@ public class AparienciaTests
     }
 
     [Fact]
-    public void Funcion_ParaFrecuenciaCero_ConservaFaseConstante()
+    public void Funcion_ParaFrecuenciaAngularCero_ConservaFaseConstante()
     {
         var apariencia = Apariencia.Aparecer(new[] { Palabra.Yo(0.0) });
         var valor1 = apariencia.Funcion(0.0);
