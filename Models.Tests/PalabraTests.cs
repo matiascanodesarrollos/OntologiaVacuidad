@@ -1,49 +1,109 @@
 using FluentAssertions;
+using System.Numerics;
 
 namespace Models.Tests;
 
 public class PalabraTests
 {
     [Fact]
-    public void Constructor_ConTexto_Crea()
+    public void Yo_CreaPalabraConTextoEsperado()
     {
-        var nombre = Nombre.Imaginar("Vacuidad", Math.PI / 3, 1.0, 2.0);
-        var palabra = nombre as Palabra;
+        var palabra = Palabra.Yo(2.0);
 
-        palabra.Should().NotBeNull();
-        palabra.Fase.Should().Be(Math.PI / 3);
+        palabra.Texto.Should().Be("Yo");
+        palabra.Id.Should().NotBe(Guid.Empty);
+        palabra.Frecuencia.Should().Be(2.0);
     }
 
-    [Fact]
-    public void Constructor_SinTexto_Crea()
+    [Theory]
+    [InlineData(2.0, 0.25)]
+    [InlineData(1.5, 0.2)]
+    [InlineData(-3.0, 0.125)]
+    [InlineData(0.0, 10.0)]
+    public void Yo_UsaFaseComplejaUnitariaConFrecuenciaIndicada(double frecuencia, double t)
     {
-        var nombre = Nombre.Imaginar("Vacuidad", Math.PI / 3, 1.0, 2.0);
-        var palabra = nombre as Palabra;
+        var palabra = Palabra.Yo(frecuencia);
+        var esperado = Complex.FromPolarCoordinates(1.0, 2 * Math.PI * frecuencia * t);
 
-        palabra.Should().NotBeNull();
-        palabra!.Texto.Should().Be("Vacuidad");
+        palabra.Fase(t).Magnitude.Should().BeApproximately(1.0, 1e-12);
+        palabra.Fase(t).Real.Should().BeApproximately(esperado.Real, 1e-12);
+        palabra.Fase(t).Imaginary.Should().BeApproximately(esperado.Imaginary, 1e-12);
     }
 
-    [Fact]
-    public void Constructor_ConFaseMayor360_NormalizaFase()
+    [Theory]
+    [InlineData(0.25)]
+    [InlineData(0.75)]
+    [InlineData(10.0)]
+    public void Yo_ConFrecuenciaCero_DevuelveFaseConstante(double t)
     {
-        var fase = 400.0;
-        var nombre = Nombre.Imaginar("Vacuidad", fase, 1.0, 2.0);
-        var palabra = nombre as Palabra;
-        var faseEsperada = fase % (2 * Math.PI);
+        var palabra = Palabra.Yo(0.0);
 
-        palabra.Should().NotBeNull();
-        palabra!.Fase.Should().Be(faseEsperada);
+        palabra.Fase(t).Real.Should().BeApproximately(1.0, 1e-12);
+        palabra.Fase(t).Imaginary.Should().BeApproximately(0.0, 1e-12);
     }
 
-    [Fact]
-    public void Constructor_ConFaseNegativa_NormalizaFaseUsandoValorAbsoluto()
+    [Theory]
+    [InlineData(1.0, 0.25)]
+    [InlineData(2.5, 0.1)]
+    [InlineData(-0.75, 0.4)]
+    public void Yo_RespetaPeriodicidadDeLaFase(double frecuencia, double t)
     {
-        var fase = -Math.PI / 3;
-        var nombre = Nombre.Imaginar("Vacuidad", fase, 1.0, 2.0);
-        var palabra = nombre as Palabra;
+        var palabra = Palabra.Yo(frecuencia);
+        var periodo = 1.0 / Math.Abs(frecuencia);
 
-        palabra.Should().NotBeNull();
-        palabra!.Fase.Should().BeApproximately(Math.PI / 3, 1e-10);
+        var actual = palabra.Fase(t);
+        var desplazada = palabra.Fase(t + periodo);
+
+        (actual - desplazada).Magnitude.Should().BeLessThan(1e-9);
+    }
+
+    [Theory]
+    [InlineData(0.0, 1.0)]
+    [InlineData(1.0, 0.6065306597)]
+    [InlineData(2.0, 0.1353352832)]
+    [InlineData(4.0, 0.0003354626)]
+    public void Yo_UsaVentanaGaussiana_ParteRealEsperada(double t, double esperado)
+    {
+        var palabra = Palabra.Yo(1.0);
+
+        palabra.Ventana(t).Real.Should().BeApproximately(esperado, 1e-9);
+        palabra.Ventana(t).Imaginary.Should().BeApproximately(0.0, 1e-12);
+    }
+
+    [Theory]
+    [InlineData(0.5)]
+    [InlineData(1.5)]
+    [InlineData(3.25)]
+    public void Yo_VentanaGaussiana_EsPar(double t)
+    {
+        var palabra = Palabra.Yo(1.0);
+
+        var positiva = palabra.Ventana(t);
+        var negativa = palabra.Ventana(-t);
+
+        (positiva - negativa).Magnitude.Should().BeLessThan(1e-12);
+    }
+
+    [Theory]
+    [InlineData(20.0)]
+    [InlineData(50.0)]
+    [InlineData(100.0)]
+    public void Yo_VentanaGaussiana_SeAtenuaFuertementeEnColas(double t)
+    {
+        var palabra = Palabra.Yo(1.0);
+
+        palabra.Ventana(t).Magnitude.Should().BeLessThan(1e-20);
+    }
+
+    [Theory]
+    [InlineData(1e3)]
+    [InlineData(-1e3)]
+    public void Yo_FaseEsNumericamenteEstableEnTiemposGrandes(double t)
+    {
+        var palabra = Palabra.Yo(3.7);
+        var fase = palabra.Fase(t);
+
+        double.IsFinite(fase.Real).Should().BeTrue();
+        double.IsFinite(fase.Imaginary).Should().BeTrue();
     }
 }

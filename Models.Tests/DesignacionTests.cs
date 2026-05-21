@@ -4,110 +4,139 @@ namespace Models.Tests;
 
 public class DesignacionTests
 {
-    private static Dictionary<double, List<Nombre>> MapearNombres(string texto)
+    [Fact]
+    public void Vacuidad_SeInicializaSinExcepcionesYConValoresConsistentes()
     {
-        var nombres = new Dictionary<double, List<Nombre>>();
-        var predicados = texto
-            .Split('.')
-            .Select(p => p.Trim())
-            .Where(p => !string.IsNullOrEmpty(p))
-            .ToList();
-        var diccionarioVerbos = predicados
-            .Select(p => p.Split(' ').First())
-            .GroupBy(p => p)
-            .ToDictionary(g => g.Key, g => g.Count());
-        var palabras = predicados.SelectMany(p => p.Split(' ')).ToList();
-        var diccionarioComplementos = palabras
-            .Where(p => !diccionarioVerbos.ContainsKey(p))
-            .GroupBy(p => p)
-            .ToDictionary(g => g.Key, g => Math.Max(1, g.Count()));
+        var vacuidad = Designacion.Vacuidad;
 
-        var deltaFasePredicados = 2 * Math.PI / predicados.Count;
-        for (var i = 0; i < predicados.Count; i++)
-        {
-            var palabrasPredicado = predicados[i].Split(' ');
-            var verboNucleo = palabrasPredicado.First();
-            var frecuencia = diccionarioVerbos[verboNucleo];
+        vacuidad.Should().NotBeNull();
+        vacuidad.Id.Should().NotBe(Guid.Empty);
+        vacuidad.Frecuencia.Should().Be(0.0);
+        vacuidad.Causa.Should().NotBeNull();
+    }
 
-            if (!nombres.ContainsKey(frecuencia))
-            {
-                nombres[frecuencia] = new List<Nombre>();
-            }
+    [Theory]
+    [InlineData(0.5)]
+    [InlineData(1.0)]
+    [InlineData(-2.0)]
+    public void Vacuidad_STFT_RespetaFormulaParaTauNoCero(double tau)
+    {
+        var valor = Designacion.Vacuidad.STFT((tau, 999.0));
 
-            var amplitud = palabrasPredicado
-                .Where(p => p != verboNucleo)
-                .Sum(p => diccionarioComplementos[p]);
-            var fase = i * deltaFasePredicados;
-
-            nombres[frecuencia].Add(Nombre.Imaginar(predicados[i], fase, frecuencia, amplitud));
-        }
-
-        return nombres;
+        valor.Real.Should().BeApproximately(0.0, 1e-12);
+        valor.Imaginary.Should().BeApproximately(1.0 / (2.0 * Math.PI * tau), 1e-12);
     }
 
     [Fact]
-    public void Designar_SobreApariencia_AgregaElNombreALaDesignacionBase()
+    public void Vacuidad_STFT_EnTauCero_TieneComponenteSingular()
     {
-        var frecuencia = 5.0;
-        var fase = Math.PI / 3;
-        var amplitud = 2.0;
-        var nombre = Nombre.Imaginar("Vacuidad", fase, frecuencia, amplitud);
-        var texto = "gozo. mente";
-        var designacionApariencia = nombre.Mostrarse(texto, MapearNombres);
+        var valor = Designacion.Vacuidad.STFT((0.0, 0.0));
 
-        var designacion = Designacion.Designar(nombre, Apariencia.Aparecer(designacionApariencia.Nombres.ToList()));
+        double.IsPositiveInfinity(valor.Real).Should().BeTrue();
+        double.IsInfinity(valor.Imaginary).Should().BeTrue();
+    }
+
+    [Fact]
+    public void Vacuidad_Causa_QuedaRetroreferenciadaALaMismaEsencia()
+    {
+        var vacuidad = Designacion.Vacuidad;
+
+        vacuidad.Causa.Esencia.Should().BeSameAs(vacuidad);
+    }
+
+    [Fact]
+    public void Designar_CreaNuevaDesignacionConFrecuenciaDeLaApariencia()
+    {
+        var apariencia = Apariencia.Aparecer(new[] { Palabra.Yo(1.0) });
+        var designacion = Designacion.Designar(apariencia, Nombre.Cuerpo);
 
         designacion.Should().NotBeNull();
-        designacion.Nombres.Should().HaveCount(designacionApariencia.Nombres.Count() + 1);
-        designacion.Nombres.Last().Should().BeEquivalentTo(nombre);
+        designacion.Texto.Should().Be(Nombre.Cuerpo.Texto);
+        designacion.Frecuencia.Should().Be(apariencia.Esencia.Frecuencia);
+        designacion.Causa.Should().NotBeNull();
     }
 
     [Fact]
-    public void Equals_ConMismaReferencia_DevuelveTrueYConOtraDesignacion_DevuelveFalse()
+    public void Designar_CreaInstanciaNuevaConIdUnico()
     {
-        var nombre = Nombre.Imaginar("Vacuidad", Math.PI / 3, 5.0, 1.0);
-        var designacion = nombre.Mostrarse("ser humano. pensar lenguaje", MapearNombres);
-        var mismaReferencia = designacion;
-        var otra = nombre.Mostrarse("ser mente. pensar vacuidad", MapearNombres);
+        var apariencia = Apariencia.Aparecer(new[] { Palabra.Yo(1.0) });
 
-        designacion.Equals(mismaReferencia).Should().BeTrue();
-        designacion.Equals(otra).Should().BeFalse();
-        designacion.Equals("no-designacion").Should().BeFalse();
+        var d1 = Designacion.Designar(apariencia, Nombre.Cuerpo);
+        var d2 = Designacion.Designar(apariencia, Nombre.Cuerpo);
+
+        d1.Id.Should().NotBe(d2.Id);
+        d1.Equals(d2).Should().BeFalse();
+    }
+
+    [Theory]
+    [InlineData(-1.5, 0.5)]
+    [InlineData(0.2, 2.0)]
+    [InlineData(2.5, -3.0)]
+    public void Designar_STFT_UsaTransformadaDelNombreConFrecuenciaSolicitada(double tau, double frecuencia)
+    {
+        var designacion = Designacion.Designar(
+            Apariencia.Aparecer(new[] { Palabra.Yo(1.7) }),
+            Nombre.Cuerpo);
+
+        var esperado = Nombre.Cuerpo.TransformadaFourier(frecuencia);
+        var actual = designacion.STFT((tau, frecuencia));
+
+        (actual - esperado).Magnitude.Should().BeLessThan(1e-10);
     }
 
     [Fact]
-    public void GetHashCode_SinParametros_GeneraPorId()
+    public void Designar_STFT_NoDependeDeTau()
     {
-        var nombre = Nombre.Imaginar("Vacuidad", Math.PI / 3, 5.0, 1.0);
-        var designacion = nombre.Mostrarse("ser humano. pensar lenguaje", MapearNombres);
+        var designacion = Designacion.Designar(
+            Apariencia.Aparecer(new[] { Palabra.Yo(1.7) }),
+            Nombre.Cuerpo);
 
-        designacion.GetHashCode().Should().Be(designacion.Id.GetHashCode());
+        var v1 = designacion.STFT((-10.0, 1.25));
+        var v2 = designacion.STFT((10.0, 1.25));
+
+        (v1 - v2).Magnitude.Should().BeLessThan(1e-10);
     }
 
     [Fact]
-    public void Efecto_ExponeNombreAgregadoYLaAparienciaDeLaDesignacion()
+    public void Mostrarse_DevuelveAparienciaConTextoDelNombre()
     {
-        var nombre = Nombre.Imaginar("Vacuidad", Math.PI / 3, 5.0, 2.0);
-        var designacion = nombre.Mostrarse("ser humano. pensar lenguaje", MapearNombres);
+        var designacion = Designacion.Designar(Apariencia.Aparecer(new[] { Palabra.Yo(1.0) }), Nombre.Cuerpo);
 
-        var efecto = designacion.Esencia;
+        var apariencia = designacion.Mostrarse(2.0);
 
-        efecto.Nombre.Texto.Should().Be("Vacuidad");
-        efecto.Nombre.Frecuencia.Should().Be(0d);
-        efecto.Nombre.Causa.Should().Be(designacion);
-        efecto.Nombre.Amplitud.Should().BeApproximately(designacion.Nombres.Sum(n => n.Amplitud), 1e-10);
-        efecto.Apariencia.Nombres.Should().BeEquivalentTo(designacion.Nombres);
+        apariencia.Should().NotBeNull();
+        apariencia.Texto.Should().Be(Nombre.Cuerpo.Texto);
+        apariencia.Esencia.Should().NotBeNull();
     }
 
     [Fact]
-    public void VelocidadGrupo_UsaLaCantidadDeNombresConLaMismaFrecuencia()
+    public void Equals_YHashCode_RespetanSemanticaPorId()
     {
-        var nombre = Nombre.Imaginar("Vacuidad", Math.PI / 3, 5.0, 1.0);
-        var designacion = nombre.Mostrarse("ser humano. ser lenguaje. pensar mente", MapearNombres);
+        var apariencia = Apariencia.Aparecer(new[] { Palabra.Yo(1.0) });
+        var d1 = Designacion.Designar(apariencia, Nombre.Cuerpo);
+        var d2 = Designacion.Designar(apariencia, Nombre.Cuerpo);
 
-        var frecuencias = designacion.Nombres.Select(n => designacion.VelocidadGrupo(n)).ToList();
+        d1.Equals(d1).Should().BeTrue();
+        d1.Equals(d2).Should().BeFalse();
+        d1.Equals(null).Should().BeFalse();
+        var hash = d1?.GetHashCode();
+        var idHash = d1?.Id.GetHashCode();
+        hash.Should().Be(idHash);
+    }
 
-        frecuencias.Should().Equal(2d, 2d, 1d, 1d);
-        designacion.VelocidadGrupo(Nombre.Imaginar("Vacuidad", 0d, 99d, 1d)).Should().Be(0d);
+    [Theory]
+    [InlineData(-2.0)]
+    [InlineData(0.0)]
+    [InlineData(3.0)]
+    public void Causa_DeDesignacionGenerada_EntregaFuncionFinita(double t)
+    {
+        var designacion = Designacion.Designar(
+            Apariencia.Aparecer(new[] { Palabra.Yo(1.0), Palabra.Yo(-0.4) }),
+            Nombre.Cuerpo);
+
+        var valor = designacion.Causa.Funcion(t);
+
+        double.IsFinite(valor.Real).Should().BeTrue();
+        double.IsFinite(valor.Imaginary).Should().BeTrue();
     }
 }
