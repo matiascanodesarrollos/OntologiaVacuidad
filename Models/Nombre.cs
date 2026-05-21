@@ -1,119 +1,106 @@
 using System;
-using System.Collections.Generic;
+using System.Numerics;
 
-public class Nombre : Palabra
+public class Nombre
 {
-    public Designacion Causa { get; }
-    public Apariencia Esencia => new Apariencia(Causa);
-    public double Frecuencia { get; }
-    public double Amplitud { get; }
+    public string Texto { get; }
+    public Func<double, Complex> TransformadaFourier { get; }
+    public double VelocidadGrupo { get; }
 
     /// <summary>
-    /// Crea un nuevo nombre con el texto, fase y frecuencia dados. 
-    /// La esencia o apariencia se calcula como una exponencial compleja con la frecuencia dada.
+    /// Crea un nuevo nombre con texto, velocidad de grupo y su transformada de Fourier.
     /// </summary>
-    /// <param name="texto">El texto del nombre.</param>
-    /// <param name="fase">La fase del nombre.</param>
-    /// <param name="frecuencia">La frecuencia del nombre.</param>
+    /// <param name="texto">Texto del nombre.</param>
+    /// <param name="velocidadGrupo">Velocidad de propagación asociada al nombre.</param>
+    /// <param name="transformadaFourier">Función espectral que devuelve amplitud y fase para una frecuencia dada.</param>
     internal Nombre(string texto, 
-        double fase,
-        double frecuencia,
-        double amplitud,
-        Designacion causa)
-        : base(texto, fase)
+        double velocidadGrupo,
+        Func<double, Complex> transformadaFourier)
     {
-        Frecuencia = frecuencia;
-        Amplitud = amplitud;
-        Causa = causa;
+        Texto = texto;
+        VelocidadGrupo = velocidadGrupo;
+        TransformadaFourier = transformadaFourier;
     }
 
     /// <summary>
-    /// Funcion para crear un nombre y su apariencia. Análogo a imaginar.
+    /// Proyecta esta designación en una nueva apariencia evaluando su función en una frecuencia angular dada.
     /// </summary>
-    /// <param name="texto">Texto o palabra asociada.</param>
-    /// <param name="fase">Fase del nuevo nombre.</param>
-    /// <param name="frecuencia">Frecuencia principal.</param>
-    /// <param name="amplitud">Amplitud deseada.</param>
-    /// <returns>Un nuevo nombre</returns>
-    public static Nombre Imaginar(
-        string texto,
-        double fase,
-        double frecuencia,
-        double amplitud)
+    /// <param name="frecuenciaAngular">Frecuencia angular usada para evaluar la función de la designación.</param>
+    /// <returns>Una apariencia construida a partir de la función de esta designación.</returns>
+    public Apariencia Mostrarse(double frecuenciaAngular)
     {
-        var nombre = new Nombre(
-            texto,
-            fase,
-            frecuencia,
-            amplitud,
-            Designacion.Vacuidad
+        var apariencia = new Apariencia(
+            new Palabra(
+                Texto,
+                frecuenciaAngular,
+                t => CalcularTransformadaInversaFourier(t))
         );
-        return nombre;
+        return apariencia;
     }
 
     /// <summary>
-    /// Permite la herencia al copiar las propiedades de otro nombre.
-    /// Para crear el original usar el metodo estático Aparecer de Apariencia.
+    /// Devuelve una representación textual simple del nombre.
     /// </summary>
-    /// <param name="nombre">El nombre del cual se copiarán las propiedades.</param>
-    public Nombre(Nombre nombre) 
-        : base(nombre.Texto, 
-            nombre.Fase)
-    {
-        Frecuencia = nombre.Frecuencia;
-        Amplitud = nombre.Amplitud;
-        Causa = nombre.Causa;
-    }
+    /// <returns>Una cadena con texto y velocidad de grupo.</returns>
+    public override string ToString() => $"{Texto} (VelocidadGrupo: {VelocidadGrupo})";
 
     /// <summary>
-    /// Crea una nueva designación al proyectar una apariencia sobre un texto.
-    /// Cada predicado en el texto se convierte en un nombre con una apariencia asociada.
-    /// La frecuencia se determina por la cantidad de nombres que comparten el mismo verbo núcleo (se asume la primer palabra del predicado),
-    /// la amplitud por la cantidad de complementos del sujeto que comparten (se asume las palabras restantes del predicado),
-    /// y la fase por la posición del predicado en la lista (distribuido en 360º).
+    /// Compara nombres por su texto.
     /// </summary>
-    /// <param name="texto">El texto que funciona como espacio, cada oración se considera un predicado.</param>
-    /// <param name="mapeoNombres">Función que determina el mapeo de nombres a partir del texto .</param>
-    /// <returns>La nueva designación creada.</returns>
-    public Designacion Mostrarse(string texto, 
-        Func<string, Dictionary<double, List<Nombre>>> mapeoNombres)
-    {
-        var designacion = new Designacion(
-            texto, 
-            mapeoNombres);
-        return Designacion.Designar(this, new Apariencia(designacion));
-    }
-
-    /// <summary>
-    /// Representacion en texto de la apariencia. 
-    /// </summary>
-    /// <returns>Una cadena que representa la apariencia.</returns>
-    public override string ToString() => $"{Texto} ({Fase * (180 / Math.PI):F2}º, {Frecuencia:F2} Hz)";
-
-    /// <summary>
-    /// Sobreescribe Equals para comparar nombres por su texto y frecuencia.
-    /// </summary>
-    /// <returns>True si los nombres son iguales, false en caso contrario.</returns>
+    /// <returns>True si ambos nombres tienen el mismo texto, false en caso contrario.</returns>
     public override bool Equals(object obj)
     {
         if (obj is Nombre other)
         {
-            return Texto == other.Texto && Frecuencia == other.Frecuencia;
+            return Texto == other.Texto;
         }
         return false;
     }
 
     /// <summary>
-    /// Sobreescribe GetHashCode para generar el hash code del Id del nombre.
+    /// Genera el hash code a partir del texto.
     /// </summary>
-    /// <returns>El hash code del nombre.</returns>
-    public override int GetHashCode() => Id.GetHashCode();
+    /// <returns>El hash code del texto del nombre.</returns>
+    public override int GetHashCode() => Texto.GetHashCode();
 
     /// <summary>
-    /// Crea un nuevo nombre con el texto "Vacuidad", fase 0, frecuencia 0 y la amplitud dada, asociado a la causa Vacuidad.
+        /// Crea un nuevo nombre base "Vacuidad" con espectro escalón unitario u(ω).
     /// </summary>
-    /// <param name="amplitud">La amplitud del nuevo nombre.</param>
-    /// <param name="designacion">La designación asociada al nuevo nombre.</param>
+    /// <param name="velocidadGrupo">La velocidad del grupo asociada al nuevo nombre.</param>
     /// <returns>Un nuevo nombre asociado a la causa Vacuidad.</returns>
-    public static Nombre Cuerpo(double amplitud, Designacion designacion) => new Nombre(nameof(Designacion.Vacuidad), 0, 0, amplitud, designacion);
+        public static Nombre Vacuidad => new Nombre(
+            nameof(Vacuidad),
+            0.0,
+            omega => omega >= 0.0 ? Complex.One : Complex.Zero); //u(ω)
+    
+    
+
+    /// <summary>
+    /// Calcula la transformada inversa de Fourier compleja del espectro definido por <see cref="TransformadaFourier"/>.
+    /// </summary>
+    /// <param name="t">Instante temporal de evaluación.</param>
+    /// <returns>Valor complejo de la señal reconstruida en el tiempo indicado.</returns>
+    /// <remarks>
+    /// Al sobreescribir este método se altera la señal de ventana usada por <see cref="Mostrarse(double)"/>,
+    /// y por lo tanto cambia la <see cref="Apariencia"/> resultante. La implementación derivada debería
+    /// respetar coherencia de unidades entre tiempo y frecuencia angular para evitar reconstrucciones inestables.
+    /// </remarks>
+    protected virtual Complex CalcularTransformadaInversaFourier(double t)
+    {
+        const double limiteFrecuencia = 8.0;
+        const int pasos = 4096;
+        var dOmega = 2.0 * limiteFrecuencia / pasos;
+        var suma = Complex.Zero;
+
+        for (var i = 0; i <= pasos; i++)
+        {
+            var omega = -limiteFrecuencia + (i * dOmega);
+            var valor = TransformadaFourier(omega);
+            var peso = (i == 0 || i == pasos) ? 0.5 : 1.0;
+            var exponente = Complex.FromPolarCoordinates(1.0, omega * t);
+            suma += peso * valor * exponente;
+        }
+
+        return suma * dOmega;
+    }
 }

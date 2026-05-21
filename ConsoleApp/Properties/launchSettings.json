@@ -1,9 +1,0 @@
-{
-  "$schema": "http://json.schemastore.org/launchsettings.json",
-  "profiles": {
-    "ConsoleApp": {
-      "commandName": "Project",
-      "commandLineArgs": "Fluir agua pura y vibrante. Permanecer tierra firme. Mover gas puro sutil. Plasmar fuego."
-    }
-  }
-}

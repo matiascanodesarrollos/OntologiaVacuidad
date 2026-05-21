@@ -1,40 +1,60 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 
-public class Apariencia : Designacion
+public class Apariencia : Palabra
 {
-    public Func<double, (double EjeReal, double EjeImaginario)> Funcion { get; }
+    private readonly Lazy<Complex> nombre;
+    public double Amplitud => nombre.Value.Magnitude;
+    public Func<double, Complex> Funcion => t => nombre.Value * Fase(t);
+    public Designacion Esencia { get; }
 
-    internal Apariencia(Designacion designacion)
-        : base(designacion.Nombres.ToList())
+    /// <summary>
+    /// Crea una copia pública de otra apariencia preservando su comportamiento para herencia.
+    /// /// <param name="otra">La apariencia de la cual se copiarán las propiedades.</param>
+    /// </summary>
+    public Apariencia(Apariencia otra)
+        : base(otra.Texto, otra.FrecuenciaAngular, otra.Ventana)
     {
-        Funcion = t => Nombres.Count() > 1 
-            ? Nombres
-                .Select(nombre =>
-                {
-                    var frecuencia = nombre.Frecuencia;
-                    var fase = nombre.Fase;
-                    var amplitud = nombre.Amplitud;
-                    return (amplitud * Math.Cos(frecuencia * t + fase),
-                            amplitud * Math.Sin(frecuencia * t + fase));
-                })
-                .Aggregate((acumulado, actual) => 
-                    (acumulado.Item1 + actual.Item1, 
-                    acumulado.Item2 + actual.Item2))
-            : t == 0 ? (double.PositiveInfinity, double.PositiveInfinity) : (0.0, 0.0);
+        nombre = new Lazy<Complex>(() => otra.nombre.Value);
+        Esencia = otra.Esencia;
+    }
+    
+
+    internal Apariencia(Palabra palabra)
+        : base(palabra.Texto, palabra.FrecuenciaAngular, palabra.Ventana)
+    {
+        nombre = new Lazy<Complex>(() => CalcularTransformadaFourier(FrecuenciaAngular));
+        Esencia = new Designacion(
+            new Nombre(palabra.Texto, palabra.FrecuenciaAngular, palabra.Ventana),
+            this);
+    }
+
+    internal Apariencia(Palabra palabra, Designacion esencia)
+        : base(palabra.Texto, palabra.FrecuenciaAngular, palabra.Ventana)
+    {
+        nombre = new Lazy<Complex>(() => CalcularTransformadaFourier(FrecuenciaAngular));
+        Esencia = esencia;
     }
 
     /// <summary>
-    /// Crea una nueva apariencia a partir de una lista de nombres, sumando las amplitudes de las apariencias de los nombres que componen la designación (Fourrier).
+    /// Crea una apariencia compuesta a partir de una lista de palabras.
     /// </summary>
-    /// <param name="nombres">Los nombres a partir de los cuales se crea la apariencia.</param>
-    /// <returns>Una nueva apariencia creada a partir de la designación.</returns>
-    public static Apariencia Aparecer(List<Nombre> nombres)
+    /// <param name="palabras">Palabras de entrada que se combinan en una sola señal.</param>
+    /// <returns>Una apariencia cuya ventana es la productoria de fase por ventana de cada palabra.</returns>
+    public static Apariencia Aparecer(IEnumerable<Palabra> palabras)
     {
-        var designacion = new Designacion(nombres);
-        var apariencia = new Apariencia(designacion);
-        return apariencia;
+        var lista = palabras.ToList();
+        var palabra = new Palabra(
+            string.Join(" ", lista.Select(p => p.Texto)),
+            lista.Sum(p => p.FrecuenciaAngular),
+            t => lista.Aggregate(
+                Complex.One,
+                (acc, p) => acc * (p.Fase(t) * p.Ventana(t))
+            )
+        );
+        return new Apariencia(palabra);
     }
 
 
@@ -57,9 +77,43 @@ public class Apariencia : Designacion
         return false;
     }
 
+    public static Apariencia Mente => new Apariencia(
+        new Palabra(
+            nameof(Mente),
+            Designacion.Cuerpo.FrecuenciaAngular,
+            t => 1.0 / (2 * Math.PI) //Transformada inversa de δ(ω)
+        )
+    );
+
     /// <summary>
-    /// Apariencia base. Delta de Dirac.
+    /// Calcula la transformada de Fourier compleja de <see cref="Ventana"/> para una frecuencia dada.
     /// </summary>
-    public static Apariencia Mente = new Apariencia(Vacuidad);
+    /// <param name="frecuenciaAngular">Frecuencia angular en la que se evalúa el espectro.</param>
+    /// <returns>Valor complejo de la transformada de Fourier en la frecuencia indicada.</returns>
+    /// <remarks>
+    /// Al sobreescribir este método se modifica directamente el valor interno usado por
+    /// <see cref="Amplitud"/> y <see cref="Funcion"/>. La implementación derivada debería conservar
+    /// estabilidad numérica y devolver valores finitos para evitar propagar NaN o infinito.
+    /// </remarks>
+    protected virtual Complex CalcularTransformadaFourier(double frecuenciaAngular)
+    {
+        const double limiteIntegracion = 8.0;
+        const int pasos = 4096;
+        var dt = (2.0 * limiteIntegracion) / pasos;
+
+        var suma = Complex.Zero;
+
+        for (var i = 0; i <= pasos; i++)
+        {
+            var t = -limiteIntegracion + (i * dt);
+            var ventana = Ventana(t);
+            var peso = (i == 0 || i == pasos) ? 0.5 : 1.0;
+
+            var exponente = Complex.FromPolarCoordinates(1.0, -frecuenciaAngular * t);
+            suma += peso * ventana * exponente;
+        }
+
+        return suma * dt;
+    }
 }
 
