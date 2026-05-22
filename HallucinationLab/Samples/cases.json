@@ -1,0 +1,20 @@
+[
+  {
+    "id": "geo-001",
+    "prompt": "Explain the capital of France in one sentence.",
+    "expectedFacts": ["Paris", "capital"],
+    "forbiddenClaims": ["Lyon is the capital", "Marseille is the capital"]
+  },
+  {
+    "id": "math-001",
+    "prompt": "What is 2 + 2?",
+    "expectedFacts": ["4"],
+    "forbiddenClaims": ["5", "22"]
+  },
+  {
+    "id": "bio-001",
+    "prompt": "Name one function of red blood cells.",
+    "expectedFacts": ["oxygen"],
+    "forbiddenClaims": ["produce insulin", "photosynthesis"]
+  }
+]

@@ -4,52 +4,36 @@ using System.Numerics;
 public class Designacion : Nombre
 {
     public Guid Id { get; }
-    private readonly Lazy<double> frecuenciaAngular;
-    private readonly Lazy<Apariencia> causa;
-    public double FrecuenciaAngular => frecuenciaAngular.Value;
+    public Palabra Causa { get; }
+    public Apariencia Esencia { get; }
     public Func<(double tau, double FrecuenciaAngular), Complex> STFT { get; }
-    public Apariencia Causa => causa.Value;
-
+    private readonly Lazy<double> frecuenciaAngular;
+    public double FrecuenciaAngular => frecuenciaAngular.Value;
+    
     /// <summary>
     /// Constructor de copia para crear una nueva designación a partir de otra para herencia.
     /// <param name="otra">La designación de la cual se copiarán las propiedades.</param>
     /// </summary>   
     public Designacion(Designacion otra)
-        : base(otra.Texto, otra.VelocidadGrupo, otra.TransformadaFourier)
+        : base(otra.Texto, otra.VelocidadGrupo, otra.Ventana)
     {
         Id = Guid.NewGuid();
-        frecuenciaAngular = new Lazy<double>(() => otra.FrecuenciaAngular);
+        Causa = otra.Causa;
+        Esencia = otra.Esencia;
         STFT = otra.STFT;
-        causa = new Lazy<Apariencia>(() => otra.Causa);
+        frecuenciaAngular = new Lazy<double>(() => otra.FrecuenciaAngular);
+              
     }
 
-    internal Designacion(
-        Nombre nombre, 
-        Func<(double tau, double FrecuenciaAngular), Complex> funcion)
-        : base(nombre.Texto, nombre.VelocidadGrupo, nombre.TransformadaFourier)
+    internal Designacion(Apariencia apariencia, Nombre nombre)
+        : base(nombre.Texto, nombre.VelocidadGrupo, nombre.Ventana)
     {
         Id = Guid.NewGuid();
-        STFT = funcion;
+        Causa = apariencia as Palabra;
+        Esencia = apariencia;
+        STFT = p => CalcularSTFT(p.tau, p.FrecuenciaAngular, apariencia.Funcion, nombre.Ventana);
         frecuenciaAngular = new Lazy<double>(() => EstimarFrecuenciaAngular(STFT));
-        causa = new Lazy<Apariencia>(() =>
-            new Apariencia(
-                new Palabra(
-                    nombre.Texto,
-                    FrecuenciaAngular,
-                    t => STFT((t, FrecuenciaAngular))),
-                this));
-    }
-
-    internal Designacion(
-        Nombre nombre,
-        Apariencia causa)
-        : base(nombre.Texto, nombre.VelocidadGrupo, nombre.TransformadaFourier)
-    {
-        Id = Guid.NewGuid();
-        frecuenciaAngular = new Lazy<double>(() => causa.FrecuenciaAngular);
-        STFT = x => nombre.TransformadaFourier(x.FrecuenciaAngular);
-        this.causa = new Lazy<Apariencia>(() => causa);
-    }
+    }    
 
     /// <summary>
     /// Crea una designación usando la frecuencia angular de la esencia de la apariencia y el espectro del nombre.
@@ -60,8 +44,8 @@ public class Designacion : Nombre
     public static Designacion Designar(Apariencia apariencia, Nombre nombre)
     {
         var nuevaDesignacion = new Designacion(
-            nombre,
-            apariencia
+            apariencia,
+            nombre
         );
         return nuevaDesignacion;
     }
@@ -86,12 +70,34 @@ public class Designacion : Nombre
     public override int GetHashCode() => Id.GetHashCode();
 
     /// <summary>
-    /// Designación base. Cuerpo.
+    /// Calcula la STFT de una funcion de apariencia para un desplazamiento temporal y una frecuencia angular.
     /// </summary>
-    public static Designacion Cuerpo = new Designacion(
-        Vacuidad,
-        x => new Complex(0.0, (x.FrecuenciaAngular / 2.0) * Math.PI) //Transformada inversa de δ′(ω)
-    );
+    /// <param name="tau">Desplazamiento temporal de la ventana.</param>
+    /// <param name="frecuenciaAngular">Frecuencia angular de analisis.</param>
+    /// <param name="funcion">Funcion temporal de la apariencia a analizar.</param>
+    /// <param name="ventanaAnalisis">Función de ventana a utilizar en el cálculo de la STFT.</param>
+    /// <returns>Valor complejo de la STFT en el punto (tau, frecuenciaAngular).</returns>
+    protected virtual Complex CalcularSTFT(double tau, double frecuenciaAngular, Func<double, Complex> funcion, Func<double, Complex> ventanaAnalisis)
+    {
+        const double limiteIntegracion = 8.0;
+        const int pasos = 2048;
+        var dt = 2.0 * limiteIntegracion / pasos;
+
+        var suma = Complex.Zero;
+
+        for (var i = 0; i <= pasos; i++)
+        {
+            var t = -limiteIntegracion + (i * dt);
+            var peso = (i == 0 || i == pasos) ? 0.5 : 1.0;
+            var x = funcion(t);
+            var w = Complex.Conjugate(ventanaAnalisis(t - tau));
+            var exponente = Complex.FromPolarCoordinates(1.0, -frecuenciaAngular * t);
+
+            suma += peso * x * w * exponente;
+        }
+
+        return suma * dt;
+    }
 
     /// <summary>
     /// Estima la frecuencia angular característica de la designación a partir de su función espectral.

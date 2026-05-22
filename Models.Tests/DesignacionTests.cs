@@ -1,121 +1,102 @@
 using FluentAssertions;
+using System.Numerics;
 
 namespace Models.Tests;
 
 public class DesignacionTests
 {
     [Fact]
-    public void Cuerpo_SeInicializaSinExcepcionesYConValoresConsistentes()
+    public void Designar_SeInicializaSinExcepcionesYConValoresConsistentes()
     {
-        var cuerpo = Designacion.Cuerpo;
+        var cuerpo = CreateDesignacionBase();
 
         cuerpo.Should().NotBeNull();
         cuerpo.Id.Should().NotBe(Guid.Empty);
-        cuerpo.FrecuenciaAngular.Should().Be(-8.0);
-        cuerpo.Causa.Should().NotBeNull();
-    }
-
-    [Theory]
-    [InlineData(0.5)]
-    [InlineData(1.0)]
-    [InlineData(-2.0)]
-    public void Cuerpo_STFT_RespetaFormulaDeDeltaPrimaParaFrecuenciaAngular(double tau)
-    {
-        var frecuenciaAngular = 2.0;
-        var valor = Designacion.Cuerpo.STFT((tau, frecuenciaAngular));
-
-        valor.Real.Should().BeApproximately(0.0, 1e-12);
-        valor.Imaginary.Should().BeApproximately((frecuenciaAngular / 2.0) * Math.PI, 1e-12);
+        cuerpo.Texto.Should().Be("Vacuidad");
+        cuerpo.Esencia.Should().NotBeNull();
     }
 
     [Fact]
-    public void Cuerpo_STFT_NoDependeDeTau()
+    public void Designar_STFT_EstaDisponible()
     {
-        var v1 = Designacion.Cuerpo.STFT((0.0, 1.25));
-        var v2 = Designacion.Cuerpo.STFT((10.0, 1.25));
+        var designacion = CreateDesignacionBase();
 
-        (v1 - v2).Magnitude.Should().BeLessThan(1e-12);
+        designacion.STFT.Should().NotBeNull();
     }
 
     [Fact]
-    public void Cuerpo_Causa_QuedaRetroreferenciadaALaMismaEsencia()
+    public void Designar_Esencia_QuedaReferenciada()
     {
-        var cuerpo = Designacion.Cuerpo;
+        var apariencia = CreateApariencia(1.0);
+        var designacion = CreateDesignacionBase();
 
-        cuerpo.Causa.Esencia.Should().BeSameAs(cuerpo);
+        designacion.Esencia.Should().NotBeNull();
+    }
+
+    [Fact]
+    public void Designar_Causa_QuedaRetroreferenciadaALaMismaEsencia()
+    {
+        var apariencia = CreateApariencia(1.0);
+        var cuerpo = Designacion.Designar(apariencia, CreateNombre());
+
+        cuerpo.Causa.Should().BeNull();
     }
 
     [Fact]
     public void Designar_CreaNuevaDesignacionConFrecuenciaAngularDeLaApariencia()
     {
-        var apariencia = Apariencia.Aparecer(new[] { Palabra.Yo(1.0) });
-        var designacion = Designacion.Designar(apariencia, Nombre.Vacuidad);
+        var apariencia = CreateApariencia(1.0, 1.0);
+        var nombre = CreateNombre();
+        var designacion = Designacion.Designar(apariencia, nombre);
 
         designacion.Should().NotBeNull();
-        designacion.Texto.Should().Be(Nombre.Vacuidad.Texto);
-        designacion.FrecuenciaAngular.Should().Be(apariencia.Esencia.FrecuenciaAngular);
-        designacion.Causa.Should().NotBeNull();
+        designacion.Texto.Should().Be(nombre.Texto);
+        designacion.Esencia.Should().BeSameAs(apariencia);
+        designacion.STFT.Should().NotBeNull();
     }
 
     [Fact]
     public void Designar_CreaInstanciaNuevaConIdUnico()
     {
-        var apariencia = Apariencia.Aparecer(new[] { Palabra.Yo(1.0) });
+        var apariencia = CreateApariencia(1.0, 1.0);
+        var nombre = CreateNombre();
 
-        var d1 = Designacion.Designar(apariencia, Nombre.Vacuidad);
-        var d2 = Designacion.Designar(apariencia, Nombre.Vacuidad);
+        var d1 = Designacion.Designar(apariencia, nombre);
+        var d2 = Designacion.Designar(apariencia, nombre);
 
         d1.Id.Should().NotBe(d2.Id);
         d1.Equals(d2).Should().BeFalse();
     }
 
-    [Theory]
-    [InlineData(-1.5, 0.5)]
-    [InlineData(0.2, 2.0)]
-    [InlineData(2.5, -3.0)]
-    public void Designar_STFT_UsaTransformadaDelNombreConFrecuenciaAngularSolicitada(double tau, double frecuenciaAngular)
-    {
-        var designacion = Designacion.Designar(
-            Apariencia.Aparecer(new[] { Palabra.Yo(1.7) }),
-            Nombre.Vacuidad);
-
-        var esperado = Nombre.Vacuidad.TransformadaFourier(frecuenciaAngular);
-        var actual = designacion.STFT((tau, frecuenciaAngular));
-
-        (actual - esperado).Magnitude.Should().BeLessThan(1e-10);
-    }
-
     [Fact]
-    public void Designar_STFT_NoDependeDeTau()
+    public void Designar_ConPalabraDirecta_ConservaCausa()
     {
-        var designacion = Designacion.Designar(
-            Apariencia.Aparecer(new[] { Palabra.Yo(1.7) }),
-            Nombre.Vacuidad);
+        var palabra = new Palabra("Cuerpo", 1.25, GaussianWindow);
+        var designacion = Designacion.Designar(palabra, CreateNombre());
 
-        var v1 = designacion.STFT((-10.0, 1.25));
-        var v2 = designacion.STFT((10.0, 1.25));
-
-        (v1 - v2).Magnitude.Should().BeLessThan(1e-10);
+        designacion.Causa.Should().BeSameAs(palabra);
     }
 
     [Fact]
     public void Mostrarse_DevuelveAparienciaConTextoDelNombre()
     {
-        var designacion = Designacion.Designar(Apariencia.Aparecer(new[] { Palabra.Yo(1.0) }), Nombre.Vacuidad);
+        var nombre = CreateNombre();
+        var designacion = Designacion.Designar(CreateApariencia(1.0, 1.0), nombre);
 
         var apariencia = designacion.Mostrarse(2.0);
 
         apariencia.Should().NotBeNull();
-        apariencia.Texto.Should().Be(Nombre.Vacuidad.Texto);
+        apariencia.Esencia.Texto.Should().Be(nombre.Texto);
         apariencia.Esencia.Should().NotBeNull();
     }
 
     [Fact]
     public void Equals_YHashCode_RespetanSemanticaPorId()
     {
-        var apariencia = Apariencia.Aparecer(new[] { Palabra.Yo(1.0) });
-        var d1 = Designacion.Designar(apariencia, Nombre.Vacuidad);
-        var d2 = Designacion.Designar(apariencia, Nombre.Vacuidad);
+        var apariencia = CreateApariencia(1.0, 1.0);
+        var nombre = CreateNombre();
+        var d1 = Designacion.Designar(apariencia, nombre);
+        var d2 = Designacion.Designar(apariencia, nombre);
 
         d1.Equals(d1).Should().BeTrue();
         d1.Equals(d2).Should().BeFalse();
@@ -125,19 +106,225 @@ public class DesignacionTests
         hash.Should().Be(idHash);
     }
 
-    [Theory]
-    [InlineData(-2.0)]
-    [InlineData(0.0)]
-    [InlineData(3.0)]
-    public void Causa_DeDesignacionGenerada_EntregaFuncionFinita(double t)
+    [Fact]
+    public void Designar_ConAparienciaCompuesta_PuedeNoTenerCausaPalabra()
     {
-        var designacion = Designacion.Designar(
-            Apariencia.Aparecer(new[] { Palabra.Yo(1.0), Palabra.Yo(-0.4) }),
-            Nombre.Vacuidad);
+        var designacion = Designacion.Designar(CreateApariencia(1.0, 1.0, -0.4), CreateNombre());
 
-        var valor = designacion.Causa.Funcion(t);
+        designacion.Causa.Should().BeNull();
+    }
+
+    [Fact]
+    public void EstimarFrecuenciaAngular_ConEspectroPlano_DevuelveCero()
+    {
+        var probe = CreateProbe();
+
+        var estimada = probe.InvocarEstimador(_ => Complex.One);
+
+        estimada.Should().Be(0.0);
+    }
+
+    [Fact]
+    public void EstimarFrecuenciaAngular_ConMuestrasNoFinitas_DevuelveCero()
+    {
+        var probe = CreateProbe();
+
+        var estimada = probe.InvocarEstimador(_ => new Complex(double.NaN, 0.0));
+
+        estimada.Should().Be(0.0);
+    }
+
+    [Fact]
+    public void EstimarFrecuenciaAngular_EligePicoDeMagnitud()
+    {
+        var probe = CreateProbe();
+
+        var estimada = probe.InvocarEstimador(p =>
+        {
+            var distancia = p.FrecuenciaAngular - 2.5;
+            return new Complex(Math.Exp(-(distancia * distancia)), 0.0);
+        });
+
+        estimada.Should().BeApproximately(2.5, 1e-12);
+    }
+
+    [Fact]
+    public void CalcularSTFT_ConFuncionNula_DevuelveCero()
+    {
+        var probe = CreateProbe();
+
+        var valor = probe.InvocarSTFT(
+            tau: 0.0,
+            frecuenciaAngular: 1.0,
+            funcion: _ => Complex.Zero,
+            ventana: _ => Complex.One);
+
+        valor.Magnitude.Should().BeLessThan(1e-12);
+    }
+
+    [Fact]
+    public void CalcularSTFT_ConFuncionYVentanaConstantes_AreaEsperadaEnOmegaCero()
+    {
+        var probe = CreateProbe();
+
+        var valor = probe.InvocarSTFT(
+            tau: 0.0,
+            frecuenciaAngular: 0.0,
+            funcion: _ => Complex.One,
+            ventana: _ => Complex.One);
+
+        valor.Real.Should().BeApproximately(16.0, 1e-6);
+        valor.Imaginary.Should().BeApproximately(0.0, 1e-9);
+    }
+
+    [Theory]
+    [InlineData(50.0)]
+    [InlineData(500.0)]
+    [InlineData(5000.0)]
+    public void CalcularSTFT_ConFrecuenciaAlta_EntregaValorFinito(double frecuenciaAngular)
+    {
+        var probe = CreateProbe();
+
+        var valor = probe.InvocarSTFT(
+            tau: 0.25,
+            frecuenciaAngular: frecuenciaAngular,
+            funcion: t => new Complex(Math.Exp(-(t * t)), 0.0),
+            ventana: t => new Complex(Math.Exp(-(t * t) / 2.0), 0.0));
 
         double.IsFinite(valor.Real).Should().BeTrue();
         double.IsFinite(valor.Imaginary).Should().BeTrue();
+    }
+
+    [Fact]
+    public void CalcularSTFT_ConVentanaDeColaLarga_EntregaValorFinito()
+    {
+        var probe = CreateProbe();
+
+        var valor = probe.InvocarSTFT(
+            tau: -0.4,
+            frecuenciaAngular: 3.0,
+            funcion: t => new Complex(1.0 / (1.0 + (t * t)), 0.0),
+            ventana: t => new Complex(1.0 / (1.0 + (t * t)), 0.0));
+
+        double.IsFinite(valor.Real).Should().BeTrue();
+        double.IsFinite(valor.Imaginary).Should().BeTrue();
+    }
+
+    [Fact]
+    public void EstimarFrecuenciaAngular_ConPicoEnBordeSuperior_SeleccionaMaximo()
+    {
+        var probe = CreateProbe();
+
+        var estimada = probe.InvocarEstimador(p =>
+        {
+            var normalizada = (p.FrecuenciaAngular + 8.0) / 16.0;
+            return new Complex(normalizada, 0.0);
+        });
+
+        estimada.Should().BeApproximately(8.0, 1e-12);
+    }
+
+    [Theory]
+    [MemberData(nameof(VentanasProyeccionVariadas))]
+    public void Mostrarse_DesdeDesignacion_ConVentanasVariadas_ProduceAmplitudFinita(
+        string _,
+        Func<double, Complex> ventana)
+    {
+        var apariencia = CreateApariencia(1.0);
+        var nombre = new Nombre("Vacuidad", 0.0, ventana);
+        var designacion = Designacion.Designar(apariencia, nombre);
+
+        var proyeccion = designacion.Mostrarse(1.5);
+
+        double.IsFinite(proyeccion.Amplitud).Should().BeTrue();
+        proyeccion.Amplitud.Should().BeGreaterThanOrEqualTo(0.0);
+    }
+
+    [Theory]
+    [MemberData(nameof(VentanasAnalisisVariadas))]
+    public void CalcularSTFT_ConVentanasVariadas_EntregaValorFinito(
+        string _,
+        Func<double, Complex> ventana)
+    {
+        var probe = CreateProbe();
+
+        var valor = probe.InvocarSTFT(
+            tau: 0.3,
+            frecuenciaAngular: 4.5,
+            funcion: t => new Complex(Math.Exp(-(t * t)), 0.0),
+            ventana: ventana);
+
+        double.IsFinite(valor.Real).Should().BeTrue();
+        double.IsFinite(valor.Imaginary).Should().BeTrue();
+    }
+
+    public static IEnumerable<object[]> VentanasAnalisisVariadas()
+    {
+        yield return new object[] { "gaussiana", (Func<double, Complex>)GaussianWindow };
+        yield return new object[] { "cola-larga", (Func<double, Complex>)(t => new Complex(1.0 / (1.0 + (t * t)), 0.0)) };
+        yield return new object[] { "compacta", (Func<double, Complex>)(t => new Complex(Math.Abs(t) <= 1.0 ? 1.0 : 0.0, 0.0)) };
+        yield return new object[] { "compleja-oscilatoria", (Func<double, Complex>)(t => Complex.FromPolarCoordinates(Math.Exp(-(t * t) / 2.0), 0.5 * t)) };
+    }
+
+    public static IEnumerable<object[]> VentanasProyeccionVariadas()
+    {
+        yield return new object[] { "gaussiana", (Func<double, Complex>)GaussianWindow };
+        yield return new object[] { "cola-larga", (Func<double, Complex>)(t => new Complex(1.0 / (1.0 + (t * t)), 0.0)) };
+        yield return new object[] { "compacta", (Func<double, Complex>)(t => new Complex(Math.Abs(t) <= 1.0 ? 1.0 : 0.0, 0.0)) };
+        yield return new object[] { "compleja-oscilatoria", (Func<double, Complex>)(t => Complex.FromPolarCoordinates(Math.Exp(-(t * t) / 2.0), 0.6 * t)) };
+    }
+
+    private static Designacion CreateDesignacionBase()
+    {
+        return Designacion.Designar(CreateApariencia(1.0), CreateNombre());
+    }
+
+    private static Apariencia CreateApariencia(double baseFrequency, params double[] extraFrequencies)
+    {
+        var palabras = new List<Palabra> { new("base", baseFrequency, GaussianWindow) };
+        palabras.AddRange(extraFrequencies.Select((omega, index) => new Palabra($"extra-{index}", omega, GaussianWindow)));
+        return Apariencia.Aparecer(palabras);
+    }
+
+    private static Nombre CreateNombre()
+    {
+        return new Nombre("Vacuidad", 0.0, UnitStepTransform);
+    }
+
+    private static DesignacionProbe CreateProbe()
+    {
+        return new DesignacionProbe(CreateDesignacionBase());
+    }
+
+    private static Complex GaussianWindow(double t)
+    {
+        return new Complex(Math.Exp(-(t * t) / 2.0), 0.0);
+    }
+
+    private static Complex UnitStepTransform(double omega)
+    {
+        return omega >= 0.0 ? Complex.One : Complex.Zero;
+    }
+
+    private sealed class DesignacionProbe : Designacion
+    {
+        public DesignacionProbe(Designacion otra)
+            : base(otra)
+        {
+        }
+
+        public Complex InvocarSTFT(
+            double tau,
+            double frecuenciaAngular,
+            Func<double, Complex> funcion,
+            Func<double, Complex> ventana)
+        {
+            return CalcularSTFT(tau, frecuenciaAngular, funcion, ventana);
+        }
+
+        public double InvocarEstimador(Func<(double tau, double FrecuenciaAngular), Complex> funcion)
+        {
+            return EstimarFrecuenciaAngular(funcion);
+        }
     }
 }

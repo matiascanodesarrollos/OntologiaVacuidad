@@ -1,31 +1,37 @@
 using System;
 using System.Numerics;
 
-public class Palabra
+public class Palabra : Apariencia
 {
-    public Guid Id { get; }
+    public string Texto { get; }
     public double FrecuenciaAngular { get; }
     public Func<double, Complex> Fase { get; }
-    public Func<double, Complex> Ventana { get; }
-    public string Texto { get; }
+    public Nombre Nombre { get; }
 
-    internal Palabra(
+    public Palabra(
         string texto, 
         double frecuenciaAngular,
         Func<double, Complex> ventana)
+        : base(texto, frecuenciaAngular, ventana)
     {
-        Id = Guid.NewGuid();
-        FrecuenciaAngular = frecuenciaAngular;
         Texto = texto;
+        FrecuenciaAngular = frecuenciaAngular;        
         Fase = t => Complex.FromPolarCoordinates(1.0, frecuenciaAngular * t);
-        Ventana = ventana;
+        Nombre = new Nombre(Texto, CalcularVelocidadGrupo(frecuenciaAngular), ventana);
     }
 
-    // Palabra base con ventana gaussiana.
-    public static Palabra Yo(double frecuenciaAngular) =>
-        new Palabra(
-            nameof(Yo), 
-            frecuenciaAngular,
-            t => new Complex(Math.Exp(-(t * t) / 2.0), 0.0) //Gaussiana
-    );
+    /// <summary>
+    /// Calcula la velocidad de grupo para un nombre dado su frecuencia angular.
+    /// Por defecto se devuelve la frecuencia en Hz.
+    /// </summary>
+    /// <param name="frecuenciaAngular">Frecuencia angular usada para calcular la velocidad de grupo.</param>
+    /// <returns>Velocidad de grupo calculada a partir de la frecuencia angular.</returns>
+    /// <remarks>
+    /// Al sobreescribir este método se modifica directamente el valor usado para inicializar
+    /// <see cref="Nombre"/> y, en particular, su <see cref="global::Nombre.VelocidadGrupo"/>.
+    /// </remarks>
+    public virtual double CalcularVelocidadGrupo(double frecuenciaAngular)
+    {
+        return frecuenciaAngular / (2 * Math.PI);
+    }
 }
