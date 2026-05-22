@@ -6,47 +6,53 @@ Aplicación de consola y librerías para probar el sistema diseñado en el artí
 
 https://medium.com/@heroe.vajradharma/ontolog%C3%ADa-de-la-vacuidad-un-sistema-para-entender-la-realidad-como-modulaci%C3%B3n-am-fm-fsk-y-plasma-2c8b56f2d8ed
 
-## Investigacion anti alucinaciones
+## Experimento de alucinaciones
 
-Se agrego un proyecto separado EpistemicGuard para evaluar reduccion de alucinaciones mediante una canalizacion epistemica:
+Se agrego el proyecto `HallucinationLab` para comparar:
 
-1. proyeccion de evidencia
-2. scoring de soporte/contradiccion/cobertura
-3. politica de respuesta con abstencion
+1. Salida baseline de un modelo existente.
+2. La misma salida, postprocesada con un guard ontologico basado en este repositorio.
 
-### Hallazgos actuales
+El flujo permite medir si bajan las alucinaciones con dos listas por caso:
 
-Benchmark comparativo medido (40 casos etiquetados):
+- `expectedFacts`: hechos que la respuesta deberia contener.
+- `forbiddenClaims`: afirmaciones consideradas alucinaciones.
 
-1. Baseline: 50.00% de alucinacion total
-2. Guarded: 0.00% de alucinacion total
-3. Reduccion relativa observada: 100.00%
+### Estructura principal
 
-Conclusión: los resultados son prometedores para continuar la investigacion, aunque la configuracion actual del sistema guardado es demasiado conservadora (abstencion alta) y requiere calibracion para mejorar utilidad practica.
+- `HallucinationLab/Backends`: backend real (`OpenAiResponsesBackend`) y fallback (`ReplayModelBackend`).
+- `HallucinationLab/Guard`: guard de control (`PassThroughGuard`) y guard ontologico (`OntologiaOutputGuard`).
+- `HallucinationLab/Eval`: scoring y metricas agregadas.
+- `HallucinationLab/Samples`: casos y respuestas de ejemplo.
 
-### Como verificar las conclusiones
+### Uso rapido
 
-1. Ejecutar benchmark:
+Ejecutar desde la raiz de la solucion:
 
-	powershell
-	dotnet run --project EpistemicGuard/EpistemicGuard.csproj -- --benchmark
+```bash
+dotnet run --project HallucinationLab -- --cases HallucinationLab/Samples/cases.json --guard pass --out hallucination-report.json
+```
 
-2. Revisar salida de consola con:
-	1. hallu_total
-	2. hallu_assertive
-	3. precision
-	4. abstention
+Para usar OpenAI real:
 
-3. Revisar reporte persistido en:
-	1. EpistemicGuard/benchmark-latest.md
+```bash
+$env:OPENAI_API_KEY="tu_api_key"
+dotnet run --project HallucinationLab -- --cases HallucinationLab/Samples/cases.json --guard pass --model gpt-4o-mini --out hallucination-report.json
+```
 
-### Como ampliar las pruebas
+El comando genera:
 
-1. Editar EpistemicGuard/BenchmarkData.cs:
-	1. agregar nuevos claims Supported/Contradicted/Unknown
-	2. aumentar corpus con fuentes conflictivas y de distinta confiabilidad
+- Resumen por consola (baseline vs guarded).
+- Archivo `hallucination-report.json` con detalle por caso y metricas agregadas.
 
-2. Ajustar umbrales en EpistemicGuard/PolicyEngine.cs.
-3. Repetir benchmark y comparar contra baseline para validar mejora real.
+### Como conectar tu modelo real
 
-Para detalle tecnico y protocolo completo, ver EpistemicGuard/README.md.
+1. Implementa `ITextModelBackend` en `HallucinationLab/Backends` para llamar tu proveedor (OpenAI, Azure, local, etc.).
+2. Mantene el mismo prompt para baseline y guarded.
+3. Usa el baseline como salida original del modelo.
+4. Aplica `OntologiaOutputGuard` para obtener la salida modificada.
+5. Compara metricas para estimar reduccion de alucinaciones.
+
+### Nota sobre OpenAI sin credenciales
+
+No existe un endpoint oficial de OpenAI para inferencia sin API key. Sin credenciales, el programa cae automaticamente a `ReplayModelBackend` para que el experimento pueda ejecutarse sin configuracion adicional.

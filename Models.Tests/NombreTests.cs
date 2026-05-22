@@ -1,31 +1,32 @@
 using FluentAssertions;
+using System.Numerics;
 
 namespace Models.Tests;
 
 public class NombreTests
 {
     [Fact]
-    public void Vacuidad_ExponeValoresEsperados()
+    public void Constructor_ExponeValoresEsperados()
     {
-        var nombre = Nombre.Vacuidad;
-        var tf = nombre.TransformadaFourier(2.0);
+        var nombre = new Nombre("Vacuidad", 0.0, UnitStepTransform);
+        var tf = nombre.Ventana(2.0);
 
-        nombre.Texto.Should().Be(nameof(Nombre.Vacuidad));
+        nombre.Texto.Should().Be("Vacuidad");
         nombre.VelocidadGrupo.Should().Be(0.0);
         tf.Real.Should().Be(1.0);
         tf.Imaginary.Should().Be(0.0);
     }
 
     [Fact]
-    public void Vacuidad_CreaNuevasInstanciasConMismaSemantica()
+    public void Constructor_CreaNuevasInstanciasConMismaSemantica()
     {
-        var primero = Nombre.Vacuidad;
-        var segundo = Nombre.Vacuidad;
+        var primero = new Nombre("Vacuidad", 0.0, UnitStepTransform);
+        var segundo = new Nombre("Vacuidad", 0.0, UnitStepTransform);
 
         primero.Should().NotBeSameAs(segundo);
         primero.Texto.Should().Be(segundo.Texto);
         primero.VelocidadGrupo.Should().Be(segundo.VelocidadGrupo);
-        primero.TransformadaFourier(1.5).Should().Be(segundo.TransformadaFourier(1.5));
+        primero.Ventana(1.5).Should().Be(segundo.Ventana(1.5));
     }
 
     [Theory]
@@ -34,9 +35,10 @@ public class NombreTests
     [InlineData(0.0)]
     [InlineData(0.5)]
     [InlineData(2.0)]
-    public void Vacuidad_TransformadaEsEscalonUnitario(double omega)
+    public void Constructor_VentanaEsEscalonUnitario(double omega)
     {
-        var tf = Nombre.Vacuidad.TransformadaFourier(omega);
+        var nombre = new Nombre("Vacuidad", 0.0, UnitStepTransform);
+        var tf = nombre.Ventana(omega);
 
         tf.Real.Should().Be(omega >= 0.0 ? 1.0 : 0.0);
         tf.Imaginary.Should().BeApproximately(0.0, 1e-12);
@@ -45,7 +47,7 @@ public class NombreTests
     [Fact]
     public void ToString_ContieneTextoYVelocidadDeGrupo()
     {
-        var nombre = Nombre.Vacuidad;
+        var nombre = new Nombre("Vacuidad", 0.0, UnitStepTransform);
 
         nombre.ToString().Should().Be($"{nombre.Texto} (VelocidadGrupo: {nombre.VelocidadGrupo})");
     }
@@ -53,8 +55,8 @@ public class NombreTests
     [Fact]
     public void Equals_ComparaPorTexto()
     {
-        var primero = Nombre.Vacuidad;
-        var segundo = Nombre.Vacuidad;
+        var primero = new Nombre("Vacuidad", 0.0, UnitStepTransform);
+        var segundo = new Nombre("Vacuidad", 0.0, UnitStepTransform);
 
         primero.Equals(segundo).Should().BeTrue();
         primero.Equals("otro").Should().BeFalse();
@@ -63,7 +65,7 @@ public class NombreTests
     [Fact]
     public void GetHashCode_UsaTextoComoBase()
     {
-        var nombre = Nombre.Vacuidad;
+        var nombre = new Nombre("Vacuidad", 0.0, UnitStepTransform);
 
         nombre.GetHashCode().Should().Be(nombre.Texto.GetHashCode());
     }
@@ -71,47 +73,46 @@ public class NombreTests
     [Fact]
     public void Equals_ConNullYTiposDistintos_DevuelveFalse()
     {
-        var nombre = Nombre.Vacuidad;
+        var nombre = new Nombre("Vacuidad", 0.0, UnitStepTransform);
+        object? nulo = null;
+        var otro = new object();
 
-        nombre.Equals(null).Should().BeFalse();
-        nombre.Equals(new object()).Should().BeFalse();
-    }
+        var esNulo = nombre.Equals(nulo);
+        var esOtro = nombre.Equals(otro);
 
-    [Theory]
-    [InlineData(0.0)]
-    [InlineData(0.25)]
-    [InlineData(1.0)]
-    [InlineData(3.0)]
-    public void Mostrarse_CreaAparienciaConFuncionComplejaFinita(double t)
-    {
-        var apariencia = Nombre.Vacuidad.Mostrarse(1.2);
-        var valor = apariencia.Funcion(t);
-
-        apariencia.Texto.Should().Be(Nombre.Vacuidad.Texto);
-        apariencia.FrecuenciaAngular.Should().BeApproximately(1.2, 1e-12);
-        double.IsFinite(valor.Real).Should().BeTrue();
-        double.IsFinite(valor.Imaginary).Should().BeTrue();
+        esNulo.Should().BeFalse();
+        esOtro.Should().BeFalse();
     }
 
     [Fact]
-    public void Mostrarse_ConFrecuenciaAngularCero_MantieneMagnitudEstableConTiempo()
+    public void Mostrarse_CreaAparienciaConEsenciaConsistente()
     {
-        var apariencia = Nombre.Vacuidad.Mostrarse(0.0);
-        var v1 = apariencia.Funcion(0.0);
-        var v2 = apariencia.Funcion(2.0);
+        var nombre = new Nombre("Vacuidad", 0.0, SmoothSpectrum);
+        var apariencia = nombre.Mostrarse(1.2);
 
-        v1.Magnitude.Should().BeApproximately(v2.Magnitude, 1e-9);
+        apariencia.Esencia.Should().NotBeNull();
+        apariencia.Esencia.Texto.Should().Be(nombre.Texto);
     }
 
     [Fact]
     public void Mostrarse_CreaNuevasInstanciasEnCadaInvocacion()
     {
-        var nombre = Nombre.Vacuidad;
+        var nombre = new Nombre("Vacuidad", 0.0, SmoothSpectrum);
 
         var a1 = nombre.Mostrarse(0.3);
         var a2 = nombre.Mostrarse(0.3);
 
         a1.Should().NotBeSameAs(a2);
         a1.Id.Should().NotBe(a2.Id);
+    }
+
+    private static Complex UnitStepTransform(double omega)
+    {
+        return omega >= 0.0 ? Complex.One : Complex.Zero;
+    }
+
+    private static Complex SmoothSpectrum(double omega)
+    {
+        return new Complex(Math.Exp(-(omega * omega)), 0.0);
     }
 }
