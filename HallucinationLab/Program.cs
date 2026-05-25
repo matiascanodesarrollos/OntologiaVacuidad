@@ -10,7 +10,7 @@ if (!File.Exists(options.CasesPath))
     return 1;
 }
 
-var backend = CreateBackend(options);
+var backend = new ReplayModelBackend(options.ResponsesPath);
 var guard = CreateGuard(options.GuardMode);
 var runner = new ExperimentRunner(backend, guard);
 
@@ -51,40 +51,15 @@ static Options ParseArgs(string[] args)
         CasesPath = Path.Combine(AppContext.BaseDirectory, "Samples", "cases.json"),
         ResponsesPath = Path.Combine(AppContext.BaseDirectory, "Samples", "replay-responses.json"),
         OutputPath = Path.Combine(Environment.CurrentDirectory, "hallucination-report.json"),
-        Model = "gpt-4o-mini",
-        ApiKey = Environment.GetEnvironmentVariable("OPENAI_API_KEY") ?? string.Empty,
-        BaseUrl = "https://api.openai.com",
-        GuardMode = "pass",
-        AllowReplayFallback = true
+        GuardMode = "ontologia",
     };
 
     for (var i = 0; i < args.Length; i++)
     {
         switch (args[i])
         {
-            case "--cases" when i + 1 < args.Length:
-                options.CasesPath = args[++i];
-                break;
-            case "--responses" when i + 1 < args.Length:
-                options.ResponsesPath = args[++i];
-                break;
-            case "--out" when i + 1 < args.Length:
-                options.OutputPath = args[++i];
-                break;
-            case "--model" when i + 1 < args.Length:
-                options.Model = args[++i];
-                break;
-            case "--api-key" when i + 1 < args.Length:
-                options.ApiKey = args[++i];
-                break;
-            case "--base-url" when i + 1 < args.Length:
-                options.BaseUrl = args[++i];
-                break;
             case "--guard" when i + 1 < args.Length:
                 options.GuardMode = args[++i];
-                break;
-            case "--strict-openai":
-                options.AllowReplayFallback = false;
                 break;
             case "--help":
             case "-h":
@@ -100,30 +75,7 @@ static Options ParseArgs(string[] args)
 static void PrintHelp()
 {
     Console.WriteLine("Usage:");
-    Console.WriteLine("  dotnet run --project HallucinationLab -- [--cases path] [--out path] [--model gpt-4o-mini] [--guard pass|ontologia]");
-    Console.WriteLine("  optional: --api-key <key> (or OPENAI_API_KEY env var), --base-url <url>, --strict-openai");
-    Console.WriteLine("  fallback: if no API key and fallback is enabled, ReplayModelBackend uses --responses path");
-}
-
-static ITextModelBackend CreateBackend(Options options)
-{
-    if (!string.IsNullOrWhiteSpace(options.ApiKey))
-    {
-        return new OpenAiResponsesBackend(options.ApiKey, options.Model, options.BaseUrl);
-    }
-
-    if (!options.AllowReplayFallback)
-    {
-        throw new InvalidOperationException("OPENAI_API_KEY is required when --strict-openai is enabled.");
-    }
-
-    if (!File.Exists(options.ResponsesPath))
-    {
-        throw new FileNotFoundException("Replay responses file not found.", options.ResponsesPath);
-    }
-
-    Console.WriteLine("OPENAI_API_KEY not found. Using ReplayModelBackend fallback for no-config execution.");
-    return new ReplayModelBackend(options.ResponsesPath);
+    Console.WriteLine("  dotnet run --project HallucinationLab -- [--guard pass|ontologia]");
 }
 
 static IOutputGuard CreateGuard(string guardMode)
@@ -140,9 +92,5 @@ file sealed class Options
     public required string CasesPath { get; set; }
     public required string ResponsesPath { get; set; }
     public required string OutputPath { get; set; }
-    public required string Model { get; set; }
-    public required string ApiKey { get; set; }
-    public required string BaseUrl { get; set; }
     public required string GuardMode { get; set; }
-    public required bool AllowReplayFallback { get; set; }
 }

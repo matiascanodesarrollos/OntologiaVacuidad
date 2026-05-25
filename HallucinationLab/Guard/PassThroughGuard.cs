@@ -4,7 +4,7 @@ public sealed class PassThroughGuard : IOutputGuard
 {
     public string Name => "PassThroughGuard";
 
-    public string Apply(string prompt, string rawOutput)
+    public string Apply(string prompt, string rawOutput, IReadOnlyList<string> expectedFacts, IReadOnlyList<string> forbiddenClaims)
     {
         return rawOutput;
     }

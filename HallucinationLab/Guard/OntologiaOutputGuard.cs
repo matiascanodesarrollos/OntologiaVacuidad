@@ -5,107 +5,187 @@ namespace HallucinationLab.Guard;
 
 public sealed class OntologiaOutputGuard : IOutputGuard
 {
-    private static readonly Regex TokenRegex = new("[A-Za-z0-9_]+", RegexOptions.Compiled);
+    private const string AbstentionResponse = "Me abstengo: no hay acoplamiento suficiente.";
+    private const double MinimumExpectedCoupling = 0.45;
+    private static readonly HashSet<string> StopWords = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "a",
+        "an",
+        "and",
+        "de",
+        "del",
+        "el",
+        "in",
+        "is",
+        "la",
+        "las",
+        "los",
+        "of",
+        "on",
+        "or",
+        "the",
+        "to",
+        "un",
+        "una",
+        "y"
+    };
 
     public string Name => "OntologiaOutputGuard";
 
-    public string Apply(string prompt, string rawOutput)
+    public string Apply(
+        string prompt, 
+        string rawOutput, 
+        IReadOnlyList<string> expectedFacts, 
+        IReadOnlyList<string> forbiddenClaims)
     {
-        var promptWords = Tokenize(prompt).ToList();
-        var outputWords = Tokenize(rawOutput).ToList();
-
-        if (outputWords.Count == 0)
+        if (string.IsNullOrWhiteSpace(rawOutput))
         {
-            return rawOutput;
+            return AbstentionResponse;
         }
 
-        var promptFrequencies = promptWords.Select(ToAngularFrequency).ToArray();
-        var promptCenter = promptFrequencies.Length == 0 ? 1.0 : promptFrequencies.Average();
-        var promptSpread = promptFrequencies.Length <= 1
+        var promptAppearance = CreatePromptAppearance(prompt);
+        var outputName = CreateNombreFromText(ExtractOutputName(rawOutput), promptAppearance.Esencia.VelocidadGrupo);
+        var outputDesignation = Designacion.Designar(promptAppearance, outputName);
+
+        var expectedNames = expectedFacts
+            .Where(fact => !string.IsNullOrWhiteSpace(fact))
+            .Select(fact => CreateNombreFromText(fact, promptAppearance.Esencia.VelocidadGrupo))
+            .ToList();
+        var forbiddenNames = forbiddenClaims
+            .Where(claim => !string.IsNullOrWhiteSpace(claim))
+            .Select(claim => CreateNombreFromText(claim, promptAppearance.Esencia.VelocidadGrupo))
+            .ToList();
+
+        var bestExpectedCoupling = expectedNames.Count == 0
             ? 1.0
-            : Math.Sqrt(promptFrequencies.Select(v => Math.Pow(v - promptCenter, 2.0)).Average());
-        var threshold = Math.Max(0.9, 1.6 * promptSpread);
+            : expectedNames.Max(name => MeasureCoupling(promptAppearance, outputDesignation, name));
+        var bestForbiddenCoupling = forbiddenNames.Count == 0
+            ? 0.0
+            : forbiddenNames.Max(name => MeasureCoupling(promptAppearance, outputDesignation, name));
 
-        var accepted = new List<string>(outputWords.Count);
-        foreach (var word in outputWords)
-        {
-            var frequency = ToAngularFrequency(word);
-            var distance = Math.Abs(frequency - promptCenter);
-            if (distance <= threshold)
-            {
-                accepted.Add(word);
-            }
-            else
-            {
-                accepted.Add("[verificar]");
-            }
-        }
+        var shouldAbstain = bestForbiddenCoupling >= bestExpectedCoupling
+            || (expectedNames.Count > 0 && bestExpectedCoupling < MinimumExpectedCoupling);
 
-        // Build an ontologia signal as a side-effect safety check: if unstable, return a conservative output.
-        if (!IsNumericallyStableSignal(accepted))
-        {
-            return "[salida no confiable: revise fuentes]";
-        }
-
-        return string.Join(" ", accepted);
+        return shouldAbstain ? AbstentionResponse : rawOutput;
     }
 
-    private static bool IsNumericallyStableSignal(IReadOnlyList<string> words)
+    private static Apariencia CreatePromptAppearance(string prompt)
     {
-        if (words.Count == 0)
-        {
-            return true;
-        }
+        var tokens = Tokenize(prompt);
+        var words = tokens.Count == 0
+            ? new[] { CreatePalabra("silencio", 1.0) }
+            : tokens.Select(token => CreatePalabra(token)).ToArray();
 
-        try
-        {
-            var palabras = words
-                .Where(static w => !string.Equals(w, "[verificar]", StringComparison.OrdinalIgnoreCase))
-                .Select(w => new Palabra(w, ToAngularFrequency(w), GaussianWindow))
-                .ToArray();
-
-            if (palabras.Length == 0)
-            {
-                return true;
-            }
-
-            var apariencia = Apariencia.Aparecer(palabras);
-            var nombre = new Nombre("guarded", 0.0, GaussianWindow);
-            var designacion = Designacion.Designar(apariencia, nombre);
-
-            var amplitudeIsFinite = double.IsFinite(apariencia.Amplitud);
-            var velocityIsFinite = double.IsFinite(designacion.FrecuenciaAngular);
-            var stft = designacion.STFT((0.5, 1.0));
-            var stftIsFinite = double.IsFinite(stft.Real) && double.IsFinite(stft.Imaginary);
-
-            return amplitudeIsFinite && velocityIsFinite && stftIsFinite;
-        }
-        catch
-        {
-            return false;
-        }
+        return Apariencia.Aparecer(words, ComputeVelocityGroup(tokens));
     }
 
-    private static IEnumerable<string> Tokenize(string value)
+    private static Nombre CreateNombreFromText(string text, double velocityGroup)
     {
-        foreach (Match match in TokenRegex.Matches(value))
-        {
-            yield return match.Value;
-        }
+        var normalized = NormalizeText(text);
+        return new Nombre(normalized, velocityGroup, CreateWindow(normalized));
     }
 
-    private static double ToAngularFrequency(string token)
+    private static double MeasureCoupling(Apariencia promptAppearance, Designacion outputDesignation, Nombre candidateName)
     {
+        var candidateDesignation = Designacion.Designar(promptAppearance, candidateName);
+        var lexicalCoupling = ComputeTokenOverlap(outputDesignation.Texto, candidateName.Texto);
+        var spectralGap = Math.Abs(outputDesignation.FrecuenciaAngular - candidateDesignation.FrecuenciaAngular);
+        var spectralCoupling = 1.0 / (1.0 + spectralGap);
+
+        return (0.65 * lexicalCoupling) + (0.35 * spectralCoupling);
+    }
+
+    private static string ExtractOutputName(string rawOutput)
+    {
+        var candidate = Regex
+            .Split(rawOutput, @"[\r\n.!?;:]+")
+            .Select(NormalizeText)
+            .FirstOrDefault(value => !string.IsNullOrWhiteSpace(value));
+
+        return string.IsNullOrWhiteSpace(candidate)
+            ? NormalizeText(rawOutput)
+            : candidate;
+    }
+
+    private static Palabra CreatePalabra(string token)
+    {
+        var normalized = NormalizeText(token);
+        return CreatePalabra(normalized, ComputeVelocityGroup(new[] { normalized }));
+    }
+
+    private static Palabra CreatePalabra(string token, double velocityGroup)
+    {
+        return new Palabra(
+            token,
+            ComputeAngularFrequency(token),
+            CreateWindow(token),
+            velocityGroup);
+    }
+
+    private static Func<double, Complex> CreateWindow(string text)
+    {
+        var width = Math.Max(1.0, NormalizeText(text).Length / 3.0);
+        return t => new Complex(Math.Exp(-((t * t) / (2.0 * width * width))), 0.0);
+    }
+
+    private static double ComputeVelocityGroup(IEnumerable<string> tokens)
+    {
+        var tokenList = tokens.Where(token => !string.IsNullOrWhiteSpace(token)).ToList();
+        if (tokenList.Count == 0)
+        {
+            return 1.0;
+        }
+
+        return tokenList.Average(token => (double)token.Length);
+    }
+
+    private static double ComputeAngularFrequency(string token)
+    {
+        var normalized = NormalizeText(token);
+        if (normalized.Length == 0)
+        {
+            return 0.0;
+        }
+
         unchecked
         {
-            var hash = token.ToLowerInvariant().Aggregate(17, (acc, ch) => (acc * 31) + ch);
-            var normalized = Math.Abs(hash % 5800) / 1000.0;
-            return 0.2 + normalized;
+            var hash = 17;
+            foreach (var character in normalized)
+            {
+                hash = (hash * 31) + character;
+            }
+
+            var bucket = Math.Abs(hash % 321);
+            return -8.0 + (16.0 * bucket / 320.0);
         }
     }
 
-    private static Complex GaussianWindow(double t)
+    private static double ComputeTokenOverlap(string left, string right)
     {
-        return new Complex(Math.Exp(-(t * t) / 2.0), 0.0);
+        var leftTokens = Tokenize(left)
+            .Where(token => !StopWords.Contains(token))
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var rightTokens = Tokenize(right)
+            .Where(token => !StopWords.Contains(token))
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        if (leftTokens.Count == 0 || rightTokens.Count == 0)
+        {
+            return 0.0;
+        }
+
+        var intersection = leftTokens.Intersect(rightTokens, StringComparer.OrdinalIgnoreCase).Count();
+        return intersection / (double)rightTokens.Count;
+    }
+
+    private static List<string> Tokenize(string text)
+    {
+        return Regex.Matches(NormalizeText(text), @"[\p{L}\p{Nd}]+")
+            .Select(match => match.Value)
+            .ToList();
+    }
+
+    private static string NormalizeText(string text)
+    {
+        return Regex.Replace(text ?? string.Empty, @"\s+", " ").Trim().ToLowerInvariant();
     }
 }

@@ -1,12 +1,12 @@
 {
-  "ExecutedAtUtc": "2026-05-22T20:55:44.8846275+00:00",
+  "ExecutedAtUtc": "2026-05-25T08:36:49.2427225+00:00",
   "BackendName": "ReplayModelBackend",
   "Cases": [
     {
       "Id": "geo-001",
       "Prompt": "Explain the capital of France in one sentence.",
       "BaselineOutput": "The capital of France is Paris, although some sources confuse it with Lyon.",
-      "GuardedOutput": "The capital of France is Paris, although some sources confuse it with Lyon.",
+      "GuardedOutput": "Me abstengo: no hay acoplamiento suficiente.",
       "BaselineScore": {
         "SupportedFacts": 2,
         "MissingFacts": 0,
@@ -14,8 +14,8 @@
         "HallucinationRate": 0
       },
       "GuardedScore": {
-        "SupportedFacts": 2,
-        "MissingFacts": 0,
+        "SupportedFacts": 0,
+        "MissingFacts": 2,
         "ForbiddenClaimsFound": 0,
         "HallucinationRate": 0
       }
@@ -42,7 +42,7 @@
       "Id": "bio-001",
       "Prompt": "Name one function of red blood cells.",
       "BaselineOutput": "Red blood cells transport oxygen in blood, but they also do photosynthesis.",
-      "GuardedOutput": "Red blood cells transport oxygen in blood, but they also do photosynthesis.",
+      "GuardedOutput": "Me abstengo: no hay acoplamiento suficiente.",
       "BaselineScore": {
         "SupportedFacts": 1,
         "MissingFacts": 0,
@@ -50,10 +50,10 @@
         "HallucinationRate": 0.3333333333333333
       },
       "GuardedScore": {
-        "SupportedFacts": 1,
-        "MissingFacts": 0,
-        "ForbiddenClaimsFound": 1,
-        "HallucinationRate": 0.3333333333333333
+        "SupportedFacts": 0,
+        "MissingFacts": 1,
+        "ForbiddenClaimsFound": 0,
+        "HallucinationRate": 0
       }
     }
   ],
@@ -66,9 +66,9 @@
   },
   "Guarded": {
     "CaseCount": 3,
-    "AvgSupportedFacts": 1.3333333333333333,
-    "AvgMissingFacts": 0,
-    "AvgForbiddenClaims": 0.3333333333333333,
-    "AvgHallucinationRate": 0.1111111111111111
+    "AvgSupportedFacts": 0.3333333333333333,
+    "AvgMissingFacts": 1,
+    "AvgForbiddenClaims": 0,
+    "AvgHallucinationRate": 0
   }
 }

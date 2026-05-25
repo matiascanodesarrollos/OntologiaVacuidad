@@ -8,9 +8,7 @@ public class Apariencia
     public Guid Id { get; }    
     public Func<double, Complex> Funcion { get; }
     public Designacion Esencia { get; }
-    public double Amplitud => _nombre.Value.Magnitude;
-    private readonly Lazy<Complex> _nombre; // Es lazy porque en general aprendemos el nombre en el futuro
-    
+    public Lazy<double> Amplitud { get; } 
 
     /// <summary>
     /// Crea una copia pública de otra apariencia preservando su comportamiento para herencia.
@@ -21,24 +19,38 @@ public class Apariencia
         Id = otra.Id;        
         Funcion = otra.Funcion;
         Esencia = otra.Esencia;
-        _nombre = new Lazy<Complex>(() => otra._nombre.Value);
+        Amplitud = otra.Amplitud;
     }
 
-    internal Apariencia(string texto, double frecuenciaAngular, Func<double, Complex> ventana)
+    internal Apariencia(
+        string texto, 
+        double frecuenciaAngular, 
+        Func<double, Complex> ventana, 
+        double velocidadGrupo)
     {
         Id = Guid.NewGuid();
-        Funcion = t => Amplitud * Complex.FromPolarCoordinates(1.0, frecuenciaAngular * t);
+        var nombre = new Nombre(
+                texto, 
+                velocidadGrupo, 
+                ventana);
+        Amplitud = new Lazy<double>(() => 
+            nombre.Fourier.ContainsKey(frecuenciaAngular) 
+                ? nombre.Fourier[frecuenciaAngular].Magnitude 
+                : 1.0);
+        Funcion = t => Amplitud.Value * Complex.FromPolarCoordinates(1.0, frecuenciaAngular * t);
         var palabra = this as Palabra;
-        Esencia = new Designacion(this, new Nombre(texto, palabra.CalcularVelocidadGrupo(frecuenciaAngular), ventana));        
-        _nombre = new Lazy<Complex>(() => CalcularTransformadaFourier(frecuenciaAngular, ventana));
+        Esencia = new Designacion(
+            this, 
+            nombre);        
     }
 
     /// <summary>
     /// Crea una apariencia compuesta a partir de una lista de palabras.
     /// </summary>
     /// <param name="palabras">Palabras de entrada que se combinan en una sola señal.</param>
+    /// <param name="velocidadGrupo">Velocidad de grupo que se asigna a la apariencia resultante.</param>
     /// <returns>Una apariencia cuya ventana es la productoria de fase por ventana de cada palabra.</returns>
-    public static Apariencia Aparecer(IEnumerable<Palabra> palabras)
+    public static Apariencia Aparecer(IEnumerable<Palabra> palabras, double velocidadGrupo)
     {
         var lista = palabras.ToList();
         var palabra = new Palabra(
@@ -46,8 +58,9 @@ public class Apariencia
             lista.Sum(p => p.FrecuenciaAngular),
             t => lista.Aggregate(
                 Complex.One,
-                (acc, p) => acc * (p.Fase(t) * p.Nombre.Ventana(t))
-            )
+                (acc, p) => acc * (p.Fase(t) * p.Ventana(t))
+            ),
+            velocidadGrupo
         );
         return new Apariencia(palabra);
     }
@@ -72,46 +85,15 @@ public class Apariencia
         return false;
     }
 
-    public static Apariencia Mente => new Apariencia(
+    public static Apariencia Mente(double energia) => new Apariencia(
         new Palabra(
             nameof(Mente),
             0.0,
             t => new Complex(
-                t == 0.0 ? 0.5 * double.PositiveInfinity : 0.0, 
-                1 / (2 * Math.PI * t)) //Transformada inversa de u(ω)
-        )
+                t == 0.0 ? 0.5 * energia : 0.0, 
+                energia / (2 * Math.PI * t)),
+            0.0
+        ) //Transformada inversa de u(ω)
     );
-
-    /// <summary>
-    /// Calcula la transformada de Fourier compleja para una frecuencia dada.
-    /// </summary>
-    /// <param name="frecuenciaAngular">Frecuencia angular en la que se evalúa el espectro.</param>
-    /// <param name="funcion">Función que se transforma.</param>
-    /// <returns>Valor complejo de la transformada de Fourier en la frecuencia indicada.</returns>
-    /// <remarks>
-    /// Al sobreescribir este método se modifica directamente el valor interno usado por
-    /// <see cref="Amplitud"/>. La implementación derivada debería conservar
-    /// estabilidad numérica y devolver valores finitos para evitar propagar NaN o infinito.
-    /// </remarks>
-    protected virtual Complex CalcularTransformadaFourier(double frecuenciaAngular, Func<double, Complex> funcion)
-    {
-        const double limiteIntegracion = 8.0;
-        const int pasos = 4096;
-        var dt = 2.0 * limiteIntegracion / pasos;
-
-        var suma = Complex.Zero;
-
-        for (var i = 0; i <= pasos; i++)
-        {
-            var t = -limiteIntegracion + (i * dt);
-            var valor = funcion(t);
-            var peso = (i == 0 || i == pasos) ? 0.5 : 1.0;
-
-            var exponente = Complex.FromPolarCoordinates(1.0, -frecuenciaAngular * t);
-            suma += peso * valor * exponente;
-        }
-
-        return suma * dt;
-    }
 }
 
