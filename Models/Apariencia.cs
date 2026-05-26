@@ -1,6 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Numerics;
 
 public class Apariencia
@@ -23,48 +21,25 @@ public class Apariencia
     }
 
     internal Apariencia(
-        string texto, 
+        string texto,
+        string contexto, 
         double frecuenciaAngular, 
-        Func<double, Complex> ventana, 
-        double velocidadGrupo)
+        Func<double, Complex> ventana)
     {
         Id = Guid.NewGuid();
         var nombre = new Nombre(
                 texto, 
-                velocidadGrupo, 
+                contexto, 
                 ventana);
         Amplitud = new Lazy<double>(() => 
             nombre.Fourier.ContainsKey(frecuenciaAngular) 
                 ? nombre.Fourier[frecuenciaAngular].Magnitude 
                 : 1.0);
         Funcion = t => Amplitud.Value * Complex.FromPolarCoordinates(1.0, frecuenciaAngular * t);
-        var palabra = this as Palabra;
         Esencia = new Designacion(
             this, 
             nombre);        
     }
-
-    /// <summary>
-    /// Crea una apariencia compuesta a partir de una lista de palabras.
-    /// </summary>
-    /// <param name="palabras">Palabras de entrada que se combinan en una sola señal.</param>
-    /// <param name="velocidadGrupo">Velocidad de grupo que se asigna a la apariencia resultante.</param>
-    /// <returns>Una apariencia cuya ventana es la productoria de fase por ventana de cada palabra.</returns>
-    public static Apariencia Aparecer(IEnumerable<Palabra> palabras, double velocidadGrupo)
-    {
-        var lista = palabras.ToList();
-        var palabra = new Palabra(
-            string.Join(" ", lista.Select(p => p.Texto)),
-            lista.Sum(p => p.FrecuenciaAngular),
-            t => lista.Aggregate(
-                Complex.One,
-                (acc, p) => acc * (p.Fase(t) * p.Ventana(t))
-            ),
-            velocidadGrupo
-        );
-        return new Apariencia(palabra);
-    }
-
 
     /// <summary>
     /// Sobreescribe GetHashCode para comparar apariencias por su Id.
@@ -85,15 +60,13 @@ public class Apariencia
         return false;
     }
 
-    public static Apariencia Mente(double energia) => new Apariencia(
-        new Palabra(
-            nameof(Mente),
-            0.0,
-            t => new Complex(
-                t == 0.0 ? 0.5 * energia : 0.0, 
-                energia / (2 * Math.PI * t)),
-            0.0
-        ) //Transformada inversa de u(ω)
+    public static Apariencia Mente(double energia) => new Apariencia(//Transformada inversa de u(ω)
+        nameof(Mente),
+        nameof(Designacion.Vacuidad),
+        0.0,
+        t => new Complex(
+            t == 0.0 ? 0.5 * energia : 0.0, 
+            t == 0.0 ? energia : 1 / (2 * Math.PI * t))
     );
 }
 
