@@ -6,7 +6,7 @@ public class Designacion
     public Guid Id { get; }
     public Apariencia Esencia { get; }
     public Nombre NombreProyectado { get; }
-    public Func<(double tau, double FrecuenciaAngular), Complex> STFT { get; }
+    public Func<double, double, Complex> STFT { get; }
     
     /// <summary>
     /// Crea una designación calculando una STFT con la funcion de la apariencia y la ventana del nombre.
@@ -21,7 +21,7 @@ public class Designacion
         Id = Guid.NewGuid();
         Esencia = apariencia;
         NombreProyectado = nombre;
-        STFT = p => CalcularSTFT(p.tau, p.FrecuenciaAngular);
+        STFT = (tau, omega) => CalcularSTFT(tau, omega);
     }
 
     /// <summary>
@@ -47,9 +47,9 @@ public class Designacion
     /// Calcula la STFT discreta completa usando un paso temporal de 1 por caracter del contexto.
     /// </summary>
     /// <param name="tau">Desplazamiento temporal de la ventana.</param>
-    /// <param name="frecuenciaAngular">Frecuencia angular de analisis.</param>
-    /// <returns>Valor complejo de la STFT en el punto (tau, frecuenciaAngular).</returns>
-    protected virtual Complex CalcularSTFT(double tau, double frecuenciaAngular)
+    /// <param name="omega">Frecuencia angular de analisis.</param>
+    /// <returns>Valor complejo de la STFT en el punto (tau, omega).</returns>
+    protected virtual Complex CalcularSTFT(double tau, double omega)
     {
         var totalMuestras = Math.Max(1, Esencia.Contexto.Length);
 
@@ -59,7 +59,7 @@ public class Designacion
         {
             var x = Esencia.Funcion(t);
             var w = Complex.Conjugate(NombreProyectado.Ventana(t - tau));
-            var exponente = Complex.FromPolarCoordinates(1.0, -frecuenciaAngular * t);
+            var exponente = Complex.FromPolarCoordinates(1.0, -omega * t);
 
             suma += x * w * exponente;
         }

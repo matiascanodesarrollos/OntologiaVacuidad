@@ -11,15 +11,15 @@ public class Apariencia : Nombre
     internal Apariencia(
         string texto,
         string contexto, 
-        double frecuenciaAngular, 
+        double omega, 
         Func<double, Complex> ventana)
         : base(texto, contexto, ventana)
     {
         Amplitud = new Lazy<double>(() => 
-            Fourier.ContainsKey(frecuenciaAngular) 
-                ? Fourier[frecuenciaAngular].Magnitude 
+            Fourier.ContainsKey(omega) 
+                ? Fourier[omega].Magnitude 
                 : 0.0);
-        Funcion = t => Amplitud.Value * Complex.FromPolarCoordinates(1.0, frecuenciaAngular * t);
+        Funcion = t => Amplitud.Value * Complex.FromPolarCoordinates(1.0, omega * t);
         Esencia = new Designacion(
             this, 
             this);

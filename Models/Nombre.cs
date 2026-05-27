@@ -36,7 +36,7 @@ public class Nombre
     /// <returns>Una apariencia construida a partir del contexto.</returns>
     public Apariencia Mostrarse(string texto)
     {
-        var apariencia = new Palabra(
+        var apariencia = new Apariencia(
             texto,
             Contexto,
             Fourier.Sum(p => p.Key),
@@ -83,7 +83,7 @@ public class Nombre
     protected virtual Dictionary<double, Complex> CalcularTransformadaFourier()
     {
         var totalMuestras = Math.Max(1, Contexto.Length);
-        var resultado = new (double FrecuenciaAngular, Complex Valor)[totalMuestras];
+        var resultado = new (double Omega, Complex Valor)[totalMuestras];
 
         for (int k = 0; k < totalMuestras; k++)
         {
@@ -99,7 +99,7 @@ public class Nombre
             resultado[k] = (omega, suma);
         }
 
-        return resultado.ToDictionary(p => p.FrecuenciaAngular, p => p.Valor);
+        return resultado.ToDictionary(p => p.Omega, p => p.Valor);
     }
 
     /// <summary>
