@@ -1,52 +1,28 @@
 using System;
 using System.Numerics;
 
-public class Designacion : Nombre
+public class Designacion
 {
     public Guid Id { get; }
-    public Palabra Causa { get; }
     public Apariencia Esencia { get; }
+    public Nombre NombreProyectado { get; }
     public Func<(double tau, double FrecuenciaAngular), Complex> STFT { get; }
     
     /// <summary>
-    /// Constructor de copia para crear una nueva designación a partir de otra para herencia.
-    /// <param name="otra">La designación de la cual se copiarán las propiedades.</param>
-    /// </summary>   
-    public Designacion(Designacion otra)
-        : base(otra.Texto, otra.Contexto, otra.Ventana)
-    {
-        Id = Guid.NewGuid();
-        Causa = otra.Causa;
-        Esencia = otra.Esencia;
-        STFT = otra.STFT;
-    }
-
-    /// <summary>
     /// Crea una designación calculando una STFT con la funcion de la apariencia y la ventana del nombre.
     /// La funcion en si de la STFT se puede sobreescribir para implementar diferentes formas de análisis.
-    /// Si la apariencia es una palabra, es su causa de la designación. 
     /// Su esencia es la apariencia de entrada.
     /// </summary>
     /// <param name="apariencia">Apariencia de entrada.</param>
     /// <param name="nombre">Nombre que aporta la ventana de análisis.</param>
     /// <returns>Una nueva designación vinculada a la apariencia de entrada.</returns>
     public Designacion(Apariencia apariencia, Nombre nombre)
-        : base(nombre.Texto, nombre.Contexto, nombre.Ventana)
     {
         Id = Guid.NewGuid();
-        Causa = apariencia as Palabra;
         Esencia = apariencia;
+        NombreProyectado = nombre;
         STFT = p => CalcularSTFT(p.tau, p.FrecuenciaAngular);
     }
-
-    public static Designacion Vacuidad(double energia) => new Designacion(
-        Apariencia.Mente(energia),
-        new Nombre(
-            nameof(Vacuidad),
-            nameof(Apariencia.Mente),
-            t => new Complex(0.0, t / (2 * Math.PI))
-        ) //Transformada inversa de δ′
-    );
 
     /// <summary>
     /// Sobreescribe Equals para comparar designaciones por su Id.
@@ -75,15 +51,14 @@ public class Designacion : Nombre
     /// <returns>Valor complejo de la STFT en el punto (tau, frecuenciaAngular).</returns>
     protected virtual Complex CalcularSTFT(double tau, double frecuenciaAngular)
     {
-        var totalMuestras = Math.Max(1, Contexto.Length);
+        var totalMuestras = Math.Max(1, Esencia.Contexto.Length);
 
         var suma = Complex.Zero;
 
-        for (var n = 0; n < totalMuestras; n++)
+        for (var t = 0; t < totalMuestras; t++)
         {
-            var t = n + 1.0;
             var x = Esencia.Funcion(t);
-            var w = Complex.Conjugate(Ventana(t - tau));
+            var w = Complex.Conjugate(NombreProyectado.Ventana(t - tau));
             var exponente = Complex.FromPolarCoordinates(1.0, -frecuenciaAngular * t);
 
             suma += x * w * exponente;
@@ -91,4 +66,14 @@ public class Designacion : Nombre
 
         return suma;
     }
+
+    public static Designacion Vacuidad(double energia) //Transformada inversa de δ′(ω)
+        => new Designacion(
+            Apariencia.Mente(energia),
+            new Nombre(
+                nameof(Vacuidad),
+                nameof(Apariencia.Mente),
+                t => new Complex(0.0, t / (2 * Math.PI))
+        ) 
+    );
 }
