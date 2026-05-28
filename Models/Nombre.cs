@@ -9,7 +9,7 @@ public class Nombre
     public string Texto { get; }
     public string Contexto { get; }
     public Func<double, Complex> Ventana { get; }
-    public double VelocidadGrupo => CalcularVelocidadGrupo();
+    public double VelocidadGrupo { get; }
     private readonly Lazy<Dictionary<double, Complex>> _fourier;
     public Dictionary<double, Complex> Fourier => _fourier.Value;
 
@@ -21,26 +21,26 @@ public class Nombre
     /// <param name="ventana">Función de ventana: debe ponderar la referencia al nombre en cada momento del contexto.</param>
     public Nombre(string texto, 
         string contexto,
-        Func<double, Complex> ventana)
+        Func<double, Complex> ventana,
+        double velocidadGrupo)
     {
         Id = Guid.NewGuid();
         Texto = texto;
         Contexto = contexto;
         Ventana = ventana;
+        VelocidadGrupo = velocidadGrupo;
         _fourier = new Lazy<Dictionary<double, Complex>>(CalcularTransformadaFourier);
     }
 
     /// <summary>
-    /// Crea una apariencia a partir de un texto.
+    /// Crea una apariencia para este nombre y de frecuencia angular igual a la suma de las frecuencias de Fourier.
     /// </summary>
-    /// <returns>Una apariencia construida a partir del contexto.</returns>
-    public Palabra Mostrarse(string texto)
+    /// <returns>La apariencia construida.</returns>
+    public Apariencia Mostrarse()
     {
-        var apariencia = new Palabra(
-            texto,
-            Contexto,
-            Fourier.Sum(p => p.Key),
-            Ventana
+        var apariencia = new Apariencia(
+            this,
+            Fourier.Sum(p => p.Key)
         );        
         return apariencia;
     }
@@ -100,39 +100,5 @@ public class Nombre
         }
 
         return resultado.ToDictionary(p => p.Omega, p => p.Valor);
-    }
-
-    /// <summary>
-    /// Calcula la velocidad de grupo como la cantidad de apariciones de un texto dentro de su contexto.
-    /// </summary>
-    /// <returns>Cantidad de apariciones no superpuestas encontradas en el contexto.</returns>
-    /// <remarks>
-    /// Al sobreescribir este método se modifica directamente el valor expuesto por
-    /// <see cref="VelocidadGrupo"/> y, por tanto, la velocidad de grupo que
-    /// <see cref="Mostrarse(double)"/> propaga en la apariencia resultante.
-    /// </remarks>
-    protected virtual int CalcularVelocidadGrupo()
-    {
-        if (string.IsNullOrEmpty(Texto) || string.IsNullOrEmpty(Contexto))
-        {
-            return 0;
-        }
-
-        var conteo = 0;
-        var indice = 0;
-
-        while (indice < Contexto.Length)
-        {
-            var encontrado = Contexto.IndexOf(Texto, indice, StringComparison.Ordinal);
-            if (encontrado < 0)
-            {
-                break;
-            }
-
-            conteo++;
-            indice = encontrado + Texto.Length;
-        }
-
-        return conteo;
     }
 }

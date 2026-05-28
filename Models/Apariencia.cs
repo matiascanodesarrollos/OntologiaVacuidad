@@ -6,27 +6,22 @@ public class Apariencia : Nombre
     public Func<double, Complex> Funcion { get; }
     public Palabra Causa { get; protected set; }
     public Designacion Esencia { get; }
-    public Lazy<double> Amplitud { get; } 
+    public double Amplitud { get; } 
 
     internal Apariencia(
-        string texto,
-        string contexto, 
-        double omega, 
-        Func<double, Complex> ventana)
-        : base(texto, contexto, ventana)
+        Nombre nombre,
+        double omega)
+        : base(nombre.Texto, nombre.Contexto, nombre.Ventana, nombre.VelocidadGrupo)
     {
-        Amplitud = new Lazy<double>(() => 
-            Fourier.ContainsKey(omega) 
-                ? Fourier[omega].Magnitude 
-                : 0.0);
-        Funcion = t => Amplitud.Value * Complex.FromPolarCoordinates(1.0, omega * t);
+        Amplitud = Fourier[omega].Magnitude;
+        Funcion = t => Complex.FromPolarCoordinates(Amplitud, omega * t);
         Esencia = new Designacion(
             this, 
             this);
     }
 
     /// <summary>
-    /// Sobreescribe GetHashCode para comparar apariencias por su Id.
+    /// Sobreescribe GetHashCode para comparar apariencias por su Id.   
     /// </summary>
     /// <returns>El hash code de la apariencia.</returns>
     public override int GetHashCode() => Id.GetHashCode();

@@ -1,42 +1,32 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Numerics;
 
 public class Palabra : Apariencia
 {
+    public new string Texto { get; }
     public new Func<double, double, Complex> Funcion { get; }
-    public double Omega { get; }
 
-    internal Palabra(
-        string texto,
-        string contexto,
-        double omega,
-        Func<double, Complex> ventana)
-        : base(texto, contexto, omega, ventana)
-    {      
-        Funcion = (tau, t) => 
-            Complex.FromPolarCoordinates(1.0, omega * tau) 
-            * ventana(t - tau);
-        Causa = this;
-        Omega = omega;
-    }
 
     /// <summary>
-    /// Crea una palabra a partir de un conjunto, combinando sus textos, contextos, omegas y ventanas.
-    /// La función de la palabra resultante es el producto de las funciones de las palabras individuales.
+    /// Crea una palabra a partir de un texto, un nombre y una frecuencia angular.
+    /// La función de la palabra se construye multiplicando la función de ventana del nombre por la fase compleja correspondiente.
+    /// La causa de la apariencia resultante o su naturaleza es la palabra misma.
     /// </summary>
-    /// <param name="texto">Texto de la palabra resultante.</param>
-    /// <param name="contexto">Contexto de la palabra resultante en forma de lista de palabras.</param>
-    public Palabra(string texto, IEnumerable<Palabra> contexto)
-        : base(
-            texto,
-            string.Join(".", contexto.Select(p => p.Contexto)),
-            contexto.Sum(p => p.Omega),
-            t => contexto.Aggregate(Complex.One, (acc, p) => acc * p.Ventana(t))
-        )
+    /// <param name="texto">Texto de la palabra.</param>
+    /// <param name="nombre">Nombre que aporta la ventana de análisis y el contexto.</param>
+    /// <param name="frecuenciaAngular">Frecuencia angular de análisis.</param>
+    /// <returns>Una nueva palabra vinculada al nombre de entrada.</returns>
+    public Palabra(
+        string texto,
+        Nombre nombre,
+        double frecuenciaAngular)
+        : base(nombre, frecuenciaAngular)
     {
-        Causa = contexto.FirstOrDefault();
+        Texto = texto;
+        Funcion = (tau, t) => 
+            Complex.FromPolarCoordinates(1.0, frecuenciaAngular * tau) 
+            * nombre.Ventana(t - tau);
+        Causa = this;
     }
 
     /// <summary>
@@ -50,16 +40,26 @@ public class Palabra : Apariencia
     {
         var muestras = Math.Max(1, Contexto.Length);
         var omega = z.Phase;
-        var suma = Complex.Zero;
+        var paso = 0.01;
+        var X = Complex.Zero;
+        var derivada = Complex.Zero;
         for (int n = 0; n < muestras; n++)
         {
-            suma += Esencia.STFT(n, omega) * Complex.Pow(z, -n);
+            var factor = Complex.Pow(z, -n);
+            var valor = Esencia.STFT(n, omega);
+            X += valor * factor;
+            derivada += (Esencia.STFT(n, omega + paso) - Esencia.STFT(n, omega - paso)) * factor / (2.0 * paso);
         }
-        return new Apariencia(
-            Texto,
-            Contexto,
-            omega,
-            t => suma * Math.Pow(z.Magnitude, -t)
+        var velocidadGrupo = X.Magnitude <= 1e-12 ? 0.0 : (derivada / X).Imaginary;
+        var nombre = new Nombre(
+            Texto, 
+            Contexto, 
+            t => Complex.FromPolarCoordinates(X.Magnitude, omega * t - X.Phase), 
+            velocidadGrupo);
+        var apariencia = new Apariencia(
+            nombre,
+            omega
         );
+        return apariencia;
     }
 }
