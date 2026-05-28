@@ -66,14 +66,4 @@ public class Designacion
 
         return suma;
     }
-
-    public static Designacion Vacuidad(double energia) //Transformada inversa de δ′(ω)
-        => new Designacion(
-            Apariencia.Mente(energia),
-            new Nombre(
-                nameof(Vacuidad),
-                nameof(Apariencia.Mente),
-                t => new Complex(0.0, t / (2 * Math.PI))
-        ) 
-    );
 }

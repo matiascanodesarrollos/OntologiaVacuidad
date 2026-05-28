@@ -1,6 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Numerics;
 
 public class Apariencia : Nombre
@@ -46,14 +44,5 @@ public class Apariencia : Nombre
         return false;
     }
 
-    public static Apariencia Mente(double energia) //Transformada inversa de u(ω)
-        => new Apariencia(
-            nameof(Mente),
-            nameof(Designacion.Vacuidad),
-            0.0,
-            t => new Complex(
-                t == 0.0 ? 0.5 * energia : 0.0, 
-                t == 0.0 ? energia : 1 / (2 * Math.PI * t))
-        );
-    }
+}
 

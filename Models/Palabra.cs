@@ -26,16 +26,17 @@ public class Palabra : Apariencia
     /// Crea una palabra a partir de un conjunto, combinando sus textos, contextos, omegas y ventanas.
     /// La función de la palabra resultante es el producto de las funciones de las palabras individuales.
     /// </summary>
-    /// <param name="palabras"></param>
-    public Palabra(IEnumerable<Palabra> palabras)
+    /// <param name="texto">Texto de la palabra resultante.</param>
+    /// <param name="contexto">Contexto de la palabra resultante en forma de lista de palabras.</param>
+    public Palabra(string texto, IEnumerable<Palabra> contexto)
         : base(
-            string.Join(".", palabras.Select(p => p.Texto)),
-            string.Join(".", palabras.Select(p => p.Contexto)),
-            palabras.Sum(p => p.Omega),
-            t => palabras.Aggregate(Complex.One, (acc, p) => acc * p.Ventana(t))
+            texto,
+            string.Join(".", contexto.Select(p => p.Contexto)),
+            contexto.Sum(p => p.Omega),
+            t => contexto.Aggregate(Complex.One, (acc, p) => acc * p.Ventana(t))
         )
     {
-        Causa = palabras.FirstOrDefault();
+        Causa = contexto.FirstOrDefault();
     }
 
     /// <summary>
@@ -52,8 +53,7 @@ public class Palabra : Apariencia
         var suma = Complex.Zero;
         for (int n = 0; n < muestras; n++)
         {
-            var designacion = Esencia.STFT(n, omega);
-            suma += Funcion(n, n) * Complex.Pow(z, -n);
+            suma += Esencia.STFT(n, omega) * Complex.Pow(z, -n);
         }
         return new Apariencia(
             Texto,
