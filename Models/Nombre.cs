@@ -34,9 +34,9 @@ public class Nombre
     /// Crea una apariencia a partir de un texto.
     /// </summary>
     /// <returns>Una apariencia construida a partir del contexto.</returns>
-    public Apariencia Mostrarse(string texto)
+    public Palabra Mostrarse(string texto)
     {
-        var apariencia = new Apariencia(
+        var apariencia = new Palabra(
             texto,
             Contexto,
             Fourier.Sum(p => p.Key),
