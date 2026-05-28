@@ -13,6 +13,16 @@ public class Nombre
     private readonly Lazy<Dictionary<double, Complex>> _fourier;
     public Dictionary<double, Complex> Fourier => _fourier.Value;
 
+    protected Nombre(Nombre otro)
+    {
+        Id = otro.Id;
+        Texto = otro.Texto;
+        Contexto = otro.Contexto;
+        Ventana = otro.Ventana;
+        VelocidadGrupo = otro.VelocidadGrupo;
+        _fourier = new Lazy<Dictionary<double, Complex>>(() => new Dictionary<double, Complex>(otro.Fourier));
+    }
+
     /// <summary>
     /// Crea un nuevo nombre con texto, contexto y su transformada de Fourier.
     /// </summary>

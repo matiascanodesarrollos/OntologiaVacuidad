@@ -11,7 +11,7 @@ public class Apariencia : Nombre
     internal Apariencia(
         Nombre nombre,
         double omega)
-        : base(nombre.Texto, nombre.Contexto, nombre.Ventana, nombre.VelocidadGrupo)
+        : base(nombre)
     {
         Amplitud = Fourier[omega].Magnitude;
         Funcion = t => Complex.FromPolarCoordinates(Amplitud, omega * t);

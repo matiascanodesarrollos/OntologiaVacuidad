@@ -5,8 +5,8 @@ public class Palabra : Apariencia
 {
     public new string Texto { get; }
     public new Func<double, double, Complex> Funcion { get; }
-
-
+    
+    
     /// <summary>
     /// Crea una palabra a partir de un texto, un nombre y una frecuencia angular.
     /// La función de la palabra se construye multiplicando la función de ventana del nombre por la fase compleja correspondiente.
@@ -30,14 +30,15 @@ public class Palabra : Apariencia
     }
 
     /// <summary>
-    /// Crea una nueva apariencia a partir de esta palabra en un punto z del plano complejo.
-    /// Usa el argumento de z como frecuencia angular de analisis (omega = arg(z))
-    /// y construye la salida acumulando terminos z^{-n}.
+    /// Calcula una nueva apariencia a partir de esta palabra y el tiempo de pensamiento tau en el concepto o nombre.
+    /// La frecuencia angular de la nueva apariencia se obtiene de la fase de la función evaluada.
     /// </summary>
-    /// <param name="z">Variable compleja de evaluacion en la transformada Z.</param>
+    /// <param name="t">Tiempo basado en el texto de la palabra.</param>
+    /// <param name="tau">Tiempo del pensamiento.</param>
     /// <returns>Una nueva apariencia de ventana constante igual a la transformada Z de su esencia.</returns>
-    public Apariencia Aparecer(Complex z)
+    public Apariencia Aparecer(double t, double tau)
     {
+        var z = Funcion(tau, t);
         var muestras = Math.Max(1, Contexto.Length);
         var omega = z.Phase;
         var paso = 0.01;
@@ -54,7 +55,7 @@ public class Palabra : Apariencia
         var nombre = new Nombre(
             Texto, 
             Contexto, 
-            t => Complex.FromPolarCoordinates(X.Magnitude, omega * t - X.Phase), 
+            t => new Complex(X.Magnitude, omega * t - X.Phase),
             velocidadGrupo);
         var apariencia = new Apariencia(
             nombre,
