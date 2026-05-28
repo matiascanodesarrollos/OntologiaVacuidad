@@ -1,40 +1,57 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Numerics;
 
 public class Nombre
 {
+    public Guid Id { get; }
     public string Texto { get; }
+    public string Contexto { get; }
     public Func<double, Complex> Ventana { get; }
     public double VelocidadGrupo { get; }
+    private readonly Lazy<Dictionary<double, Complex>> _fourier;
+    public Dictionary<double, Complex> Fourier => _fourier.Value;
 
-    /// <summary>
-    /// Crea un nuevo nombre con texto, velocidad de grupo y su transformada de Fourier.
-    /// </summary>
-    /// <param name="texto">Texto del nombre.</param>
-    /// <param name="velocidadGrupo">Velocidad de propagación asociada al nombre.</param>
-    /// <param name="ventana">Función de ventana que devuelve un valor complejo para un tiempo dado.</param>
-    public Nombre(string texto, 
-        double velocidadGrupo,
-        Func<double, Complex> ventana)
+    protected Nombre(Nombre otro)
     {
-        Texto = texto;
-        VelocidadGrupo = velocidadGrupo;
-        Ventana = ventana;
+        Id = otro.Id;
+        Texto = otro.Texto;
+        Contexto = otro.Contexto;
+        Ventana = otro.Ventana;
+        VelocidadGrupo = otro.VelocidadGrupo;
+        _fourier = new Lazy<Dictionary<double, Complex>>(() => new Dictionary<double, Complex>(otro.Fourier));
     }
 
     /// <summary>
-    /// Proyecta esta designación en una nueva apariencia evaluando su función en una frecuencia angular dada.
+    /// Crea un nuevo nombre con texto, contexto y su transformada de Fourier.
     /// </summary>
-    /// <param name="frecuenciaAngular">Frecuencia angular usada para evaluar la función de la designación.</param>
-    /// <returns>Una apariencia construida a partir de la función de esta designación.</returns>
-    public Apariencia Mostrarse(double frecuenciaAngular)
+    /// <param name="texto">Texto del nombre.</param>
+    /// <param name="contexto">Contexto donde se evaluan apariciones del texto.</param>
+    /// <param name="ventana">Función de ventana: debe ponderar la referencia al nombre en cada momento del contexto.</param>
+    public Nombre(string texto, 
+        string contexto,
+        Func<double, Complex> ventana,
+        double velocidadGrupo)
+    {
+        Id = Guid.NewGuid();
+        Texto = texto;
+        Contexto = contexto;
+        Ventana = ventana;
+        VelocidadGrupo = velocidadGrupo;
+        _fourier = new Lazy<Dictionary<double, Complex>>(CalcularTransformadaFourier);
+    }
+
+    /// <summary>
+    /// Crea una apariencia para este nombre y de frecuencia angular igual a la suma de las frecuencias de Fourier.
+    /// </summary>
+    /// <returns>La apariencia construida.</returns>
+    public Apariencia Mostrarse()
     {
         var apariencia = new Apariencia(
-            new Palabra(
-                Texto,
-                frecuenciaAngular,
-                Ventana)
-        );
+            this,
+            Fourier.Sum(p => p.Key)
+        );        
         return apariencia;
     }
 
@@ -45,21 +62,53 @@ public class Nombre
     public override string ToString() => $"{Texto} (VelocidadGrupo: {VelocidadGrupo})";
 
     /// <summary>
-    /// Compara nombres por su texto.
+    /// Compara nombres por su Id.
     /// </summary>
-    /// <returns>True si ambos nombres tienen el mismo texto, false en caso contrario.</returns>
+    /// <returns>True si ambos nombres tienen el mismo Id, false en caso contrario.</returns>
     public override bool Equals(object obj)
     {
         if (obj is Nombre other)
         {
-            return Texto == other.Texto;
+            return Id == other.Id;
         }
         return false;
     }
 
     /// <summary>
-    /// Genera el hash code a partir del texto.
+    /// Genera el hash code a partir del Id.
     /// </summary>
-    /// <returns>El hash code del texto del nombre.</returns>
-    public override int GetHashCode() => Texto.GetHashCode();
+    /// <returns>El hash code del Id del nombre.</returns>
+    public override int GetHashCode() => Id.GetHashCode();
+
+    /// <summary>
+    /// Calcula la transformada de Fourier discreta completa de la ventana
+    /// usando un paso temporal de 1 por carácter del contexto.
+    /// </summary>
+    /// <returns>Diccionario de frecuencia angular a valor complejo que representa el espectro.</returns>
+    /// <remarks>
+    /// Al sobreescribir este método se modifica directamente el espectro almacenado en
+    /// <see cref="Fourier"/> y, por tanto, las frecuencias que <see cref="Mostrarse"/> usa
+    /// para construir las palabras.
+    /// </remarks>
+    protected virtual Dictionary<double, Complex> CalcularTransformadaFourier()
+    {
+        var totalMuestras = Math.Max(1, Contexto.Length);
+        var resultado = new (double Omega, Complex Valor)[totalMuestras];
+
+        for (int k = 0; k < totalMuestras; k++)
+        {
+            var omega = 2.0 * Math.PI * k / totalMuestras;
+            var suma = Complex.Zero;
+
+            for (int t = 0; t < totalMuestras; t++)
+            {
+                var muestra = Ventana(t);
+                suma += muestra * Complex.FromPolarCoordinates(1.0, -omega * t);
+            }
+
+            resultado[k] = (omega, suma);
+        }
+
+        return resultado.ToDictionary(p => p.Omega, p => p.Valor);
+    }
 }

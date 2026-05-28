@@ -1,53 +1,27 @@
 using System;
 using System.Numerics;
 
-public class Designacion : Nombre
+public class Designacion
 {
     public Guid Id { get; }
-    public Palabra Causa { get; }
     public Apariencia Esencia { get; }
-    public Func<(double tau, double FrecuenciaAngular), Complex> STFT { get; }
-    private readonly Lazy<double> frecuenciaAngular;
-    public double FrecuenciaAngular => frecuenciaAngular.Value;
+    public Nombre Nombre { get; }
+    public Func<double, double, Complex> STFT { get; }
     
     /// <summary>
-    /// Constructor de copia para crear una nueva designación a partir de otra para herencia.
-    /// <param name="otra">La designación de la cual se copiarán las propiedades.</param>
-    /// </summary>   
-    public Designacion(Designacion otra)
-        : base(otra.Texto, otra.VelocidadGrupo, otra.Ventana)
-    {
-        Id = Guid.NewGuid();
-        Causa = otra.Causa;
-        Esencia = otra.Esencia;
-        STFT = otra.STFT;
-        frecuenciaAngular = new Lazy<double>(() => otra.FrecuenciaAngular);
-              
-    }
-
-    internal Designacion(Apariencia apariencia, Nombre nombre)
-        : base(nombre.Texto, nombre.VelocidadGrupo, nombre.Ventana)
-    {
-        Id = Guid.NewGuid();
-        Causa = apariencia as Palabra;
-        Esencia = apariencia;
-        STFT = p => CalcularSTFT(p.tau, p.FrecuenciaAngular, apariencia.Funcion, nombre.Ventana);
-        frecuenciaAngular = new Lazy<double>(() => EstimarFrecuenciaAngular(STFT));
-    }    
-
-    /// <summary>
-    /// Crea una designación usando la frecuencia angular de la esencia de la apariencia y el espectro del nombre.
+    /// Crea una designación calculando una STFT con la funcion de la apariencia y la ventana del nombre.
+    /// La funcion en si de la STFT se puede sobreescribir para implementar diferentes formas de análisis.
+    /// Su esencia es la apariencia de entrada.
     /// </summary>
-    /// <param name="apariencia">Apariencia desde la que se toma la frecuencia angular base.</param>
-    /// <param name="nombre">Nombre que aporta texto, velocidad de grupo y transformada.</param>
+    /// <param name="apariencia">Apariencia de entrada.</param>
+    /// <param name="nombre">Nombre que aporta la ventana de análisis.</param>
     /// <returns>Una nueva designación vinculada a la apariencia de entrada.</returns>
-    public static Designacion Designar(Apariencia apariencia, Nombre nombre)
+    public Designacion(Apariencia apariencia, Nombre nombre)
     {
-        var nuevaDesignacion = new Designacion(
-            apariencia,
-            nombre
-        );
-        return nuevaDesignacion;
+        Id = Guid.NewGuid();
+        Esencia = apariencia;
+        Nombre = nombre;
+        STFT = (tau, omega) => CalcularSTFT(tau, omega);
     }
 
     /// <summary>
@@ -70,86 +44,28 @@ public class Designacion : Nombre
     public override int GetHashCode() => Id.GetHashCode();
 
     /// <summary>
-    /// Calcula la STFT de una funcion de apariencia para un desplazamiento temporal y una frecuencia angular.
+    /// Calcula la STFT evaluando la función de la esencia en la ventana del nombre 
+    /// con un paso temporal de 1 por caracter del contexto.
+    /// Sobreescribir para implementar diferentes formas de análisis o pasos temporales.
     /// </summary>
     /// <param name="tau">Desplazamiento temporal de la ventana.</param>
-    /// <param name="frecuenciaAngular">Frecuencia angular de analisis.</param>
-    /// <param name="funcion">Funcion temporal de la apariencia a analizar.</param>
-    /// <param name="ventanaAnalisis">Función de ventana a utilizar en el cálculo de la STFT.</param>
-    /// <returns>Valor complejo de la STFT en el punto (tau, frecuenciaAngular).</returns>
-    protected virtual Complex CalcularSTFT(double tau, double frecuenciaAngular, Func<double, Complex> funcion, Func<double, Complex> ventanaAnalisis)
-    {
-        const double limiteIntegracion = 8.0;
-        const int pasos = 2048;
-        var dt = 2.0 * limiteIntegracion / pasos;
-
+    /// <param name="omega">Frecuencia angular de analisis.</param>
+    /// <returns>Valor complejo de la STFT en el punto (tau, omega).</returns>
+    protected virtual Complex CalcularSTFT(double tau, double omega)
+    {        
+        var totalMuestras = Math.Max(1, Esencia.Contexto.Length);
         var suma = Complex.Zero;
 
-        for (var i = 0; i <= pasos; i++)
+        for (var n = 0; n < totalMuestras; n++)
         {
-            var t = -limiteIntegracion + (i * dt);
-            var peso = (i == 0 || i == pasos) ? 0.5 : 1.0;
-            var x = funcion(t);
-            var w = Complex.Conjugate(ventanaAnalisis(t - tau));
-            var exponente = Complex.FromPolarCoordinates(1.0, -frecuenciaAngular * t);
+            var t = n; // Paso temporal de 1 por caracter del contexto
+            var x = Esencia.Funcion(t);
+            var w = Complex.Conjugate(Nombre.Ventana(t - tau));
+            var exponente = Complex.FromPolarCoordinates(1.0, -omega * t);
 
-            suma += peso * x * w * exponente;
+            suma += x * w * exponente;
         }
 
-        return suma * dt;
-    }
-
-    /// <summary>
-    /// Estima la frecuencia angular característica de la designación a partir de su función espectral.
-    /// </summary>
-    /// <param name="funcion">Función espectral compleja usada para muestrear magnitudes.</param>
-    /// <returns>Frecuencia angular estimada; devuelve 0 cuando el espectro es plano o no identificable.</returns>
-    /// <remarks>
-    /// Este método se invoca de forma diferida por <see cref="FrecuenciaAngular"/> (lazy). Si se sobreescribe,
-    /// la nueva estrategia impacta la frecuencia angular materializada en el primer acceso y la construcción de
-    /// <see cref="Causa"/>, que depende de dicha frecuencia angular.
-    /// </remarks>
-    protected virtual double EstimarFrecuenciaAngular(Func<(double tau, double FrecuenciaAngular), Complex> funcion)
-    {
-        const double minFrecuenciaAngular = -8.0;
-        const double maxFrecuenciaAngular = 8.0;
-        const int pasos = 256;
-        const double tauMuestreo = 1.0;
-
-        var delta = (maxFrecuenciaAngular - minFrecuenciaAngular) / pasos;
-        var mejorFrecuenciaAngular = 0.0;
-        var maxMagnitud = double.NegativeInfinity;
-        var minMagnitud = double.PositiveInfinity;
-
-        for (var i = 0; i <= pasos; i++)
-        {
-            var frecuenciaAngular = minFrecuenciaAngular + (i * delta);
-            var valor = funcion((tauMuestreo, frecuenciaAngular));
-            var magnitud = valor.Magnitude;
-
-            if (!double.IsFinite(magnitud))
-            {
-                continue;
-            }
-
-            if (magnitud > maxMagnitud)
-            {
-                maxMagnitud = magnitud;
-                mejorFrecuenciaAngular = frecuenciaAngular;
-            }
-
-            if (magnitud < minMagnitud)
-            {
-                minMagnitud = magnitud;
-            }
-        }
-
-        if (!double.IsFinite(maxMagnitud))
-        {
-            return 0.0;
-        }
-
-        var espectroPlano = Math.Abs(maxMagnitud - minMagnitud) <= 1e-9 * (1.0 + Math.Abs(maxMagnitud));
-        return espectroPlano ? 0.0 : mejorFrecuenciaAngular;
+        return suma;
     }
 }

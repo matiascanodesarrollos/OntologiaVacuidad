@@ -3,35 +3,64 @@ using System.Numerics;
 
 public class Palabra : Apariencia
 {
-    public string Texto { get; }
-    public double FrecuenciaAngular { get; }
-    public Func<double, Complex> Fase { get; }
-    public Nombre Nombre { get; }
-
+    public new string Texto { get; }
+    public new Func<double, double, Complex> Funcion { get; }
+    
+    
+    /// <summary>
+    /// Crea una palabra a partir de un texto, un nombre y una frecuencia angular.
+    /// La función de la palabra se construye multiplicando la función de ventana del nombre por la fase compleja correspondiente.
+    /// La causa de la apariencia resultante o su naturaleza es la palabra misma.
+    /// </summary>
+    /// <param name="texto">Texto de la palabra.</param>
+    /// <param name="nombre">Nombre que aporta la ventana de análisis y el contexto.</param>
+    /// <param name="frecuenciaAngular">Frecuencia angular de análisis.</param>
+    /// <returns>Una nueva palabra vinculada al nombre de entrada.</returns>
     public Palabra(
-        string texto, 
-        double frecuenciaAngular,
-        Func<double, Complex> ventana)
-        : base(texto, frecuenciaAngular, ventana)
+        string texto,
+        Nombre nombre,
+        double frecuenciaAngular)
+        : base(nombre, frecuenciaAngular)
     {
         Texto = texto;
-        FrecuenciaAngular = frecuenciaAngular;        
-        Fase = t => Complex.FromPolarCoordinates(1.0, frecuenciaAngular * t);
-        Nombre = new Nombre(Texto, CalcularVelocidadGrupo(frecuenciaAngular), ventana);
+        Funcion = (tau, t) => 
+            Complex.FromPolarCoordinates(1.0, frecuenciaAngular * tau) 
+            * nombre.Ventana(t - tau);
+        Causa = this;
     }
 
     /// <summary>
-    /// Calcula la velocidad de grupo para un nombre dado su frecuencia angular.
-    /// Por defecto se devuelve la frecuencia en Hz.
+    /// Calcula una nueva apariencia a partir de esta palabra y el tiempo de pensamiento tau en el concepto o nombre.
+    /// La frecuencia angular de la nueva apariencia se obtiene de la fase de la función evaluada.
     /// </summary>
-    /// <param name="frecuenciaAngular">Frecuencia angular usada para calcular la velocidad de grupo.</param>
-    /// <returns>Velocidad de grupo calculada a partir de la frecuencia angular.</returns>
-    /// <remarks>
-    /// Al sobreescribir este método se modifica directamente el valor usado para inicializar
-    /// <see cref="Nombre"/> y, en particular, su <see cref="global::Nombre.VelocidadGrupo"/>.
-    /// </remarks>
-    public virtual double CalcularVelocidadGrupo(double frecuenciaAngular)
+    /// <param name="t">Tiempo basado en el texto de la palabra.</param>
+    /// <param name="tau">Tiempo del pensamiento.</param>
+    /// <returns>Una nueva apariencia de ventana constante igual a la transformada Z de su esencia.</returns>
+    public Apariencia Aparecer(double t, double tau)
     {
-        return frecuenciaAngular / (2 * Math.PI);
+        var z = Funcion(tau, t);
+        var muestras = Math.Max(1, Contexto.Length);
+        var omega = z.Phase;
+        var paso = 0.01;
+        var X = Complex.Zero;
+        var derivada = Complex.Zero;
+        for (int n = 0; n < muestras; n++)
+        {
+            var factor = Complex.Pow(z, -n);
+            var valor = Esencia.STFT(n, omega);
+            X += valor * factor;
+            derivada += (Esencia.STFT(n, omega + paso) - Esencia.STFT(n, omega - paso)) * factor / (2.0 * paso);
+        }
+        var velocidadGrupo = X.Magnitude <= 1e-12 ? 0.0 : (derivada / X).Imaginary;
+        var nombre = new Nombre(
+            Texto, 
+            Contexto, 
+            t => new Complex(X.Magnitude, omega * t - X.Phase),
+            velocidadGrupo);
+        var apariencia = new Apariencia(
+            nombre,
+            omega
+        );
+        return apariencia;
     }
 }
