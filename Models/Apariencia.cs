@@ -13,8 +13,8 @@ public class Apariencia
         double omega)
     {
         Id = Guid.NewGuid();
-        var amplitud = new Lazy<double>(() => CalcularAmplitud(nombre, omega));
-        Funcion = t => Complex.FromPolarCoordinates(amplitud.Value, omega * t);
+        var amplitud = new Lazy<Complex>(() => CalcularAmplitud(nombre, omega));
+        Funcion = t => amplitud.Value * Complex.FromPolarCoordinates(1, omega * t);
         Esencia = new Designacion(
             this, 
             nombre);
@@ -26,8 +26,8 @@ public class Apariencia
     /// </summary>
     /// <param name="nombre">Nombre que aporta la ventana de análisis.</param>
     /// <param name="omega">Frecuencia angular de análisis.</param>
-    /// <returns>La magnitud del integral complejo de la ventana.</returns>
-    public virtual double CalcularAmplitud(Nombre nombre, double omega)
+    /// <returns>El integral complejo de la ventana.</returns>
+    public virtual Complex CalcularAmplitud(Nombre nombre, double omega)
     {
         var muestras = Math.Max(1, nombre.Contexto.Length);
         var integral = Complex.Zero;
@@ -38,7 +38,7 @@ public class Apariencia
             integral += nombre.Ventana(t) * Complex.FromPolarCoordinates(1.0, -omega * t);
         }
 
-        return integral.Magnitude;
+        return integral;
     }
 
     /// <summary>
