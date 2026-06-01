@@ -1,11 +1,10 @@
 using System;
 using System.Numerics;
 
-public class Designacion
+public class Designacion : Nombre
 {
-    public Guid Id { get; }
-    public Apariencia Esencia { get; }
-    public Nombre Nombre { get; }
+    public new Guid Id { get; }
+    public Apariencia Apariencia { get; }
     public Func<double, double, Complex> STFT { get; }
     
     /// <summary>
@@ -17,10 +16,10 @@ public class Designacion
     /// <param name="nombre">Nombre que aporta la ventana de análisis.</param>
     /// <returns>Una nueva designación vinculada a la apariencia de entrada.</returns>
     public Designacion(Apariencia apariencia, Nombre nombre)
+        : base(nombre)
     {
         Id = Guid.NewGuid();
-        Esencia = apariencia;
-        Nombre = nombre;
+        Apariencia = apariencia;
         STFT = (tau, omega) => CalcularSTFT(tau, omega);
     }
 
@@ -53,14 +52,14 @@ public class Designacion
     /// <returns>Valor complejo de la STFT en el punto (tau, omega).</returns>
     protected virtual Complex CalcularSTFT(double tau, double omega)
     {        
-        var totalMuestras = Math.Max(1, Esencia.Contexto.Length);
+        var totalMuestras = Math.Max(1, Contexto.Length);
         var suma = Complex.Zero;
 
         for (var n = 0; n < totalMuestras; n++)
         {
             var t = n; // Paso temporal de 1 por caracter del contexto
-            var x = Esencia.Funcion(t);
-            var w = Complex.Conjugate(Nombre.Ventana(t - tau));
+            var x = Apariencia.Funcion(t);
+            var w = Complex.Conjugate(Ventana(t - tau));
             var exponente = Complex.FromPolarCoordinates(1.0, -omega * t);
 
             suma += x * w * exponente;

@@ -43,16 +43,18 @@ public class Nombre
     }
 
     /// <summary>
-    /// Crea una apariencia para este nombre y de frecuencia angular igual a la suma de las frecuencias de Fourier.
+    /// Crea una palabra para este nombre de frecuencia angular igual a la suma de las frecuencias de Fourier.
     /// </summary>
-    /// <returns>La apariencia construida.</returns>
-    public Apariencia Mostrarse()
+    /// <param name="texto">Texto elegido para expresar el concepto.</param>
+    /// <returns>La palabra construida.</returns>
+    public Palabra Mostrarse(string texto)
     {
-        var apariencia = new Apariencia(
+        var palabra = new Palabra(
+            texto,
             this,
             Fourier.Sum(p => p.Key)
-        );        
-        return apariencia;
+        ); 
+        return palabra;
     }
 
     /// <summary>
@@ -82,7 +84,7 @@ public class Nombre
 
     /// <summary>
     /// Calcula la transformada de Fourier discreta completa de la ventana
-    /// usando un paso temporal de 1 por carácter del contexto.
+    /// usando un paso temporal de 1 por carácter del texto.
     /// </summary>
     /// <returns>Diccionario de frecuencia angular a valor complejo que representa el espectro.</returns>
     /// <remarks>
@@ -92,7 +94,7 @@ public class Nombre
     /// </remarks>
     protected virtual Dictionary<double, Complex> CalcularTransformadaFourier()
     {
-        var totalMuestras = Math.Max(1, Contexto.Length);
+        var totalMuestras = Math.Max(1, Texto.Length);
         var resultado = new (double Omega, Complex Valor)[totalMuestras];
 
         for (int k = 0; k < totalMuestras; k++)

@@ -1,23 +1,44 @@
 using System;
 using System.Numerics;
 
-public class Apariencia : Nombre
+public class Apariencia
 {
+    public Guid Id { get; }
     public Func<double, Complex> Funcion { get; }
-    public Palabra Causa { get; protected set; }
+    public Palabra Causa { get; internal set; }
     public Designacion Esencia { get; }
-    public double Amplitud { get; } 
 
     internal Apariencia(
         Nombre nombre,
         double omega)
-        : base(nombre)
     {
-        Amplitud = Fourier[omega].Magnitude;
-        Funcion = t => Complex.FromPolarCoordinates(Amplitud, omega * t);
+        Id = Guid.NewGuid();
+        var amplitud = new Lazy<double>(() => CalcularAmplitud(nombre, omega));
+        Funcion = t => Complex.FromPolarCoordinates(amplitud.Value, omega * t);
         Esencia = new Designacion(
             this, 
-            this);
+            nombre);
+    }
+
+    /// <summary>
+    /// Calcula la amplitud como la integral discreta de la ventana sobre el contexto.
+    /// Sobreescribir para definir otro criterio de amplitud.
+    /// </summary>
+    /// <param name="nombre">Nombre que aporta la ventana de análisis.</param>
+    /// <param name="omega">Frecuencia angular de análisis.</param>
+    /// <returns>La magnitud del integral complejo de la ventana.</returns>
+    public virtual double CalcularAmplitud(Nombre nombre, double omega)
+    {
+        var muestras = Math.Max(1, nombre.Contexto.Length);
+        var integral = Complex.Zero;
+
+        // Integral discreta con paso temporal unitario por caracter del contexto.
+        for (var t = 0; t < muestras; t++)
+        {
+            integral += nombre.Ventana(t) * Complex.FromPolarCoordinates(1.0, -omega * t);
+        }
+
+        return integral.Magnitude;
     }
 
     /// <summary>

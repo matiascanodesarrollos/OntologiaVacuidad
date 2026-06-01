@@ -6,17 +6,7 @@ public class Palabra : Apariencia
     public new string Texto { get; }
     public new Func<double, double, Complex> Funcion { get; }
     
-    
-    /// <summary>
-    /// Crea una palabra a partir de un texto, un nombre y una frecuencia angular.
-    /// La función de la palabra se construye multiplicando la función de ventana del nombre por la fase compleja correspondiente.
-    /// La causa de la apariencia resultante o su naturaleza es la palabra misma.
-    /// </summary>
-    /// <param name="texto">Texto de la palabra.</param>
-    /// <param name="nombre">Nombre que aporta la ventana de análisis y el contexto.</param>
-    /// <param name="frecuenciaAngular">Frecuencia angular de análisis.</param>
-    /// <returns>Una nueva palabra vinculada al nombre de entrada.</returns>
-    public Palabra(
+    internal Palabra(
         string texto,
         Nombre nombre,
         double frecuenciaAngular)
@@ -30,16 +20,14 @@ public class Palabra : Apariencia
     }
 
     /// <summary>
-    /// Calcula una nueva apariencia a partir de esta palabra y el tiempo de pensamiento tau en el concepto o nombre.
-    /// La frecuencia angular de la nueva apariencia se obtiene de la fase de la función evaluada.
+    /// Crea una designación evaluando la STFT en un punto complejo z (representa la persona que pregunta).
     /// </summary>
-    /// <param name="t">Tiempo basado en el texto de la palabra.</param>
-    /// <param name="tau">Tiempo del pensamiento.</param>
-    /// <returns>Una nueva apariencia de ventana constante igual a la transformada Z de su esencia.</returns>
-    public Apariencia Aparecer(double t, double tau)
+    /// <param name="z">Punto complejo para evaluar la STFT.</param>
+    /// <param name="respuesta">Como se expresa el concepto a esa persona.</param>
+    /// <returns>Una nueva designación vinculada a la palabra.</returns>
+    public Designacion Aparecer(Complex z, string respuesta)
     {
-        var z = Funcion(tau, t);
-        var muestras = Math.Max(1, Contexto.Length);
+        var muestras = Math.Max(1, Esencia.Contexto.Length);
         var omega = z.Phase;
         var paso = 0.01;
         var X = Complex.Zero;
@@ -53,14 +41,14 @@ public class Palabra : Apariencia
         }
         var velocidadGrupo = X.Magnitude <= 1e-12 ? 0.0 : (derivada / X).Imaginary;
         var nombre = new Nombre(
+            respuesta, 
             Texto, 
-            Contexto, 
-            t => new Complex(X.Magnitude, omega * t - X.Phase),
+            t => t > 0 ? X.Magnitude : 0.0,
             velocidadGrupo);
-        var apariencia = new Apariencia(
-            nombre,
-            omega
-        );
-        return apariencia;
+        var apariencia = new Apariencia(nombre, X.Phase)
+        {
+            Causa = this
+        };
+        return apariencia.Esencia;
     }
 }
