@@ -4,28 +4,32 @@ using System.Numerics;
 public class Palabra : Apariencia
 {
     public new string Texto { get; }
+    public Designacion Esencia { get; }
     public new Func<double, double, Complex> Funcion { get; }
+    public Apariencia Efecto { get; private set; }
     
     internal Palabra(
         string texto,
-        Nombre nombre,
+        Designacion designacion,
         double frecuenciaAngular)
-        : base(nombre, frecuenciaAngular)
+        : base(designacion, frecuenciaAngular)
     {
         Texto = texto;
         Funcion = (tau, t) => 
             Complex.FromPolarCoordinates(1.0, frecuenciaAngular * tau) 
-            * nombre.Ventana(t - tau);
+            * designacion.Ventana(t - tau);
         Causa = this;
+        Efecto = this;
     }
 
     /// <summary>
-    /// Crea una designación evaluando la STFT en un punto complejo z (representa la persona que pregunta).
+    /// Crea una apariencia evaluando la STFT en un punto complejo z (representa la persona que pregunta).
+    /// La nueva apariencia se vuelve el efecto de esta palabra.
     /// </summary>
     /// <param name="z">Punto complejo para evaluar la STFT.</param>
     /// <param name="respuesta">Como se expresa el concepto a esa persona.</param>
-    /// <returns>Una nueva designación vinculada a la palabra.</returns>
-    public Designacion Aparecer(Complex z, string respuesta)
+    /// <returns>Una nueva apariencia vinculada a la palabra.</returns>
+    public Apariencia Aparecer(Complex z, string respuesta)
     {
         var muestras = Math.Max(1, Esencia.Contexto.Length);
         var omega = z.Phase;
@@ -49,6 +53,7 @@ public class Palabra : Apariencia
         {
             Causa = this
         };
-        return apariencia.Esencia;
+        Efecto = apariencia;
+        return Efecto;
     }
 }

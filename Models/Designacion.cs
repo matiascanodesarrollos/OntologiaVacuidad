@@ -1,11 +1,28 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Numerics;
 
 public class Designacion : Nombre
 {
     public new Guid Id { get; }
-    public Apariencia Apariencia { get; }
+    public Palabra Palabra { get; }
     public Func<double, double, Complex> STFT { get; }
+
+    /// <summary>
+    /// Crea una designación con una STFT predefinida.
+    /// </summary>
+    /// <param name="nombre">Nombre asociado a la designación.</param>
+    /// <param name="tiempoPalabra">Momento relativo a tau en que se pronuncia la palabra.</param>
+    public Designacion(Nombre nombre, double tiempoPalabra)
+        : base(new Nombre(string.Empty, string.Empty, t => 1.0, 0.0))
+    {
+        Id = Guid.NewGuid();
+        Palabra = new Palabra(string.Empty, this, nombre.Fourier.Sum(p => p.Key));
+        STFT = (tau, omega) => nombre.Fourier.TryGetValue(omega, out var valor) 
+            ? valor * Palabra.Funcion(tau, tiempoPalabra) 
+            : Complex.Zero;
+    }
     
     /// <summary>
     /// Crea una designación calculando una STFT con la funcion de la apariencia y la ventana del nombre.
@@ -19,7 +36,7 @@ public class Designacion : Nombre
         : base(nombre)
     {
         Id = Guid.NewGuid();
-        Apariencia = apariencia;
+        Palabra = apariencia.Causa;
         STFT = (tau, omega) => CalcularSTFT(tau, omega);
     }
 
@@ -54,11 +71,12 @@ public class Designacion : Nombre
     {        
         var totalMuestras = Math.Max(1, Contexto.Length);
         var suma = Complex.Zero;
+        var apariencia = Palabra as Apariencia;
 
         for (var n = 0; n < totalMuestras; n++)
         {
-            var t = n; // Paso temporal de 1 por caracter del contexto
-            var x = Apariencia.Funcion(t);
+            var t = n; // Paso temporal de 1 por caracter del contexto            
+            var x = apariencia.Funcion(t);
             var w = Complex.Conjugate(Ventana(t - tau));
             var exponente = Complex.FromPolarCoordinates(1.0, -omega * t);
 

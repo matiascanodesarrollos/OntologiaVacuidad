@@ -6,7 +6,6 @@ public class Apariencia
     public Guid Id { get; }
     public Func<double, Complex> Funcion { get; }
     public Palabra Causa { get; internal set; }
-    public Designacion Esencia { get; }
 
     internal Apariencia(
         Nombre nombre,
@@ -15,9 +14,6 @@ public class Apariencia
         Id = Guid.NewGuid();
         var amplitud = new Lazy<Complex>(() => CalcularAmplitud(nombre, omega));
         Funcion = t => amplitud.Value * Complex.FromPolarCoordinates(1, omega * t);
-        Esencia = new Designacion(
-            this, 
-            nombre);
     }
 
     /// <summary>
