@@ -13,6 +13,14 @@ public class Nombre
     private readonly Lazy<Dictionary<double, Complex>> _fourier;
     public Dictionary<double, Complex> Fourier => _fourier.Value;
 
+    internal static Nombre Gozo(double energia) => new Nombre(
+        "gozo",
+        "vacuidad",
+        t => t <= 0
+            ? new Complex(0.5 * energia, 0.0)
+            : new Complex(0.0, energia / (2 * Math.PI * t)),
+        0.0);
+
     protected Nombre(Nombre otro)
     {
         Id = otro.Id;
@@ -52,7 +60,7 @@ public class Nombre
     {
         var designacion = new Designacion(apariencia, this);
         return designacion.Esencia;
-    }
+    }    
 
     /// <summary>
     /// Devuelve una representación textual simple del nombre.
@@ -81,7 +89,7 @@ public class Nombre
 
     /// <summary>
     /// Calcula la transformada de Fourier discreta completa de la ventana
-    /// usando un paso temporal de 1 por carácter del texto.
+    /// usando un paso temporal de 1 por carácter del contexto.
     /// </summary>
     /// <returns>Diccionario de frecuencia angular a valor complejo que representa el espectro.</returns>
     /// <remarks>
@@ -91,7 +99,7 @@ public class Nombre
     /// </remarks>
     protected virtual Dictionary<double, Complex> CalcularTransformadaFourier()
     {
-        var totalMuestras = Math.Max(1, Texto.Length);
+        var totalMuestras = Math.Max(1, Contexto.Length);
         var resultado = new (double Omega, Complex Valor)[totalMuestras];
 
         for (int k = 0; k < totalMuestras; k++)

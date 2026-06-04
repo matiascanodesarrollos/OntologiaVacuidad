@@ -3,20 +3,29 @@ using System.Numerics;
 
 public class Palabra : Apariencia
 {
-    public new string Texto { get; }
-    public Designacion Esencia { get; }
+    public string Texto { get; }    
     public new Func<double, double, Complex> Funcion { get; }
-    public Apariencia Efecto { get; private set; }
-    
+    public Designacion Esencia { get; }
+    public Apariencia Efecto { get; internal set; }
+
     internal Palabra(
         string texto,
-        Designacion designacion,
-        double frecuenciaAngular)
-        : base(designacion, frecuenciaAngular)
+        Func<double, double, Complex> funcion,
+        double energia)
+        : base(Nombre.Gozo(energia))
+    {
+        Texto = texto;
+        Funcion = funcion;
+    }
+
+    internal Palabra(
+        string texto,
+        Designacion designacion)
+        : base(designacion)
     {
         Texto = texto;
         Funcion = (tau, t) => 
-            Complex.FromPolarCoordinates(1.0, frecuenciaAngular * tau) 
+            Complex.FromPolarCoordinates(1.0, FrecuenciaAngular * tau) 
             * designacion.Ventana(t - tau);
         Causa = this;
         Efecto = this;
@@ -47,12 +56,9 @@ public class Palabra : Apariencia
         var nombre = new Nombre(
             respuesta, 
             Texto, 
-            t => t > 0 ? X.Magnitude : 0.0,
+            t => t > 0 ? X : Complex.Zero,
             velocidadGrupo);
-        var apariencia = new Apariencia(nombre, X.Phase)
-        {
-            Causa = this
-        };
+        var apariencia = new Apariencia(X.Phase, nombre.Ventana, X.Magnitude);
         Efecto = apariencia;
         return Efecto;
     }

@@ -1,19 +1,33 @@
 using System;
+using System.Linq;
 using System.Numerics;
 
 public class Apariencia
 {
     public Guid Id { get; }
+    public double FrecuenciaAngular { get; }
     public Func<double, Complex> Funcion { get; }
     public Palabra Causa { get; internal set; }
 
-    internal Apariencia(
-        Nombre nombre,
-        double omega)
+    internal Apariencia(Nombre nombre)
     {
         Id = Guid.NewGuid();
-        var amplitud = new Lazy<Complex>(() => CalcularAmplitud(nombre, omega));
-        Funcion = t => amplitud.Value * Complex.FromPolarCoordinates(1, omega * t);
+        FrecuenciaAngular = nombre.Fourier.Sum(p => p.Key);
+        var amplitud = new Lazy<Complex>(() => CalcularAmplitud(nombre, FrecuenciaAngular));
+        Funcion = t => amplitud.Value * Complex.FromPolarCoordinates(1, FrecuenciaAngular * t);
+    }
+
+    public Apariencia(double frecuenciaAngular, Func<double, Complex> funcion, double energia)
+    {
+        Id = Guid.NewGuid();
+        FrecuenciaAngular = frecuenciaAngular;
+        Funcion = funcion;
+        var gozo = Nombre.Gozo(energia);
+        var vacuidad = new Palabra(
+            "vacuidad", 
+            (tau, t) => Complex.FromPolarCoordinates(1.0, FrecuenciaAngular * tau) * gozo.Ventana(t - tau), 
+            energia);
+        Causa = vacuidad;
     }
 
     /// <summary>
@@ -25,7 +39,7 @@ public class Apariencia
     /// <returns>El integral complejo de la ventana.</returns>
     public virtual Complex CalcularAmplitud(Nombre nombre, double omega)
     {
-        var muestras = Math.Max(1, nombre.Contexto.Length);
+        var muestras = Math.Max(1, nombre.Texto.Length);
         var integral = Complex.Zero;
 
         // Integral discreta con paso temporal unitario por caracter del contexto.

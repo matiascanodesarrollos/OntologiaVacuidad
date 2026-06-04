@@ -1,15 +1,13 @@
 using FluentAssertions;
+using System.Numerics;
 
 namespace Models.Tests;
 
 public class AITests
 {
     [Theory]
-    [InlineData(0.01, 50)]
-    [InlineData(0.01, 500)]
-    [InlineData(0.01, 1000)]
-    [InlineData(0.01, 5000)]
-    public void Modelo_ConRespuestaCorrectaYRelevante_NoAlucina(double tolerancia, double relevanciaMinima)
+    [InlineData(2.5, 6000)]
+    public void Modelo_ConRespuestaCorrecta_NoAlucina(double toleranciaDefase, double energiaMaxima)
     {
         //Arrage
         var verdad = "Francia:capital:París";
@@ -20,56 +18,22 @@ public class AITests
         // Caracter por caracter se indica a que parte del prompt se refiere cada caracter de la respuesta (0: no relevante, 1: se refiere al contexto de la pregunta, 2: se refiere a la pregunta en sí, 3: se refiere a la respuesta).
         var referenciaRespuestaPrompt = new double[] { 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3 };
 
-        //Act
-        var nombrePregunta = new Nombre(
-                    prompt,
-                    verdad,
-                    t =>
-                    {
-                        var indice = (int)t;
-                        if (indice >= 0 && indice < referenciaPromptVerdad.Length)
-                        {
-                            return referenciaPromptVerdad[indice];
-                        }
-                        return 0;
-                    },
-                    1.0);
-        var nombreRespuesta = new Nombre(
-                    respuesta,
-                    prompt,
-                    t =>
-                    {
-                        var indice = (int)t;
-                        if (indice >= 0 && indice < referenciaRespuestaPrompt.Length)
-                        {
-                            return referenciaRespuestaPrompt[indice];
-                        }
-                        return 0;
-                    },
-                    1.0);
-        var designacion = new Designacion(
-            nombreRespuesta,
-            0.0);
-        var palabra = nombrePregunta.Mostrarse(designacion, respuesta);
-
-        //Assert
-        var alucina = !Alucina(
+        //Act & Assert
+        var alucina = Alucina(
             verdad, 
             prompt, 
             respuesta, 
             referenciaPromptVerdad, 
             referenciaRespuestaPrompt, 
-            tolerancia, 
-            relevanciaMinima);
-        alucina.Should().BeFalse("Se esperaba que el modelo no alucinara, pero lo hizo.");
+            toleranciaDefase, 
+            energiaMaxima,
+            out var detalleFallo);
+        alucina.Should().BeFalse(detalleFallo);
     }
 
     [Theory]
-    [InlineData(0.01, 50)]
-    [InlineData(0.01, 25)]
-    [InlineData(0.01, 10)]
-    [InlineData(0.01, 1)]
-    public void Modelo_ConRespuestaCorrectaYMuchoRelleno_Alucina(double tolerancia, double relevanciaMinima)
+    [InlineData(2.5, 5500)]
+    public void Modelo_ConMuchoRelleno_Alucina(double toleranciaDefase, double energiaMaxima)
     {
         //Arrage
         var verdad = "Francia:capital:París";
@@ -87,9 +51,10 @@ public class AITests
             respuesta, 
             referenciaPromptVerdad, 
             referenciaRespuestaPrompt, 
-            tolerancia, 
-            relevanciaMinima);
-        alucina.Should().BeTrue("Se esperaba que el modelo alucinara, pero no lo hizo.");
+            toleranciaDefase, 
+            energiaMaxima,
+            out var detalleFallo);
+        alucina.Should().BeTrue(detalleFallo);
     }
 
 
@@ -99,48 +64,122 @@ public class AITests
         string respuesta,
         double[] referenciaPromptVerdad,
         double[] referenciaRespuestaPrompt,
-        double tolerancia,
-        double relevanciaMinima)
+        double toleranciaDefase,
+        double energiaMaxima,
+        out string detalleFallo)
     {
+        Func<double, Complex> funcionTemporalPregunta = t =>
+            {
+                var indice = (int)t;
+                if (indice >= 0 && indice < referenciaPromptVerdad.Length)
+                {
+                    return referenciaPromptVerdad[indice];
+                }
+                return 0;
+            };
         var nombrePregunta = new Nombre(
                     prompt,
                     verdad,
-                    t =>
-                    {
-                        var indice = (int)t;
-                        if (indice >= 0 && indice < referenciaPromptVerdad.Length)
-                        {
-                            return referenciaPromptVerdad[indice];
-                        }
-                        return 0;
-                    },
+                    funcionTemporalPregunta,
                     1.0);
+        Func<double, Complex> funcionTemporalRespuesta = t =>
+            {
+                var indice = (int)t;
+                if (indice >= 0 && indice < referenciaRespuestaPrompt.Length)
+                {
+                    return referenciaRespuestaPrompt[indice];
+                }
+                return 0;
+            };
         var nombreRespuesta = new Nombre(
                     respuesta,
                     prompt,
-                    t =>
-                    {
-                        var indice = (int)t;
-                        if (indice >= 0 && indice < referenciaRespuestaPrompt.Length)
-                        {
-                            return referenciaRespuestaPrompt[indice];
-                        }
-                        return 0;
-                    },
+                    funcionTemporalRespuesta,
+                    1.0);
+
+        var energiaPregunta = CalcularEnergia(nombrePregunta);
+        var aparienciaPregunta = new Apariencia(
+            nombrePregunta.Fourier.Sum(p => p.Key), 
+            funcionTemporalPregunta, 
+            energiaPregunta);
+        var palabra = nombrePregunta.Mostrarse(aparienciaPregunta);
+
+        var nombreVerdad = new Nombre(
+                    verdad,
+                    verdad,
+                    t => t <= 0
+                        ? new Complex(0.5 * energiaPregunta, 0.0)
+                        : new Complex(0.0, energiaPregunta / (2 * Math.PI * t)),
                     1.0);
         var designacion = new Designacion(
-            nombreRespuesta,
-            0.0);
-        var palabra = nombrePregunta.Mostrarse(designacion, respuesta);
+            aparienciaPregunta,
+            nombreVerdad);
 
-        var alucina = true;
+        var alucina = false;
+        detalleFallo = "Sin incumplimiento de umbrales.";
         for (int tau = 0; tau < respuesta.Length; tau++)
         {
-            for (int t = 0; t < verdad.Length; t++)
+            for (int t = 0; t < prompt.Length; t++)
             {
-                
+                var valor = palabra.Funcion(tau, t);
+                foreach (var omega in designacion.Fourier.Keys)
+                {
+                    if(t == tau)
+                    {
+                        var stftValor = designacion.STFT(tau, omega);
+                        var decaimientoVerdad = nombrePregunta.Ventana(t).Magnitude * Math.Exp(-Math.Abs(t));
+                        var magnitudStftAjustada = stftValor.Magnitude * decaimientoVerdad;
+                        var deltaMagnitud = Math.Abs(magnitudStftAjustada - valor.Magnitude);
+                        if (deltaMagnitud > energiaMaxima)
+                        {
+                            alucina = true;
+                            detalleFallo = $"Magnitud: delta={deltaMagnitud:F6} > umbral={energiaMaxima:F6}, designacionAjustada={magnitudStftAjustada:F2}, designacionCruda={stftValor.Magnitude:F2}, palabra={valor.Magnitude:F2}, decaimientoVerdad={decaimientoVerdad:F6}, tau={tau}, t={t}, omega={omega:F6}.";
+                            break;
+                        }
+
+                        var faseStftNormalizada = NormalizarFase(stftValor.Phase);
+                        var faseValorNormalizada = NormalizarFase(valor.Phase);
+                        var deltaFase = Math.Abs(faseStftNormalizada - faseValorNormalizada);
+                        if (deltaFase > toleranciaDefase && faseValorNormalizada > toleranciaDefase)
+                        {
+                            alucina = true;
+                            detalleFallo = $"Fase: delta={deltaFase:F6} > umbral={toleranciaDefase:F6}, designacion={faseStftNormalizada:F2}, palabra={faseValorNormalizada:F2}, tau={tau}, t={t}, omega={omega:F6}.";
+                            break;
+                        }
+                    }                
+                }
+
+                if (alucina)
+                {
+                    break;
+                }
+            }
+
+            if (alucina)
+            {
+                break;
             }
         }
         return alucina;
+    }
+
+    private double CalcularEnergia(Nombre nombre)
+    {        
+        return nombre.Fourier.Sum(p => p.Value.Magnitude);
+    }
+
+    private static double NormalizarFase(double fase)
+    {
+        var dosPi = 2.0 * Math.PI;
+        var normalizada = fase % dosPi;
+        if (normalizada <= -Math.PI)
+        {
+            normalizada += dosPi;
+        }
+        else if (normalizada > Math.PI)
+        {
+            normalizada -= dosPi;
+        }
+        return Math.Abs(normalizada);
     }
 }

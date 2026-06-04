@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 using System.Numerics;
 
 public class Designacion : Nombre
@@ -18,7 +17,7 @@ public class Designacion : Nombre
         : base(nombre)
     {
         Id = Guid.NewGuid();
-        Esencia = new Palabra(texto, this, nombre.Fourier.Sum(p => p.Key));
+        Esencia = new Palabra(texto, this);
         STFT = (tau, omega) => nombre.Fourier.TryGetValue(omega, out var valor) 
             ? valor * Esencia.Funcion(tau, tiempoPalabra) 
             : Complex.Zero;
@@ -75,12 +74,9 @@ public class Designacion : Nombre
 
         for (var n = 0; n < totalMuestras; n++)
         {
-            var t = n; // Paso temporal de 1 por caracter del contexto            
-            var x = apariencia.Funcion(t);
-            var w = Complex.Conjugate(Ventana(t - tau));
-            var exponente = Complex.FromPolarCoordinates(1.0, -omega * t);
-
-            suma += x * w * exponente;
+            suma += apariencia.Funcion(n)
+                * Complex.Conjugate(Ventana(n - tau))
+                * Complex.FromPolarCoordinates(1.0, -omega * n); // Paso temporal de 1 por caracter del contexto  
         }
 
         return suma;
