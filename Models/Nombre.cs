@@ -48,14 +48,10 @@ public class Nombre
     /// <param name="designacion">Designación elegida para expresar el concepto.</param>
     /// <param name="texto">Texto para la palabra.</param>
     /// <returns>La palabra construida.</returns>
-    public Palabra Mostrarse(Designacion designacion, string texto)
+    public Palabra Mostrarse(Apariencia apariencia)
     {
-        var palabra = new Palabra(
-            texto,
-            designacion,
-            Fourier.Sum(p => p.Key)
-        ); 
-        return palabra;
+        var designacion = new Designacion(apariencia, this);
+        return designacion.Esencia;
     }
 
     /// <summary>

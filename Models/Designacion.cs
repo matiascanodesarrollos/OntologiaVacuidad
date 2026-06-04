@@ -1,26 +1,26 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 
 public class Designacion : Nombre
 {
     public new Guid Id { get; }
-    public Palabra Palabra { get; }
+    public Palabra Esencia { get; }
     public Func<double, double, Complex> STFT { get; }
 
     /// <summary>
     /// Crea una designación con una STFT predefinida.
     /// </summary>
     /// <param name="nombre">Nombre asociado a la designación.</param>
+    /// <param name="texto">Texto de la palabra.</param>
     /// <param name="tiempoPalabra">Momento relativo a tau en que se pronuncia la palabra.</param>
-    public Designacion(Nombre nombre, double tiempoPalabra)
-        : base(new Nombre(string.Empty, string.Empty, t => 1.0, 0.0))
+    public Designacion(Nombre nombre, string texto, double tiempoPalabra)
+        : base(nombre)
     {
         Id = Guid.NewGuid();
-        Palabra = new Palabra(string.Empty, this, nombre.Fourier.Sum(p => p.Key));
+        Esencia = new Palabra(texto, this, nombre.Fourier.Sum(p => p.Key));
         STFT = (tau, omega) => nombre.Fourier.TryGetValue(omega, out var valor) 
-            ? valor * Palabra.Funcion(tau, tiempoPalabra) 
+            ? valor * Esencia.Funcion(tau, tiempoPalabra) 
             : Complex.Zero;
     }
     
@@ -36,7 +36,7 @@ public class Designacion : Nombre
         : base(nombre)
     {
         Id = Guid.NewGuid();
-        Palabra = apariencia.Causa;
+        Esencia = apariencia.Causa;
         STFT = (tau, omega) => CalcularSTFT(tau, omega);
     }
 
@@ -71,7 +71,7 @@ public class Designacion : Nombre
     {        
         var totalMuestras = Math.Max(1, Contexto.Length);
         var suma = Complex.Zero;
-        var apariencia = Palabra as Apariencia;
+        var apariencia = Esencia as Apariencia;
 
         for (var n = 0; n < totalMuestras; n++)
         {
