@@ -28,7 +28,6 @@ internal static class AITestHelpers
 
         if (alucina != esperado)
         {
-            var truthScore = TruthReferenceEvaluator.Evaluate(respuesta, verdad);
             var (palabra, designacion, aparienciaPregunta) = CrearContextoDiagnostico(
                 verdad,
                 prompt,
@@ -45,7 +44,7 @@ internal static class AITestHelpers
                 respuesta.Length,
                 toleranciaDefase,
                 energia);
-            detalleFallo = $"{detalleFallo} | TruthAnchors={truthScore.TruthAnchorsFound}/{truthScore.TruthAnchorsFound + truthScore.MissingTruthAnchors} | Diagnostico={carpetaDiagnostico}";
+            detalleFallo = $"{detalleFallo} | Diagnostico={carpetaDiagnostico}";
         }
 
         return (alucina, detalleFallo);
