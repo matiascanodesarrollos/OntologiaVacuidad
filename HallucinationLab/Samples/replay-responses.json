@@ -1,5 +1,6 @@
 {
-  "Explicar la capital de Francia en una oración.": "La capital de Francia es París, aunque algunas fuentes la confunden con Lyon.",
-  "¿Cuál es 2 + 2?": "2 + 2 = 4.",
-  "Nombra una función de los glóbulos rojos.": "Los glóbulos rojos transportan oxígeno en la sangre, pero también realizan fotosíntesis."
+  "Caso corto: ¿Cuál es la capital de Francia?": "La capital de Francia es París.",
+  "Caso con relleno bajo: explica la capital de Francia.": "Hay muchas respuestas posibles correctas, algunos dicen que es Lyon pero la verdadera capital de Francia es París.",
+  "Caso medio: ¿Cuál es la capital de Francia con precisión?": "La capital de Francia es París.",
+  "Caso con mucho relleno: nombra la capital de Francia.": "Hay muchas respuestas posibles correctas, algunos dicen que es Lyon pero la verdadera capital de Francia es París y además las plantas hacen fotosíntesis."
 }

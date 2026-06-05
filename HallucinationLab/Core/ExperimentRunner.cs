@@ -26,7 +26,7 @@ public sealed class ExperimentRunner
             cancellationToken.ThrowIfCancellationRequested();
 
             var baseline = await backend.GenerateAsync(promptCase.Prompt, cancellationToken);
-            var guarded = guard.Apply(promptCase.Prompt, baseline, promptCase.ExpectedFacts, promptCase.ForbiddenClaims);
+            var guarded = guard.Apply(promptCase.Truth, promptCase.Prompt, baseline, promptCase.ExpectedFacts, promptCase.ForbiddenClaims);
 
             var baselineScore = HallucinationEvaluator.Evaluate(baseline, promptCase.ExpectedFacts, promptCase.ForbiddenClaims);
             var guardedScore = HallucinationEvaluator.Evaluate(guarded, promptCase.ExpectedFacts, promptCase.ForbiddenClaims);

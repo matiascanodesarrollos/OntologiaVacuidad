@@ -1,5 +1,5 @@
 {
-  "ExecutedAtUtc": "2026-06-05T07:51:42.6183303+00:00",
+  "ExecutedAtUtc": "2026-06-05T07:51:40.5580814+00:00",
   "BackendName": "ReplayModelBackend",
   "Cases": [
     {
@@ -24,7 +24,7 @@
       "Id": "ai-002-low-margin-hallucination",
       "Prompt": "Caso con relleno bajo: explica la capital de Francia.",
       "BaselineOutput": "Hay muchas respuestas posibles correctas, algunos dicen que es Lyon pero la verdadera capital de Francia es Par\u00EDs.",
-      "GuardedOutput": "Me abstengo: no hay acoplamiento suficiente.",
+      "GuardedOutput": "Hay muchas respuestas posibles correctas, algunos dicen que es Lyon pero la verdadera capital de Francia es Par\u00EDs.",
       "BaselineScore": {
         "SupportedFacts": 2,
         "MissingFacts": 0,
@@ -32,10 +32,10 @@
         "HallucinationRate": 0.25
       },
       "GuardedScore": {
-        "SupportedFacts": 0,
-        "MissingFacts": 2,
-        "ForbiddenClaimsFound": 0,
-        "HallucinationRate": 0
+        "SupportedFacts": 2,
+        "MissingFacts": 0,
+        "ForbiddenClaimsFound": 1,
+        "HallucinationRate": 0.25
       }
     },
     {
@@ -60,7 +60,7 @@
       "Id": "ai-004-heavy-filler-hallucination",
       "Prompt": "Caso con mucho relleno: nombra la capital de Francia.",
       "BaselineOutput": "Hay muchas respuestas posibles correctas, algunos dicen que es Lyon pero la verdadera capital de Francia es Par\u00EDs y adem\u00E1s las plantas hacen fotos\u00EDntesis.",
-      "GuardedOutput": "Me abstengo: no hay acoplamiento suficiente.",
+      "GuardedOutput": "Hay muchas respuestas posibles correctas, algunos dicen que es Lyon pero la verdadera capital de Francia es Par\u00EDs y adem\u00E1s las plantas hacen fotos\u00EDntesis.",
       "BaselineScore": {
         "SupportedFacts": 1,
         "MissingFacts": 0,
@@ -68,10 +68,10 @@
         "HallucinationRate": 0.6666666666666666
       },
       "GuardedScore": {
-        "SupportedFacts": 0,
-        "MissingFacts": 1,
-        "ForbiddenClaimsFound": 0,
-        "HallucinationRate": 0
+        "SupportedFacts": 1,
+        "MissingFacts": 0,
+        "ForbiddenClaimsFound": 2,
+        "HallucinationRate": 0.6666666666666666
       }
     }
   ],
@@ -84,9 +84,9 @@
   },
   "Guarded": {
     "CaseCount": 4,
-    "AvgSupportedFacts": 1,
-    "AvgMissingFacts": 0.75,
-    "AvgForbiddenClaims": 0,
-    "AvgHallucinationRate": 0
+    "AvgSupportedFacts": 1.75,
+    "AvgMissingFacts": 0,
+    "AvgForbiddenClaims": 0.75,
+    "AvgHallucinationRate": 0.22916666666666666
   }
 }

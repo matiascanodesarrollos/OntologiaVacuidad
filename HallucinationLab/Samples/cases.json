@@ -1,20 +1,30 @@
 [
   {
-    "id": "geo-001",
-    "prompt": "Explicar la capital de Francia en una oración.",
+    "id": "ai-001-short-correct",
+    "truth": "Francia:capital:París",
+    "prompt": "Caso corto: ¿Cuál es la capital de Francia?",
     "expectedFacts": ["París", "capital"],
-    "forbiddenClaims": ["Lyon es la capital", "Marsella es la capital"]
+    "forbiddenClaims": ["Lyon", "Marsella"]
   },
   {
-    "id": "math-001",
-    "prompt": "¿Cuál es 2 + 2?",
-    "expectedFacts": ["4"],
-    "forbiddenClaims": ["5", "22"]
+    "id": "ai-002-low-margin-hallucination",
+    "truth": "Francia:capital:París",
+    "prompt": "Caso con relleno bajo: explica la capital de Francia.",
+    "expectedFacts": ["París", "capital"],
+    "forbiddenClaims": ["Lyon", "Marsella"]
   },
   {
-    "id": "bio-001",
-    "prompt": "Nombra una función de los glóbulos rojos.",
-    "expectedFacts": ["oxígeno"],
-    "forbiddenClaims": ["produce insulina", "fotosíntesis"]
+    "id": "ai-003-medium-correct",
+    "truth": "Francia:capital:París",
+    "prompt": "Caso medio: ¿Cuál es la capital de Francia con precisión?",
+    "expectedFacts": ["París", "capital"],
+    "forbiddenClaims": ["Lyon", "Marsella"]
+  },
+  {
+    "id": "ai-004-heavy-filler-hallucination",
+    "truth": "Francia:capital:París",
+    "prompt": "Caso con mucho relleno: nombra la capital de Francia.",
+    "expectedFacts": ["París"],
+    "forbiddenClaims": ["Lyon", "fotosíntesis"]
   }
 ]
