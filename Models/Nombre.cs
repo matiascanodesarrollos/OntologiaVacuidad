@@ -13,14 +13,6 @@ public class Nombre
     private readonly Lazy<Dictionary<double, Complex>> _fourier;
     public Dictionary<double, Complex> Fourier => _fourier.Value;
 
-    internal static Nombre Gozo(double energia) => new Nombre(
-        "gozo",
-        "vacuidad",
-        t => t <= 0
-            ? new Complex(0.5 * energia, 0.0)
-            : new Complex(0.0, energia / (2 * Math.PI * t)),
-        0.0);
-
     protected Nombre(Nombre otro)
     {
         Id = otro.Id;

@@ -8,15 +8,24 @@ public class Palabra : Apariencia
     public Designacion Esencia { get; }
     public Apariencia Efecto { get; internal set; }
 
-    internal Palabra(
+    private Palabra(
         string texto,
         Func<double, double, Complex> funcion,
         double energia)
-        : base(Nombre.Gozo(energia))
+        : base(0, t => t > 0 ? new Complex(0.5 * energia, energia / (2 * Math.PI * t)) : Complex.One)
     {
         Texto = texto;
         Funcion = funcion;
     }
+
+    internal static Palabra Gozo(double energia) => new Palabra(
+        "gozo",
+        (tau, t) => 
+            Complex.FromPolarCoordinates(1.0, energia) 
+            * (t <= 0
+                ? new Complex(0.5 * energia, 0.0)
+                : new Complex(0.0, energia / (2 * Math.PI * t))),
+        energia);
 
     internal Palabra(
         string texto,

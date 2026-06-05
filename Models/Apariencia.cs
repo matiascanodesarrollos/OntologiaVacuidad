@@ -14,7 +14,15 @@ public class Apariencia
         Id = Guid.NewGuid();
         FrecuenciaAngular = nombre.Fourier.Sum(p => p.Key);
         var amplitud = new Lazy<Complex>(() => CalcularAmplitud(nombre, FrecuenciaAngular));
-        Funcion = t => amplitud.Value * Complex.FromPolarCoordinates(1, FrecuenciaAngular * t);
+        Funcion = t => 
+            amplitud.Value * Complex.FromPolarCoordinates(1, FrecuenciaAngular * t);
+    }
+
+    internal Apariencia(double frecuenciaAngular, Func<double, Complex> funcion)
+    {
+        Id = Guid.NewGuid();
+        FrecuenciaAngular = frecuenciaAngular;
+        Funcion = funcion;
     }
 
     public Apariencia(double frecuenciaAngular, Func<double, Complex> funcion, double energia)
@@ -22,12 +30,7 @@ public class Apariencia
         Id = Guid.NewGuid();
         FrecuenciaAngular = frecuenciaAngular;
         Funcion = funcion;
-        var gozo = Nombre.Gozo(energia);
-        var vacuidad = new Palabra(
-            "vacuidad", 
-            (tau, t) => Complex.FromPolarCoordinates(1.0, FrecuenciaAngular * tau) * gozo.Ventana(t - tau), 
-            energia);
-        Causa = vacuidad;
+        Causa = Palabra.Gozo(energia);
     }
 
     /// <summary>
