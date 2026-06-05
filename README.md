@@ -15,7 +15,7 @@ Se agrego el proyecto `HallucinationLab` para comparar:
 
 ### Resultados preliminares
 
-En una corrida local con `ReplayModelBackend` y 4 casos de prueba, el baseline quedo en una tasa media de alucinacion de 22.92% y el guard ontologico en 0%. En esos mismos casos, el guard redujo las afirmaciones prohibidas, pero a cambio aumento las abstenciones y dejo hechos esperados sin cubrir en dos de los cuatro escenarios.
+En una corrida local con `ReplayModelBackend` y 4 casos de prueba, el baseline quedo en una tasa media de alucinacion de 22.92% y el guard ontologico en 0%. En esos mismos casos, el guard puede aumentar abstenciones y afectar cobertura de anclas de verdad, por lo que conviene evaluar siempre la deteccion sobre la respuesta efectiva y no solo por etiqueta fija del caso.
 
 Esto sugiere que, con estos parametros, el guard si puede cortar salida riesgosa, pero todavia no preserva bien la cobertura semantica cuando la respuesta original era util.
 

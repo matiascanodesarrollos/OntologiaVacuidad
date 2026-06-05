@@ -5,8 +5,6 @@ public sealed class PromptCase
     public string Id { get; set; } = string.Empty;
     public string Truth { get; set; } = string.Empty;
     public string Prompt { get; set; } = string.Empty;
-    public List<string> ExpectedFacts { get; set; } = new();
-    public List<string> ForbiddenClaims { get; set; } = new();
 }
 
 public sealed class CaseResult

@@ -9,8 +9,9 @@ Ahora incluye un backend real de OpenAI (`OpenAiResponsesBackend`) y un guard de
 
 El experimento trabaja por casos con:
 
-- `expectedFacts`: hechos esperados.
-- `forbiddenClaims`: afirmaciones que se consideran alucinaciones.
+- `truth`: referencia de verdad canonica (por ejemplo `Francia:capital:París`).
+
+La deteccion de alucinacion se calcula sobre cada respuesta generada, en funcion de cuanto cubre la referencia de verdad del caso.
 
 ## Ejecucion rapida
 

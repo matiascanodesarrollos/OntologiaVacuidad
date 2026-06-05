@@ -2,8 +2,8 @@ namespace HallucinationLab.Eval;
 
 public sealed class TruthReferenceScore
 {
-    public int TruthAnchorsFound { get; init; }
-    public int MissingTruthAnchors { get; init; }
+    public int AnchorsFound { get; init; }
+    public int MissingAnchors { get; init; }
 }
 
 public static class TruthReferenceEvaluator
@@ -19,8 +19,8 @@ public static class TruthReferenceEvaluator
 
         return new TruthReferenceScore
         {
-            TruthAnchorsFound = found,
-            MissingTruthAnchors = anchors.Length - found
+            AnchorsFound = found,
+            MissingAnchors = anchors.Length - found
         };
     }
 }

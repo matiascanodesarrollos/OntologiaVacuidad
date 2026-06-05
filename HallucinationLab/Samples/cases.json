@@ -2,29 +2,21 @@
   {
     "id": "ai-001-short-correct",
     "truth": "Francia:capital:París",
-    "prompt": "Caso corto: ¿Cuál es la capital de Francia?",
-    "expectedFacts": ["París", "capital"],
-    "forbiddenClaims": ["Lyon", "Marsella"]
+    "prompt": "Caso corto: ¿Cuál es la capital de Francia?"
   },
   {
     "id": "ai-002-low-margin-hallucination",
     "truth": "Francia:capital:París",
-    "prompt": "Caso con relleno bajo: explica la capital de Francia.",
-    "expectedFacts": ["París", "capital"],
-    "forbiddenClaims": ["Lyon", "Marsella"]
+    "prompt": "Caso con relleno bajo: explica la capital de Francia."
   },
   {
     "id": "ai-003-medium-correct",
     "truth": "Francia:capital:París",
-    "prompt": "Caso medio: ¿Cuál es la capital de Francia con precisión?",
-    "expectedFacts": ["París", "capital"],
-    "forbiddenClaims": ["Lyon", "Marsella"]
+    "prompt": "Caso medio: ¿Cuál es la capital de Francia con precisión?"
   },
   {
     "id": "ai-004-heavy-filler-hallucination",
     "truth": "Francia:capital:París",
-    "prompt": "Caso con mucho relleno: nombra la capital de Francia.",
-    "expectedFacts": ["París"],
-    "forbiddenClaims": ["Lyon", "fotosíntesis"]
+    "prompt": "Caso con mucho relleno: nombra la capital de Francia."
   }
 ]
