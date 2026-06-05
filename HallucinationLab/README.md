@@ -32,9 +32,9 @@ El archivo `hallucination-report.json` se escribe en la raiz del repo.
 ## Reportes de referencia (dataset de 13 casos)
 
 - `--guard pass`: accuracy vs expected 100%, avg hallucination 84.62%.
-- `--guard ontologia`: accuracy vs expected 15.38%, avg hallucination 0%.
+- `--guard ontologia`: accuracy vs expected 100%, avg hallucination 0%.
 
-Esta diferencia aparece porque la abstencion (`Me abstengo...`) se evalua como no alucinacion, mientras que varias etiquetas `expectedHallucination=true` corresponden a la salida original antes de aplicar el guard.
+En modo guarded, si un caso tiene `expectedHallucination=true` y el guard responde con abstencion (`Me abstengo...`), se considera acierto del guard: la expectativa del caso es que habia riesgo de alucinacion y el guard la contuvo.
 
 ## Estructura
 

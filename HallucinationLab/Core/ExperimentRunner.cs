@@ -9,6 +9,7 @@ public sealed class ExperimentRunner
 {
     private readonly ITextModelBackend backend;
     private readonly IOutputGuard guard;
+    private readonly HallucinationEvaluator evaluator = new();
 
     public ExperimentRunner(ITextModelBackend backend, IOutputGuard guard)
     {
@@ -28,8 +29,8 @@ public sealed class ExperimentRunner
             var baseline = await backend.GenerateAsync(promptCase.Id, promptCase.Prompt, cancellationToken);
             var guarded = guard.Apply(promptCase, baseline);
 
-            var baselineScore = HallucinationEvaluator.Evaluate(promptCase, baseline);
-            var guardedScore = HallucinationEvaluator.Evaluate(promptCase, guarded);
+            var baselineScore = evaluator.Evaluate(promptCase, baseline);
+            var guardedScore = evaluator.Evaluate(promptCase, guarded);
 
             results.Add(new CaseResult
             {
@@ -46,8 +47,8 @@ public sealed class ExperimentRunner
         {
             BackendName = backend.Name,
             Cases = results,
-            Baseline = HallucinationEvaluator.Aggregate(results.Select(r => r.BaselineScore)),
-            Guarded = HallucinationEvaluator.Aggregate(results.Select(r => r.GuardedScore))
+            Baseline = evaluator.Aggregate(results.Select(r => r.BaselineScore)),
+            Guarded = evaluator.Aggregate(results.Select(r => r.GuardedScore))
         };
     }
 

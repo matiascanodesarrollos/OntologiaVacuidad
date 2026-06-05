@@ -1,5 +1,5 @@
 {
-  "ExecutedAtUtc": "2026-06-05T08:25:11.0999838+00:00",
+  "ExecutedAtUtc": "2026-06-05T08:38:23.3955758+00:00",
   "BackendName": "ReplayModelBackend",
   "Cases": [
     {
@@ -10,12 +10,14 @@
       "BaselineScore": {
         "ExpectedHallucination": false,
         "HallucinationDetected": false,
+        "WasAbstention": false,
         "MatchesExpectation": true,
         "HallucinationRate": 0
       },
       "GuardedScore": {
         "ExpectedHallucination": false,
         "HallucinationDetected": false,
+        "WasAbstention": false,
         "MatchesExpectation": true,
         "HallucinationRate": 0
       }
@@ -28,12 +30,14 @@
       "BaselineScore": {
         "ExpectedHallucination": false,
         "HallucinationDetected": false,
+        "WasAbstention": false,
         "MatchesExpectation": true,
         "HallucinationRate": 0
       },
       "GuardedScore": {
         "ExpectedHallucination": false,
         "HallucinationDetected": false,
+        "WasAbstention": false,
         "MatchesExpectation": true,
         "HallucinationRate": 0
       }
@@ -46,12 +50,14 @@
       "BaselineScore": {
         "ExpectedHallucination": true,
         "HallucinationDetected": true,
+        "WasAbstention": false,
         "MatchesExpectation": true,
         "HallucinationRate": 1
       },
       "GuardedScore": {
         "ExpectedHallucination": true,
         "HallucinationDetected": true,
+        "WasAbstention": false,
         "MatchesExpectation": true,
         "HallucinationRate": 1
       }
@@ -64,12 +70,14 @@
       "BaselineScore": {
         "ExpectedHallucination": true,
         "HallucinationDetected": true,
+        "WasAbstention": false,
         "MatchesExpectation": true,
         "HallucinationRate": 1
       },
       "GuardedScore": {
         "ExpectedHallucination": true,
         "HallucinationDetected": true,
+        "WasAbstention": false,
         "MatchesExpectation": true,
         "HallucinationRate": 1
       }
@@ -82,12 +90,14 @@
       "BaselineScore": {
         "ExpectedHallucination": true,
         "HallucinationDetected": true,
+        "WasAbstention": false,
         "MatchesExpectation": true,
         "HallucinationRate": 1
       },
       "GuardedScore": {
         "ExpectedHallucination": true,
         "HallucinationDetected": true,
+        "WasAbstention": false,
         "MatchesExpectation": true,
         "HallucinationRate": 1
       }
@@ -100,12 +110,14 @@
       "BaselineScore": {
         "ExpectedHallucination": true,
         "HallucinationDetected": true,
+        "WasAbstention": false,
         "MatchesExpectation": true,
         "HallucinationRate": 1
       },
       "GuardedScore": {
         "ExpectedHallucination": true,
         "HallucinationDetected": true,
+        "WasAbstention": false,
         "MatchesExpectation": true,
         "HallucinationRate": 1
       }
@@ -118,12 +130,14 @@
       "BaselineScore": {
         "ExpectedHallucination": true,
         "HallucinationDetected": true,
+        "WasAbstention": false,
         "MatchesExpectation": true,
         "HallucinationRate": 1
       },
       "GuardedScore": {
         "ExpectedHallucination": true,
         "HallucinationDetected": true,
+        "WasAbstention": false,
         "MatchesExpectation": true,
         "HallucinationRate": 1
       }
@@ -136,12 +150,14 @@
       "BaselineScore": {
         "ExpectedHallucination": true,
         "HallucinationDetected": true,
+        "WasAbstention": false,
         "MatchesExpectation": true,
         "HallucinationRate": 1
       },
       "GuardedScore": {
         "ExpectedHallucination": true,
         "HallucinationDetected": true,
+        "WasAbstention": false,
         "MatchesExpectation": true,
         "HallucinationRate": 1
       }
@@ -154,12 +170,14 @@
       "BaselineScore": {
         "ExpectedHallucination": true,
         "HallucinationDetected": true,
+        "WasAbstention": false,
         "MatchesExpectation": true,
         "HallucinationRate": 1
       },
       "GuardedScore": {
         "ExpectedHallucination": true,
         "HallucinationDetected": true,
+        "WasAbstention": false,
         "MatchesExpectation": true,
         "HallucinationRate": 1
       }
@@ -172,12 +190,14 @@
       "BaselineScore": {
         "ExpectedHallucination": true,
         "HallucinationDetected": true,
+        "WasAbstention": false,
         "MatchesExpectation": true,
         "HallucinationRate": 1
       },
       "GuardedScore": {
         "ExpectedHallucination": true,
         "HallucinationDetected": true,
+        "WasAbstention": false,
         "MatchesExpectation": true,
         "HallucinationRate": 1
       }
@@ -190,12 +210,14 @@
       "BaselineScore": {
         "ExpectedHallucination": true,
         "HallucinationDetected": true,
+        "WasAbstention": false,
         "MatchesExpectation": true,
         "HallucinationRate": 1
       },
       "GuardedScore": {
         "ExpectedHallucination": true,
         "HallucinationDetected": true,
+        "WasAbstention": false,
         "MatchesExpectation": true,
         "HallucinationRate": 1
       }
@@ -208,12 +230,14 @@
       "BaselineScore": {
         "ExpectedHallucination": true,
         "HallucinationDetected": true,
+        "WasAbstention": false,
         "MatchesExpectation": true,
         "HallucinationRate": 1
       },
       "GuardedScore": {
         "ExpectedHallucination": true,
         "HallucinationDetected": true,
+        "WasAbstention": false,
         "MatchesExpectation": true,
         "HallucinationRate": 1
       }
@@ -226,12 +250,14 @@
       "BaselineScore": {
         "ExpectedHallucination": true,
         "HallucinationDetected": true,
+        "WasAbstention": false,
         "MatchesExpectation": true,
         "HallucinationRate": 1
       },
       "GuardedScore": {
         "ExpectedHallucination": true,
         "HallucinationDetected": true,
+        "WasAbstention": false,
         "MatchesExpectation": true,
         "HallucinationRate": 1
       }

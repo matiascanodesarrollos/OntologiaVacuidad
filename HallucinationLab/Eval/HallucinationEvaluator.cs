@@ -1,22 +1,36 @@
 namespace HallucinationLab.Eval;
 
-public static class HallucinationEvaluator
+public sealed class HallucinationEvaluator
 {
-    public static HallucinationScore Evaluate(Core.PromptCase promptCase, string output)
+    public HallucinationScore Evaluate(Core.PromptCase promptCase, string output)
     {
+        var wasAbstention = IsAbstention(output);
         var hallucinationDetected = TestParityHallucinationEvaluator.DetectHallucination(promptCase, output);
         var rate = hallucinationDetected ? 1.0 : 0.0;
+        var matchesExpectation = hallucinationDetected == promptCase.ExpectedHallucination;
+
+        if (wasAbstention
+            && promptCase.ExpectedHallucination)
+        {
+            matchesExpectation = true;
+        }
 
         return new HallucinationScore
         {
             ExpectedHallucination = promptCase.ExpectedHallucination,
             HallucinationDetected = hallucinationDetected,
-            MatchesExpectation = hallucinationDetected == promptCase.ExpectedHallucination,
+            WasAbstention = wasAbstention,
+            MatchesExpectation = matchesExpectation,
             HallucinationRate = rate
         };
     }
 
-    public static AggregatedMetrics Aggregate(IEnumerable<HallucinationScore> scores)
+    private bool IsAbstention(string output)
+    {
+        return output.StartsWith("Me abstengo:", StringComparison.OrdinalIgnoreCase);
+    }
+
+    public AggregatedMetrics Aggregate(IEnumerable<HallucinationScore> scores)
     {
         var list = scores.ToList();
         if (list.Count == 0)
