@@ -2,17 +2,16 @@ namespace HallucinationLab.Eval;
 
 public static class HallucinationEvaluator
 {
-    public static HallucinationScore Evaluate(string output, string truth)
+    public static HallucinationScore Evaluate(Core.PromptCase promptCase, string output)
     {
-        var truthScore = TruthReferenceEvaluator.Evaluate(output, truth);
-        var hallucinationDetected = truthScore.MissingAnchors > 0;
+        var hallucinationDetected = TestParityHallucinationEvaluator.DetectHallucination(promptCase, output);
         var rate = hallucinationDetected ? 1.0 : 0.0;
 
         return new HallucinationScore
         {
-            SupportedFacts = truthScore.AnchorsFound,
-            MissingFacts = truthScore.MissingAnchors,
+            ExpectedHallucination = promptCase.ExpectedHallucination,
             HallucinationDetected = hallucinationDetected,
+            MatchesExpectation = hallucinationDetected == promptCase.ExpectedHallucination,
             HallucinationRate = rate
         };
     }
@@ -28,8 +27,7 @@ public static class HallucinationEvaluator
         return new AggregatedMetrics
         {
             CaseCount = list.Count,
-            AvgSupportedFacts = list.Average(s => s.SupportedFacts),
-            AvgMissingFacts = list.Average(s => s.MissingFacts),
+            ExpectationAccuracy = list.Average(s => s.MatchesExpectation ? 1.0 : 0.0),
             AvgHallucinationRate = list.Average(s => s.HallucinationRate)
         };
     }

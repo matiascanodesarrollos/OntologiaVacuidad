@@ -15,9 +15,14 @@ Se agrego el proyecto `HallucinationLab` para comparar:
 
 ### Resultados preliminares
 
-En una corrida local con `ReplayModelBackend` y 4 casos de prueba, el baseline quedo en una tasa media de alucinacion de 22.92% y el guard ontologico en 0%. En esos mismos casos, el guard puede aumentar abstenciones y afectar cobertura de anclas de verdad, por lo que conviene evaluar siempre la deteccion sobre la respuesta efectiva y no solo por etiqueta fija del caso.
+En la corrida local actual con `ReplayModelBackend` y 13 casos (alineados a `Models.Tests/AITests.cs`):
 
-Esto sugiere que, con estos parametros, el guard si puede cortar salida riesgosa, pero todavia no preserva bien la cobertura semantica cuando la respuesta original era util.
+1. Con `--guard pass`: `ExpectationAccuracy=100%` y `AvgHallucinationRate=84.62%`.
+2. Con `--guard ontologia`: `ExpectationAccuracy=15.38%` y `AvgHallucinationRate=0%`.
+
+Esto refleja que el guard ontologico convierte multiples salidas en abstencion (`Me abstengo...`), y la abstencion se evalua como no alucinacion en el score de salida final.
+
+Esto sugiere que, con estos parametros, el guard si corta salida riesgosa de forma agresiva, pero reduce fuertemente la coincidencia con la etiqueta esperada del dataset cuando esa etiqueta fue definida sobre la respuesta no protegida.
 
 ### Evaluacion tecnica
 

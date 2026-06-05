@@ -15,9 +15,14 @@ public sealed class ReplayModelBackend : ITextModelBackend
 
     public string Name => "ReplayModelBackend";
 
-    public Task<string> GenerateAsync(string prompt, CancellationToken cancellationToken)
+    public Task<string> GenerateAsync(string caseId, string prompt, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
+
+        if (responseMap.TryGetValue(caseId, out var caseOutput))
+        {
+            return Task.FromResult(caseOutput);
+        }
 
         if (responseMap.TryGetValue(prompt, out var output))
         {

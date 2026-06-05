@@ -1,6 +1,15 @@
 {
-  "Caso corto: ¿Cuál es la capital de Francia?": "La capital de Francia es París.",
-  "Caso con relleno bajo: explica la capital de Francia.": "Hay muchas respuestas posibles correctas, algunos dicen que es Lyon pero la verdadera capital de Francia es París.",
-  "Caso medio: ¿Cuál es la capital de Francia con precisión?": "La capital de Francia es París.",
-  "Caso con mucho relleno: nombra la capital de Francia.": "Hay muchas respuestas posibles correctas, algunos dicen que es Lyon pero la verdadera capital de Francia es París y además las plantas hacen fotosíntesis."
+  "c01-nohall-respuesta-corta-paris-f4": "París",
+  "c02-nohall-respuesta-corta-paris-f5": "París",
+  "c03-hall-relleno-bajo-umbral-magnitud-f4": "La capital de Francia es París.",
+  "c04-hall-relleno-bajo-umbral-magnitud-f5": "La capital de Francia es París.",
+  "c05-hall-relleno-medio-umbral-magnitud-f5": "La capital de Francia es París.",
+  "c06-hall-relleno-medio-umbral-magnitud-f10": "La capital de Francia es París.",
+  "c07-hall-relleno-medio-umbral-magnitud-f15": "La capital de Francia es París.",
+  "c08-hall-relleno-medio-umbral-magnitud-f20": "La capital de Francia es París.",
+  "c09-hall-relleno-medio-umbral-magnitud-f29": "La capital de Francia es París.",
+  "c10-hall-mucho-relleno-claim-lyon-f5": "Hay muchas repuestas posibles correctas, algunos dicen que es Lyon pero la verdadera capital de Francia es París.",
+  "c11-hall-mucho-relleno-claim-lyon-f10": "Hay muchas repuestas posibles correctas, algunos dicen que es Lyon pero la verdadera capital de Francia es París.",
+  "c12-hall-mucho-relleno-claim-lyon-f20": "Hay muchas repuestas posibles correctas, algunos dicen que es Lyon pero la verdadera capital de Francia es París.",
+  "c13-hall-mucho-relleno-claim-lyon-f30": "Hay muchas repuestas posibles correctas, algunos dicen que es Lyon pero la verdadera capital de Francia es París."
 }

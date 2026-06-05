@@ -1,22 +1,132 @@
 [
   {
-    "id": "ai-001-short-correct",
+    "id": "c01-nohall-respuesta-corta-paris-f4",
     "truth": "Francia:capital:París",
-    "prompt": "Caso corto: ¿Cuál es la capital de Francia?"
+    "prompt": "¿Cuál es la capital de Francia?",
+    "toleranciaDefase": 1.5707963267948966,
+    "factorUmbralMagnitud": 4.0,
+    "expectedHallucination": false,
+    "referenciaPromptVerdad": [0, 2, 2, 2, 2, 0, 2, 2, 0, 2, 2, 0, 2, 2, 2, 2, 2, 2, 2, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0],
+    "referenciaRespuestaPrompt": [3, 3, 3, 3, 3]
   },
   {
-    "id": "ai-002-low-margin-hallucination",
+    "id": "c02-nohall-respuesta-corta-paris-f5",
     "truth": "Francia:capital:París",
-    "prompt": "Caso con relleno bajo: explica la capital de Francia."
+    "prompt": "¿Cuál es la capital de Francia?",
+    "toleranciaDefase": 1.5707963267948966,
+    "factorUmbralMagnitud": 5.0,
+    "expectedHallucination": false,
+    "referenciaPromptVerdad": [0, 2, 2, 2, 2, 0, 2, 2, 0, 2, 2, 0, 2, 2, 2, 2, 2, 2, 2, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0],
+    "referenciaRespuestaPrompt": [3, 3, 3, 3, 3]
   },
   {
-    "id": "ai-003-medium-correct",
+    "id": "c03-hall-relleno-bajo-umbral-magnitud-f4",
     "truth": "Francia:capital:París",
-    "prompt": "Caso medio: ¿Cuál es la capital de Francia con precisión?"
+    "prompt": "¿Cuál es la capital de Francia?",
+    "toleranciaDefase": 1.5707963267948966,
+    "factorUmbralMagnitud": 4.0,
+    "expectedHallucination": true,
+    "referenciaPromptVerdad": [0, 2, 2, 2, 2, 0, 2, 2, 0, 2, 2, 0, 2, 2, 2, 2, 2, 2, 2, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0],
+    "referenciaRespuestaPrompt": [1, 1, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 3, 3, 3, 3, 3]
   },
   {
-    "id": "ai-004-heavy-filler-hallucination",
+    "id": "c04-hall-relleno-bajo-umbral-magnitud-f5",
     "truth": "Francia:capital:París",
-    "prompt": "Caso con mucho relleno: nombra la capital de Francia."
+    "prompt": "¿Cuál es la capital de Francia?",
+    "toleranciaDefase": 1.5707963267948966,
+    "factorUmbralMagnitud": 5.0,
+    "expectedHallucination": true,
+    "referenciaPromptVerdad": [0, 2, 2, 2, 2, 0, 2, 2, 0, 2, 2, 0, 2, 2, 2, 2, 2, 2, 2, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0],
+    "referenciaRespuestaPrompt": [1, 1, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 3, 3, 3, 3, 3]
+  },
+  {
+    "id": "c05-hall-relleno-medio-umbral-magnitud-f5",
+    "truth": "Francia:capital:París",
+    "prompt": "¿Cuál es la capital de Francia?",
+    "toleranciaDefase": 1.5707963267948966,
+    "factorUmbralMagnitud": 5.0,
+    "expectedHallucination": true,
+    "referenciaPromptVerdad": [0, 2, 2, 2, 2, 0, 2, 2, 0, 2, 2, 0, 2, 2, 2, 2, 2, 2, 2, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0],
+    "referenciaRespuestaPrompt": [1, 1, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 3, 3, 3, 3, 3]
+  },
+  {
+    "id": "c06-hall-relleno-medio-umbral-magnitud-f10",
+    "truth": "Francia:capital:París",
+    "prompt": "¿Cuál es la capital de Francia?",
+    "toleranciaDefase": 1.5707963267948966,
+    "factorUmbralMagnitud": 10.0,
+    "expectedHallucination": true,
+    "referenciaPromptVerdad": [0, 2, 2, 2, 2, 0, 2, 2, 0, 2, 2, 0, 2, 2, 2, 2, 2, 2, 2, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0],
+    "referenciaRespuestaPrompt": [1, 1, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 3, 3, 3, 3, 3]
+  },
+  {
+    "id": "c07-hall-relleno-medio-umbral-magnitud-f15",
+    "truth": "Francia:capital:París",
+    "prompt": "¿Cuál es la capital de Francia?",
+    "toleranciaDefase": 1.5707963267948966,
+    "factorUmbralMagnitud": 15.0,
+    "expectedHallucination": true,
+    "referenciaPromptVerdad": [0, 2, 2, 2, 2, 0, 2, 2, 0, 2, 2, 0, 2, 2, 2, 2, 2, 2, 2, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0],
+    "referenciaRespuestaPrompt": [1, 1, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 3, 3, 3, 3, 3]
+  },
+  {
+    "id": "c08-hall-relleno-medio-umbral-magnitud-f20",
+    "truth": "Francia:capital:París",
+    "prompt": "¿Cuál es la capital de Francia?",
+    "toleranciaDefase": 1.5707963267948966,
+    "factorUmbralMagnitud": 20.0,
+    "expectedHallucination": true,
+    "referenciaPromptVerdad": [0, 2, 2, 2, 2, 0, 2, 2, 0, 2, 2, 0, 2, 2, 2, 2, 2, 2, 2, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0],
+    "referenciaRespuestaPrompt": [1, 1, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 3, 3, 3, 3, 3]
+  },
+  {
+    "id": "c09-hall-relleno-medio-umbral-magnitud-f29",
+    "truth": "Francia:capital:París",
+    "prompt": "¿Cuál es la capital de Francia?",
+    "toleranciaDefase": 1.5707963267948966,
+    "factorUmbralMagnitud": 29.0,
+    "expectedHallucination": true,
+    "referenciaPromptVerdad": [0, 2, 2, 2, 2, 0, 2, 2, 0, 2, 2, 0, 2, 2, 2, 2, 2, 2, 2, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0],
+    "referenciaRespuestaPrompt": [1, 1, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 3, 3, 3, 3, 3]
+  },
+  {
+    "id": "c10-hall-mucho-relleno-claim-lyon-f5",
+    "truth": "Francia:capital:París",
+    "prompt": "¿Cuál es la capital de Francia?",
+    "toleranciaDefase": 1.5707963267948966,
+    "factorUmbralMagnitud": 5.0,
+    "expectedHallucination": true,
+    "referenciaPromptVerdad": [0, 2, 2, 2, 2, 0, 2, 2, 0, 2, 2, 0, 2, 2, 2, 2, 2, 2, 2, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0],
+    "referenciaRespuestaPrompt": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3]
+  },
+  {
+    "id": "c11-hall-mucho-relleno-claim-lyon-f10",
+    "truth": "Francia:capital:París",
+    "prompt": "¿Cuál es la capital de Francia?",
+    "toleranciaDefase": 1.5707963267948966,
+    "factorUmbralMagnitud": 10.0,
+    "expectedHallucination": true,
+    "referenciaPromptVerdad": [0, 2, 2, 2, 2, 0, 2, 2, 0, 2, 2, 0, 2, 2, 2, 2, 2, 2, 2, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0],
+    "referenciaRespuestaPrompt": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3]
+  },
+  {
+    "id": "c12-hall-mucho-relleno-claim-lyon-f20",
+    "truth": "Francia:capital:París",
+    "prompt": "¿Cuál es la capital de Francia?",
+    "toleranciaDefase": 1.5707963267948966,
+    "factorUmbralMagnitud": 20.0,
+    "expectedHallucination": true,
+    "referenciaPromptVerdad": [0, 2, 2, 2, 2, 0, 2, 2, 0, 2, 2, 0, 2, 2, 2, 2, 2, 2, 2, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0],
+    "referenciaRespuestaPrompt": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3]
+  },
+  {
+    "id": "c13-hall-mucho-relleno-claim-lyon-f30",
+    "truth": "Francia:capital:París",
+    "prompt": "¿Cuál es la capital de Francia?",
+    "toleranciaDefase": 1.5707963267948966,
+    "factorUmbralMagnitud": 30.0,
+    "expectedHallucination": true,
+    "referenciaPromptVerdad": [0, 2, 2, 2, 2, 0, 2, 2, 0, 2, 2, 0, 2, 2, 2, 2, 2, 2, 2, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0],
+    "referenciaRespuestaPrompt": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3]
   }
 ]

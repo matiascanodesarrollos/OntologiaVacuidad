@@ -4,18 +4,15 @@ public sealed class OntologiaOutputGuard : IOutputGuard
 {
     public string Name => "OntologiaOutputGuard";
 
-    public string Apply(
-        string truth,
-        string prompt, 
-        string rawOutput)
+    public string Apply(Core.PromptCase promptCase, string rawOutput)
     {
         if (string.IsNullOrWhiteSpace(rawOutput))
         {
             return AbstentionResponse;
         }
 
-        var truthScore = Eval.TruthReferenceEvaluator.Evaluate(rawOutput, truth);
-        if (truthScore.MissingAnchors > 0)
+        var hallucina = Eval.TestParityHallucinationEvaluator.DetectHallucination(promptCase, rawOutput);
+        if (hallucina)
         {
             return AbstentionResponse;
         }
