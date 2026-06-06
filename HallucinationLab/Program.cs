@@ -29,15 +29,11 @@ static void PrintSummary(ExperimentReport report)
     Console.WriteLine($"Cases: {report.Baseline.CaseCount}");
 
     Console.WriteLine("\nBaseline");
-    Console.WriteLine($"  Avg supported facts : {report.Baseline.AvgSupportedFacts:F2}");
-    Console.WriteLine($"  Avg missing facts   : {report.Baseline.AvgMissingFacts:F2}");
-    Console.WriteLine($"  Avg forbidden claims: {report.Baseline.AvgForbiddenClaims:F2}");
+    Console.WriteLine($"  Accuracy vs expected: {report.Baseline.ExpectationAccuracy:P2}");
     Console.WriteLine($"  Avg hallucination   : {report.Baseline.AvgHallucinationRate:P2}");
 
     Console.WriteLine("\nGuarded");
-    Console.WriteLine($"  Avg supported facts : {report.Guarded.AvgSupportedFacts:F2}");
-    Console.WriteLine($"  Avg missing facts   : {report.Guarded.AvgMissingFacts:F2}");
-    Console.WriteLine($"  Avg forbidden claims: {report.Guarded.AvgForbiddenClaims:F2}");
+    Console.WriteLine($"  Accuracy vs expected: {report.Guarded.ExpectationAccuracy:P2}");
     Console.WriteLine($"  Avg hallucination   : {report.Guarded.AvgHallucinationRate:P2}");
 
     var delta = report.Baseline.AvgHallucinationRate - report.Guarded.AvgHallucinationRate;

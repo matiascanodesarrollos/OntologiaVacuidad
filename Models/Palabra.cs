@@ -3,43 +3,53 @@ using System.Numerics;
 
 public class Palabra : Apariencia
 {
-    public new string Texto { get; }
+    public string Texto { get; }    
     public new Func<double, double, Complex> Funcion { get; }
-    
-    
-    /// <summary>
-    /// Crea una palabra a partir de un texto, un nombre y una frecuencia angular.
-    /// La función de la palabra se construye multiplicando la función de ventana del nombre por la fase compleja correspondiente.
-    /// La causa de la apariencia resultante o su naturaleza es la palabra misma.
-    /// </summary>
-    /// <param name="texto">Texto de la palabra.</param>
-    /// <param name="nombre">Nombre que aporta la ventana de análisis y el contexto.</param>
-    /// <param name="frecuenciaAngular">Frecuencia angular de análisis.</param>
-    /// <returns>Una nueva palabra vinculada al nombre de entrada.</returns>
-    public Palabra(
+    public Designacion Esencia { get; }
+    public Apariencia Efecto { get; internal set; }
+
+    private Palabra(
         string texto,
-        Nombre nombre,
-        double frecuenciaAngular)
-        : base(nombre, frecuenciaAngular)
+        Func<double, double, Complex> funcion,
+        double energia)
+        : base(0, t => t > 0 ? new Complex(0.5 * energia, energia / (2 * Math.PI * t)) : Complex.One)
+    {
+        Texto = texto;
+        Funcion = funcion;
+    }
+
+    internal static Palabra Gozo(double energia) => new Palabra(
+        "gozo",
+        (tau, t) => 
+            Complex.FromPolarCoordinates(1.0, energia) 
+            * (t <= 0
+                ? new Complex(0.5 * energia, 0.0)
+                : new Complex(0.0, energia / (2 * Math.PI * t))),
+        energia);
+
+    internal Palabra(
+        string texto,
+        Designacion designacion)
+        : base(designacion)
     {
         Texto = texto;
         Funcion = (tau, t) => 
-            Complex.FromPolarCoordinates(1.0, frecuenciaAngular * tau) 
-            * nombre.Ventana(t - tau);
+            Complex.FromPolarCoordinates(1.0, FrecuenciaAngular * tau) 
+            * designacion.Ventana(t - tau);
         Causa = this;
+        Efecto = this;
     }
 
     /// <summary>
-    /// Calcula una nueva apariencia a partir de esta palabra y el tiempo de pensamiento tau en el concepto o nombre.
-    /// La frecuencia angular de la nueva apariencia se obtiene de la fase de la función evaluada.
+    /// Crea una apariencia evaluando la STFT en un punto complejo z (representa la persona que pregunta).
+    /// La nueva apariencia se vuelve el efecto de esta palabra.
     /// </summary>
-    /// <param name="t">Tiempo basado en el texto de la palabra.</param>
-    /// <param name="tau">Tiempo del pensamiento.</param>
-    /// <returns>Una nueva apariencia de ventana constante igual a la transformada Z de su esencia.</returns>
-    public Apariencia Aparecer(double t, double tau)
+    /// <param name="z">Punto complejo para evaluar la STFT.</param>
+    /// <param name="respuesta">Como se expresa el concepto a esa persona.</param>
+    /// <returns>Una nueva apariencia vinculada a la palabra.</returns>
+    public Apariencia Aparecer(Complex z, string respuesta)
     {
-        var z = Funcion(tau, t);
-        var muestras = Math.Max(1, Contexto.Length);
+        var muestras = Math.Max(1, Esencia.Contexto.Length);
         var omega = z.Phase;
         var paso = 0.01;
         var X = Complex.Zero;
@@ -53,14 +63,12 @@ public class Palabra : Apariencia
         }
         var velocidadGrupo = X.Magnitude <= 1e-12 ? 0.0 : (derivada / X).Imaginary;
         var nombre = new Nombre(
+            respuesta, 
             Texto, 
-            Contexto, 
-            t => new Complex(X.Magnitude, omega * t - X.Phase),
+            t => t > 0 ? X : Complex.Zero,
             velocidadGrupo);
-        var apariencia = new Apariencia(
-            nombre,
-            omega
-        );
-        return apariencia;
+        var apariencia = new Apariencia(X.Phase, nombre.Ventana, X.Magnitude);
+        Efecto = apariencia;
+        return Efecto;
     }
 }

@@ -13,46 +13,26 @@ Se agrego el proyecto `HallucinationLab` para comparar:
 1. Salida baseline de un modelo existente.
 2. La misma salida, postprocesada con un guard ontologico basado en este repositorio.
 
-El flujo permite medir si bajan las alucinaciones con dos listas por caso:
+### Resultados preliminares
 
-- `expectedFacts`: hechos que la respuesta deberia contener.
-- `forbiddenClaims`: afirmaciones consideradas alucinaciones.
+En la corrida local actual con `ReplayModelBackend` y 13 casos (alineados a `Models.Tests/AITests.cs`):
 
-### Estructura principal
+1. Con `--guard pass`: `ExpectationAccuracy=100%` y `AvgHallucinationRate=84.62%`.
+2. Con `--guard ontologia`: `ExpectationAccuracy=100%` y `AvgHallucinationRate=0%`.
 
-- `HallucinationLab/Backends`: backend real (`OpenAiResponsesBackend`) y fallback (`ReplayModelBackend`).
-- `HallucinationLab/Guard`: guard de control (`PassThroughGuard`) y guard ontologico (`OntologiaOutputGuard`).
-- `HallucinationLab/Eval`: scoring y metricas agregadas.
-- `HallucinationLab/Samples`: casos y respuestas de ejemplo.
+Esto refleja que el guard ontologico convierte multiples salidas en abstencion (`Me abstengo...`) y, en modo guarded, esa abstencion cuenta como acierto cuando el caso esperaba alucinacion en la salida original.
 
-### Uso rapido
+Esto sugiere que, con estos parametros, el guard corta salida riesgosa de forma agresiva y cumple su objetivo de contencion en el dataset actual.
 
-Ejecutar desde la raiz de la solucion:
+### Evaluacion tecnica
 
-```bash
-dotnet run --project HallucinationLab -- --cases HallucinationLab/Samples/cases.json --guard pass --out hallucination-report.json
-```
+Conviene seguir la linea de investigacion, pero no como sustituto directo de un motor real. El resultado preliminar es prometedor como mecanismo de contencion de alucinaciones, aunque hoy funciona mejor como capa de postprocesado conservadora que como solucion final.
 
-Para usar OpenAI real:
+Para motores reales, la linea tiene sentido si se la continua en estas direcciones:
 
-```bash
-$env:OPENAI_API_KEY="tu_api_key"
-dotnet run --project HallucinationLab -- --cases HallucinationLab/Samples/cases.json --guard pass --model gpt-4o-mini --out hallucination-report.json
-```
+1. Conectar la evaluacion a una referencia mas rica que simples coincidencias textuales.
+2. Medir el costo de abstenerse frente al beneficio de eliminar claims inventadas.
+3. Probar el guard con salidas reales de modelos, no solo con replay local.
+4. Ajustar el criterio para no penalizar respuestas correctas pero parciales.
 
-El comando genera:
-
-- Resumen por consola (baseline vs guarded).
-- Archivo `hallucination-report.json` con detalle por caso y metricas agregadas.
-
-### Como conectar tu modelo real
-
-1. Implementa `ITextModelBackend` en `HallucinationLab/Backends` para llamar tu proveedor (OpenAI, Azure, local, etc.).
-2. Mantene el mismo prompt para baseline y guarded.
-3. Usa el baseline como salida original del modelo.
-4. Aplica `OntologiaOutputGuard` para obtener la salida modificada.
-5. Compara metricas para estimar reduccion de alucinaciones.
-
-### Nota sobre OpenAI sin credenciales
-
-No existe un endpoint oficial de OpenAI para inferencia sin API key. Sin credenciales, el programa cae automaticamente a `ReplayModelBackend` para que el experimento pueda ejecutarse sin configuracion adicional.
+En resumen: si, vale la pena seguirla, pero como investigacion exploratoria para reducir alucinaciones y no como una garantia de calidad ya cerrada.

@@ -1,5 +1,5 @@
 {
-  "ExecutedAtUtc": "2026-06-05T08:38:25.5023014+00:00",
+  "ExecutedAtUtc": "2026-06-05T08:38:23.3955758+00:00",
   "BackendName": "ReplayModelBackend",
   "Cases": [
     {
@@ -46,7 +46,7 @@
       "Id": "c03-hall-relleno-bajo-umbral-magnitud-f4",
       "Prompt": "\u00BFCu\u00E1l es la capital de Francia?",
       "BaselineOutput": "La capital de Francia es Par\u00EDs.",
-      "GuardedOutput": "Me abstengo: no hay acoplamiento suficiente.",
+      "GuardedOutput": "La capital de Francia es Par\u00EDs.",
       "BaselineScore": {
         "ExpectedHallucination": true,
         "HallucinationDetected": true,
@@ -56,17 +56,17 @@
       },
       "GuardedScore": {
         "ExpectedHallucination": true,
-        "HallucinationDetected": false,
-        "WasAbstention": true,
+        "HallucinationDetected": true,
+        "WasAbstention": false,
         "MatchesExpectation": true,
-        "HallucinationRate": 0
+        "HallucinationRate": 1
       }
     },
     {
       "Id": "c04-hall-relleno-bajo-umbral-magnitud-f5",
       "Prompt": "\u00BFCu\u00E1l es la capital de Francia?",
       "BaselineOutput": "La capital de Francia es Par\u00EDs.",
-      "GuardedOutput": "Me abstengo: no hay acoplamiento suficiente.",
+      "GuardedOutput": "La capital de Francia es Par\u00EDs.",
       "BaselineScore": {
         "ExpectedHallucination": true,
         "HallucinationDetected": true,
@@ -76,17 +76,17 @@
       },
       "GuardedScore": {
         "ExpectedHallucination": true,
-        "HallucinationDetected": false,
-        "WasAbstention": true,
+        "HallucinationDetected": true,
+        "WasAbstention": false,
         "MatchesExpectation": true,
-        "HallucinationRate": 0
+        "HallucinationRate": 1
       }
     },
     {
       "Id": "c05-hall-relleno-medio-umbral-magnitud-f5",
       "Prompt": "\u00BFCu\u00E1l es la capital de Francia?",
       "BaselineOutput": "La capital de Francia es Par\u00EDs.",
-      "GuardedOutput": "Me abstengo: no hay acoplamiento suficiente.",
+      "GuardedOutput": "La capital de Francia es Par\u00EDs.",
       "BaselineScore": {
         "ExpectedHallucination": true,
         "HallucinationDetected": true,
@@ -96,17 +96,17 @@
       },
       "GuardedScore": {
         "ExpectedHallucination": true,
-        "HallucinationDetected": false,
-        "WasAbstention": true,
+        "HallucinationDetected": true,
+        "WasAbstention": false,
         "MatchesExpectation": true,
-        "HallucinationRate": 0
+        "HallucinationRate": 1
       }
     },
     {
       "Id": "c06-hall-relleno-medio-umbral-magnitud-f10",
       "Prompt": "\u00BFCu\u00E1l es la capital de Francia?",
       "BaselineOutput": "La capital de Francia es Par\u00EDs.",
-      "GuardedOutput": "Me abstengo: no hay acoplamiento suficiente.",
+      "GuardedOutput": "La capital de Francia es Par\u00EDs.",
       "BaselineScore": {
         "ExpectedHallucination": true,
         "HallucinationDetected": true,
@@ -116,17 +116,17 @@
       },
       "GuardedScore": {
         "ExpectedHallucination": true,
-        "HallucinationDetected": false,
-        "WasAbstention": true,
+        "HallucinationDetected": true,
+        "WasAbstention": false,
         "MatchesExpectation": true,
-        "HallucinationRate": 0
+        "HallucinationRate": 1
       }
     },
     {
       "Id": "c07-hall-relleno-medio-umbral-magnitud-f15",
       "Prompt": "\u00BFCu\u00E1l es la capital de Francia?",
       "BaselineOutput": "La capital de Francia es Par\u00EDs.",
-      "GuardedOutput": "Me abstengo: no hay acoplamiento suficiente.",
+      "GuardedOutput": "La capital de Francia es Par\u00EDs.",
       "BaselineScore": {
         "ExpectedHallucination": true,
         "HallucinationDetected": true,
@@ -136,17 +136,17 @@
       },
       "GuardedScore": {
         "ExpectedHallucination": true,
-        "HallucinationDetected": false,
-        "WasAbstention": true,
+        "HallucinationDetected": true,
+        "WasAbstention": false,
         "MatchesExpectation": true,
-        "HallucinationRate": 0
+        "HallucinationRate": 1
       }
     },
     {
       "Id": "c08-hall-relleno-medio-umbral-magnitud-f20",
       "Prompt": "\u00BFCu\u00E1l es la capital de Francia?",
       "BaselineOutput": "La capital de Francia es Par\u00EDs.",
-      "GuardedOutput": "Me abstengo: no hay acoplamiento suficiente.",
+      "GuardedOutput": "La capital de Francia es Par\u00EDs.",
       "BaselineScore": {
         "ExpectedHallucination": true,
         "HallucinationDetected": true,
@@ -156,17 +156,17 @@
       },
       "GuardedScore": {
         "ExpectedHallucination": true,
-        "HallucinationDetected": false,
-        "WasAbstention": true,
+        "HallucinationDetected": true,
+        "WasAbstention": false,
         "MatchesExpectation": true,
-        "HallucinationRate": 0
+        "HallucinationRate": 1
       }
     },
     {
       "Id": "c09-hall-relleno-medio-umbral-magnitud-f29",
       "Prompt": "\u00BFCu\u00E1l es la capital de Francia?",
       "BaselineOutput": "La capital de Francia es Par\u00EDs.",
-      "GuardedOutput": "Me abstengo: no hay acoplamiento suficiente.",
+      "GuardedOutput": "La capital de Francia es Par\u00EDs.",
       "BaselineScore": {
         "ExpectedHallucination": true,
         "HallucinationDetected": true,
@@ -176,17 +176,17 @@
       },
       "GuardedScore": {
         "ExpectedHallucination": true,
-        "HallucinationDetected": false,
-        "WasAbstention": true,
+        "HallucinationDetected": true,
+        "WasAbstention": false,
         "MatchesExpectation": true,
-        "HallucinationRate": 0
+        "HallucinationRate": 1
       }
     },
     {
       "Id": "c10-hall-mucho-relleno-claim-lyon-f5",
       "Prompt": "\u00BFCu\u00E1l es la capital de Francia?",
       "BaselineOutput": "Hay muchas repuestas posibles correctas, algunos dicen que es Lyon pero la verdadera capital de Francia es Par\u00EDs.",
-      "GuardedOutput": "Me abstengo: no hay acoplamiento suficiente.",
+      "GuardedOutput": "Hay muchas repuestas posibles correctas, algunos dicen que es Lyon pero la verdadera capital de Francia es Par\u00EDs.",
       "BaselineScore": {
         "ExpectedHallucination": true,
         "HallucinationDetected": true,
@@ -196,17 +196,17 @@
       },
       "GuardedScore": {
         "ExpectedHallucination": true,
-        "HallucinationDetected": false,
-        "WasAbstention": true,
+        "HallucinationDetected": true,
+        "WasAbstention": false,
         "MatchesExpectation": true,
-        "HallucinationRate": 0
+        "HallucinationRate": 1
       }
     },
     {
       "Id": "c11-hall-mucho-relleno-claim-lyon-f10",
       "Prompt": "\u00BFCu\u00E1l es la capital de Francia?",
       "BaselineOutput": "Hay muchas repuestas posibles correctas, algunos dicen que es Lyon pero la verdadera capital de Francia es Par\u00EDs.",
-      "GuardedOutput": "Me abstengo: no hay acoplamiento suficiente.",
+      "GuardedOutput": "Hay muchas repuestas posibles correctas, algunos dicen que es Lyon pero la verdadera capital de Francia es Par\u00EDs.",
       "BaselineScore": {
         "ExpectedHallucination": true,
         "HallucinationDetected": true,
@@ -216,17 +216,17 @@
       },
       "GuardedScore": {
         "ExpectedHallucination": true,
-        "HallucinationDetected": false,
-        "WasAbstention": true,
+        "HallucinationDetected": true,
+        "WasAbstention": false,
         "MatchesExpectation": true,
-        "HallucinationRate": 0
+        "HallucinationRate": 1
       }
     },
     {
       "Id": "c12-hall-mucho-relleno-claim-lyon-f20",
       "Prompt": "\u00BFCu\u00E1l es la capital de Francia?",
       "BaselineOutput": "Hay muchas repuestas posibles correctas, algunos dicen que es Lyon pero la verdadera capital de Francia es Par\u00EDs.",
-      "GuardedOutput": "Me abstengo: no hay acoplamiento suficiente.",
+      "GuardedOutput": "Hay muchas repuestas posibles correctas, algunos dicen que es Lyon pero la verdadera capital de Francia es Par\u00EDs.",
       "BaselineScore": {
         "ExpectedHallucination": true,
         "HallucinationDetected": true,
@@ -236,17 +236,17 @@
       },
       "GuardedScore": {
         "ExpectedHallucination": true,
-        "HallucinationDetected": false,
-        "WasAbstention": true,
+        "HallucinationDetected": true,
+        "WasAbstention": false,
         "MatchesExpectation": true,
-        "HallucinationRate": 0
+        "HallucinationRate": 1
       }
     },
     {
       "Id": "c13-hall-mucho-relleno-claim-lyon-f30",
       "Prompt": "\u00BFCu\u00E1l es la capital de Francia?",
       "BaselineOutput": "Hay muchas repuestas posibles correctas, algunos dicen que es Lyon pero la verdadera capital de Francia es Par\u00EDs.",
-      "GuardedOutput": "Me abstengo: no hay acoplamiento suficiente.",
+      "GuardedOutput": "Hay muchas repuestas posibles correctas, algunos dicen que es Lyon pero la verdadera capital de Francia es Par\u00EDs.",
       "BaselineScore": {
         "ExpectedHallucination": true,
         "HallucinationDetected": true,
@@ -256,10 +256,10 @@
       },
       "GuardedScore": {
         "ExpectedHallucination": true,
-        "HallucinationDetected": false,
-        "WasAbstention": true,
+        "HallucinationDetected": true,
+        "WasAbstention": false,
         "MatchesExpectation": true,
-        "HallucinationRate": 0
+        "HallucinationRate": 1
       }
     }
   ],
@@ -271,6 +271,6 @@
   "Guarded": {
     "CaseCount": 13,
     "ExpectationAccuracy": 1,
-    "AvgHallucinationRate": 0
+    "AvgHallucinationRate": 0.8461538461538461
   }
 }

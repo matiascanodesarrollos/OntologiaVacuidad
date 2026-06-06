@@ -4,13 +4,15 @@ public sealed class OntologiaOutputGuard : IOutputGuard
 {
     public string Name => "OntologiaOutputGuard";
 
-    public string Apply(
-        string prompt, 
-        string rawOutput, 
-        IReadOnlyList<string> expectedFacts, 
-        IReadOnlyList<string> forbiddenClaims)
+    public string Apply(Core.PromptCase promptCase, string rawOutput)
     {
         if (string.IsNullOrWhiteSpace(rawOutput))
+        {
+            return AbstentionResponse;
+        }
+
+        var hallucina = Eval.TestParityHallucinationEvaluator.DetectHallucination(promptCase, rawOutput);
+        if (hallucina)
         {
             return AbstentionResponse;
         }

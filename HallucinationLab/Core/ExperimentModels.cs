@@ -3,9 +3,13 @@ namespace HallucinationLab.Core;
 public sealed class PromptCase
 {
     public string Id { get; set; } = string.Empty;
+    public string Truth { get; set; } = string.Empty;
     public string Prompt { get; set; } = string.Empty;
-    public List<string> ExpectedFacts { get; set; } = new();
-    public List<string> ForbiddenClaims { get; set; } = new();
+    public double ToleranciaDefase { get; set; }
+    public double FactorUmbralMagnitud { get; set; }
+    public bool ExpectedHallucination { get; set; }
+    public List<double> ReferenciaPromptVerdad { get; set; } = new();
+    public List<double> ReferenciaRespuestaPrompt { get; set; } = new();
 }
 
 public sealed class CaseResult

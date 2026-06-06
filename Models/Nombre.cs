@@ -43,17 +43,16 @@ public class Nombre
     }
 
     /// <summary>
-    /// Crea una apariencia para este nombre y de frecuencia angular igual a la suma de las frecuencias de Fourier.
+    /// Crea una palabra para este nombre de frecuencia angular igual a la suma de las frecuencias de Fourier.
     /// </summary>
-    /// <returns>La apariencia construida.</returns>
-    public Apariencia Mostrarse()
+    /// <param name="designacion">Designación elegida para expresar el concepto.</param>
+    /// <param name="texto">Texto para la palabra.</param>
+    /// <returns>La palabra construida.</returns>
+    public Palabra Mostrarse(Apariencia apariencia)
     {
-        var apariencia = new Apariencia(
-            this,
-            Fourier.Sum(p => p.Key)
-        );        
-        return apariencia;
-    }
+        var designacion = new Designacion(apariencia, this);
+        return designacion.Esencia;
+    }    
 
     /// <summary>
     /// Devuelve una representación textual simple del nombre.

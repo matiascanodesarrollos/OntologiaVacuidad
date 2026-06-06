@@ -1,23 +1,57 @@
 using System;
+using System.Linq;
 using System.Numerics;
 
-public class Apariencia : Nombre
+public class Apariencia
 {
+    public Guid Id { get; }
+    public double FrecuenciaAngular { get; }
     public Func<double, Complex> Funcion { get; }
-    public Palabra Causa { get; protected set; }
-    public Designacion Esencia { get; }
-    public double Amplitud { get; } 
+    public Palabra Causa { get; internal set; }
 
-    internal Apariencia(
-        Nombre nombre,
-        double omega)
-        : base(nombre)
+    internal Apariencia(Nombre nombre)
     {
-        Amplitud = Fourier[omega].Magnitude;
-        Funcion = t => Complex.FromPolarCoordinates(Amplitud, omega * t);
-        Esencia = new Designacion(
-            this, 
-            this);
+        Id = Guid.NewGuid();
+        FrecuenciaAngular = nombre.Fourier.Sum(p => p.Key);
+        var amplitud = new Lazy<Complex>(() => CalcularAmplitud(nombre, FrecuenciaAngular));
+        Funcion = t => 
+            amplitud.Value * Complex.FromPolarCoordinates(1, FrecuenciaAngular * t);
+    }
+
+    internal Apariencia(double frecuenciaAngular, Func<double, Complex> funcion)
+    {
+        Id = Guid.NewGuid();
+        FrecuenciaAngular = frecuenciaAngular;
+        Funcion = funcion;
+    }
+
+    public Apariencia(double frecuenciaAngular, Func<double, Complex> funcion, double energia)
+    {
+        Id = Guid.NewGuid();
+        FrecuenciaAngular = frecuenciaAngular;
+        Funcion = funcion;
+        Causa = Palabra.Gozo(energia);
+    }
+
+    /// <summary>
+    /// Calcula la amplitud como la integral discreta de la ventana sobre el contexto.
+    /// Sobreescribir para definir otro criterio de amplitud.
+    /// </summary>
+    /// <param name="nombre">Nombre que aporta la ventana de análisis.</param>
+    /// <param name="omega">Frecuencia angular de análisis.</param>
+    /// <returns>El integral complejo de la ventana.</returns>
+    public virtual Complex CalcularAmplitud(Nombre nombre, double omega)
+    {
+        var muestras = Math.Max(1, nombre.Texto.Length);
+        var integral = Complex.Zero;
+
+        // Integral discreta con paso temporal unitario por caracter del contexto.
+        for (var t = 0; t < muestras; t++)
+        {
+            integral += nombre.Ventana(t) * Complex.FromPolarCoordinates(1.0, -omega * t);
+        }
+
+        return integral;
     }
 
     /// <summary>
