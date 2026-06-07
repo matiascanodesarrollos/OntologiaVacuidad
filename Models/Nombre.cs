@@ -92,11 +92,12 @@ public class Nombre
     protected virtual Dictionary<double, Complex> CalcularTransformadaFourier()
     {
         var totalMuestras = Math.Max(1, Contexto.Length);
-        var resultado = new (double Omega, Complex Valor)[totalMuestras];
+        var omegas = Contexto.GroupBy(c => c + 1);
+        var resultado = new Dictionary<double, Complex>();
 
-        for (int k = 0; k < totalMuestras; k++)
+        foreach(var grupo in omegas)
         {
-            var omega = 2.0 * Math.PI * k / totalMuestras;
+            var omega = grupo.Key;
             var suma = Complex.Zero;
 
             for (int t = 0; t < totalMuestras; t++)
@@ -104,10 +105,9 @@ public class Nombre
                 var muestra = Ventana(t);
                 suma += muestra * Complex.FromPolarCoordinates(1.0, -omega * t);
             }
-
-            resultado[k] = (omega, suma);
+            resultado.Add(omega, suma);
         }
 
-        return resultado.ToDictionary(p => p.Omega, p => p.Valor);
+        return resultado;
     }
 }

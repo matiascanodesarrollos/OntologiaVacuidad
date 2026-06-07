@@ -60,23 +60,7 @@ public static class TestParityHallucinationEvaluator
             funcionTemporalRespuesta,
             1.0);
 
-        var aparienciaPregunta = new Apariencia(
-            nombrePregunta.Fourier.Sum(p => p.Key),
-            t =>
-            {
-                if (t == 0)
-                {
-                    return new Complex(energia, 0.0);
-                }
-
-                if (t > prompt.Length || t < 0)
-                {
-                    return Complex.Zero;
-                }
-
-                return new Complex(energia * Math.Exp(-t), energia * t);
-            },
-            energia);
+        var aparienciaPregunta = new Apariencia(nombrePregunta);
 
         var palabra = nombrePregunta.Mostrarse(aparienciaPregunta);
 

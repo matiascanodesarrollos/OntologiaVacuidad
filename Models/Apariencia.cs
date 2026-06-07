@@ -8,14 +8,15 @@ public class Apariencia
     public double FrecuenciaAngular { get; }
     public Func<double, Complex> Funcion { get; }
     public Palabra Causa { get; internal set; }
+    public Lazy<Complex> Amplitud { get; }
 
-    internal Apariencia(Nombre nombre)
+    public Apariencia(Nombre nombre)
     {
         Id = Guid.NewGuid();
         FrecuenciaAngular = nombre.Fourier.Sum(p => p.Key);
-        var amplitud = new Lazy<Complex>(() => CalcularAmplitud(nombre, FrecuenciaAngular));
+        Amplitud = new Lazy<Complex>(() => CalcularAmplitud(nombre, FrecuenciaAngular));
         Funcion = t => 
-            amplitud.Value * Complex.FromPolarCoordinates(1, FrecuenciaAngular * t);
+            Amplitud.Value * Complex.FromPolarCoordinates(1, FrecuenciaAngular * t);
     }
 
     internal Apariencia(double frecuenciaAngular, Func<double, Complex> funcion)
@@ -25,7 +26,7 @@ public class Apariencia
         Funcion = funcion;
     }
 
-    public Apariencia(double frecuenciaAngular, Func<double, Complex> funcion, double energia)
+    internal Apariencia(double frecuenciaAngular, Func<double, Complex> funcion, double energia)
     {
         Id = Guid.NewGuid();
         FrecuenciaAngular = frecuenciaAngular;

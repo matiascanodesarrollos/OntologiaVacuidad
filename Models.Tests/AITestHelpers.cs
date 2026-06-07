@@ -1,239 +1,106 @@
-using System.Numerics;
-
 namespace Models.Tests;
 
-internal static class AITestHelpers
+public class AITestHelpers
 {
-    internal static (bool alucina, string detalleFallo) EvaluarAlucina(
+    private readonly AITestDiagnostics _diagnostics = new AITestDiagnostics();
+
+    public (bool alucina, string detalleFallo) EvaluarAlucina(
         string verdad,
         string prompt,
         string respuesta,
         double[] referenciaPromptVerdad,
         double[] referenciaRespuestaPrompt,
-        double toleranciaDefase,
+        double umbralPlv,
         double factorUmbralMagnitud,
         double energia,
         bool esperado)
     {
+        var contextoBuilder = new ContextBuilder(verdad)
+                .ConPrompt(prompt, referenciaPromptVerdad, velocidadGrupo: 1.0)
+                .ConRespuesta(respuesta, referenciaRespuestaPrompt, velocidadGrupo: 1.0);
+
         var alucina = Alucina(
-            verdad,
-            prompt,
-            respuesta,
-            referenciaPromptVerdad,
-            referenciaRespuestaPrompt,
-            toleranciaDefase,
+            contextoBuilder,
+            umbralPlv,
             factorUmbralMagnitud,
             energia,
             out var detalleFallo);
 
         if (alucina != esperado)
         {
-            var (palabra, designacion, aparienciaPregunta) = CrearContextoDiagnostico(
-                verdad,
-                prompt,
-                respuesta,
-                referenciaPromptVerdad,
-                referenciaRespuestaPrompt,
-                energia);
-
-            var carpetaDiagnostico = AITestDiagnostics.GenerarDiagnosticos(
-                palabra,
-                designacion,
-                aparienciaPregunta,
-                prompt.Length,
-                respuesta.Length,
-                toleranciaDefase,
-                energia);
+            var carpetaDiagnostico = _diagnostics.GenerarDiagnosticos(
+                contextoBuilder);
             detalleFallo = $"{detalleFallo} | Diagnostico={carpetaDiagnostico}";
         }
 
         return (alucina, detalleFallo);
     }
 
-    internal static bool Alucina(
-        string verdad,
-        string prompt,
-        string respuesta,
-        double[] referenciaPromptVerdad,
-        double[] referenciaRespuestaPrompt,
-        double toleranciaDefase,
+    private bool Alucina(
+        ContextBuilder contextoBuilder,
+        double umbralPlv,
         double factorUmbralMagnitud,
         double energia,
         out string detalleFallo)
     {
-        Func<double, Complex> funcionTemporalPregunta = t =>
+        var magnitudMaxima = energia;
+        var magnitudMinima = energia / factorUmbralMagnitud;
+        detalleFallo = $"Sin incumplimiento de umbrales. Magnitud Maxima={magnitudMaxima:F6}, Magnitud Minima={magnitudMinima:F6}";
+
+        var amplitudRespuesta = contextoBuilder.AparienciaRespuesta.Amplitud.Value.Magnitude;
+        if (amplitudRespuesta > magnitudMaxima || amplitudRespuesta < magnitudMinima)
         {
-            var indice = (int)t;
-            if (indice >= 0 && indice < referenciaPromptVerdad.Length)
-            {
-                return referenciaPromptVerdad[indice];
-            }
-
-            return 0;
-        };
-
-        var nombrePregunta = new Nombre(
-            prompt,
-            verdad,
-            funcionTemporalPregunta,
-            1.0);
-
-        Func<double, Complex> funcionTemporalRespuesta = t =>
+            detalleFallo = $"Incumplimiento en magnitud. AmplitudRespuesta={amplitudRespuesta:F6} fuera del rango [{magnitudMinima:F6}, {magnitudMaxima:F6}]";
+            return true;
+        }
+        
+        if (!EstaArmonizada(
+            contextoBuilder,
+            umbralPlv,
+            out var detalleArmonia))
         {
-            var indice = (int)t;
-            if (indice >= 0 && indice < referenciaRespuestaPrompt.Length)
-            {
-                return referenciaRespuestaPrompt[indice];
-            }
-
-            return 0;
-        };
-
-        var nombreRespuesta = new Nombre(
-            respuesta,
-            prompt,
-            funcionTemporalRespuesta,
-            1.0);
-
-        var aparienciaPregunta = new Apariencia(
-            nombrePregunta.Fourier.Sum(p => p.Key),
-            t =>
-            {
-                if (t == 0)
-                {
-                    return new Complex(energia, 0.0);
-                }
-
-                if (t > prompt.Length || t < 0)
-                {
-                    return Complex.Zero;
-                }
-
-                return new Complex(energia * Math.Exp(-t), energia * t);
-            },
-            energia);
-
-        var palabra = nombrePregunta.Mostrarse(aparienciaPregunta);
-
-        var designacion = new Designacion(
-            aparienciaPregunta,
-            nombreRespuesta);
-
-        var alucina = false;
-        detalleFallo = $"Sin incumplimiento de umbrales. Fase={toleranciaDefase:F6}, Magnitud={energia:F6}";
-        foreach (var omega in designacion.Fourier.Keys)
-        {
-            for (int tau = 0; tau < prompt.Length; tau++)
-            {
-                for (int t = 0; t < respuesta.Length; t++)
-                {
-                    var valorPalabra = palabra.Funcion(tau, t);
-                    var valorApariencia = aparienciaPregunta.Funcion(t);
-                    var valorDesignacion = designacion.STFT(tau, omega);
-                    var deltaMagnitud = Math.Abs(valorApariencia.Magnitude - valorPalabra.Magnitude);
-                    var umbralMagnitud = energia * factorUmbralMagnitud;
-                    if (deltaMagnitud > umbralMagnitud)
-                    {
-                        alucina = true;
-                        detalleFallo = $"Magnitud: delta={deltaMagnitud:F6} > umbral={umbralMagnitud:F6}, apariencia={valorApariencia.Magnitude:F2}, palabra={valorPalabra.Magnitude:F2}, t={t}, tau={tau}, omega={omega:F6}";
-                        break;
-                    }
-
-                    var umbralMagnitudFase = Math.Max(1e-6, energia * 0.01);
-                    if (!double.IsFinite(valorApariencia.Magnitude)
-                        || !double.IsFinite(valorPalabra.Magnitude)
-                        || valorApariencia.Magnitude <= umbralMagnitudFase
-                        || valorPalabra.Magnitude <= umbralMagnitudFase)
-                    {
-                        continue;
-                    }
-
-                    var faseApariencia = Math.Abs(valorApariencia.Phase);
-                    var faseDesignacion = Math.Abs(valorDesignacion.Phase);
-                    var deltaFase = faseApariencia - faseDesignacion;
-                    if (deltaFase > toleranciaDefase)
-                    {
-                        alucina = true;
-                        detalleFallo = $"Fase: delta={deltaFase:F6} > umbral={toleranciaDefase:F6}, apariencia={faseApariencia:F2}, designacion={faseDesignacion:F2}, t={t}, omega={omega:F6}";
-                        break;
-                    }
-                }
-            }
-
-            if (alucina)
-            {
-                break;
-            }
+            detalleFallo = detalleArmonia;
+            return true;
         }
 
-        return alucina;
+        return false;
     }
 
-    internal static (Palabra palabra, Designacion designacion, Apariencia aparienciaPregunta) CrearContextoDiagnostico(
-        string verdad,
-        string prompt,
-        string respuesta,
-        double[] referenciaPromptVerdad,
-        double[] referenciaRespuestaPrompt,
-        double energia)
+    private bool EstaArmonizada(
+        ContextBuilder contextoBuilder,
+        double umbralPlv,
+        out string detalleArmonia)
     {
-        Func<double, Complex> funcionTemporalPregunta = t =>
+        var plv = CalcularPlv(contextoBuilder);
+        var armoniza = plv >= umbralPlv;
+
+        detalleArmonia =
+            $"Armonizacion frecuencial insuficiente. " +
+            $"PLV={plv:F6}, umbralPLV={umbralPlv:F2}.";
+
+        return armoniza;
+    }
+
+    private double CalcularPlv(ContextBuilder contextoBuilder)
+    {
+        var tMax = Math.Max(contextoBuilder.Prompt.Length, contextoBuilder.Respuesta.Length);
+        if (tMax <= 0)
         {
-            var indice = (int)t;
-            if (indice >= 0 && indice < referenciaPromptVerdad.Length)
-            {
-                return referenciaPromptVerdad[indice];
-            }
+            return 0.0;
+        }
 
-            return 0;
-        };
-
-        var nombrePregunta = new Nombre(
-            prompt,
-            verdad,
-            funcionTemporalPregunta,
-            1.0);
-
-        Func<double, Complex> funcionTemporalRespuesta = t =>
+        var sumaCos = 0.0;
+        var sumaSin = 0.0;
+        for (var t = 0; t < tMax; t++)
         {
-            var indice = (int)t;
-            if (indice >= 0 && indice < referenciaRespuestaPrompt.Length)
-            {
-                return referenciaRespuestaPrompt[indice];
-            }
+            var fasePromt = contextoBuilder.AparienciaPromt.Funcion(t).Phase;
+            var faseRespuesta = contextoBuilder.AparienciaRespuesta.Funcion(t).Phase;
+            var deltaFase = fasePromt - faseRespuesta;
 
-            return 0;
-        };
+            sumaCos += Math.Cos(deltaFase);
+            sumaSin += Math.Sin(deltaFase);
+        }
 
-        var nombreRespuesta = new Nombre(
-            respuesta,
-            prompt,
-            funcionTemporalRespuesta,
-            1.0);
-
-        var aparienciaPregunta = new Apariencia(
-            nombrePregunta.Fourier.Sum(p => p.Key),
-            t =>
-            {
-                if (t == 0)
-                {
-                    return new Complex(energia, 0.0);
-                }
-
-                if (t > prompt.Length || t < 0)
-                {
-                    return Complex.Zero;
-                }
-
-                return new Complex(energia * Math.Exp(-t), energia * t);
-            },
-            energia);
-
-        var palabra = nombrePregunta.Mostrarse(aparienciaPregunta);
-        var designacion = new Designacion(
-            aparienciaPregunta,
-            nombreRespuesta);
-
-        return (palabra, designacion, aparienciaPregunta);
+        return Math.Sqrt((sumaCos * sumaCos) + (sumaSin * sumaSin)) / tMax;
     }
 }

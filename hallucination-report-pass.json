@@ -1,5 +1,5 @@
 {
-  "ExecutedAtUtc": "2026-06-05T08:38:23.3955758+00:00",
+  "ExecutedAtUtc": "2026-06-05T08:47:43.8193008+00:00",
   "BackendName": "ReplayModelBackend",
   "Cases": [
     {
@@ -9,6 +9,7 @@
       "GuardedOutput": "Par\u00EDs",
       "BaselineScore": {
         "ExpectedHallucination": false,
+        "ExpectedAbstention": false,
         "HallucinationDetected": false,
         "WasAbstention": false,
         "MatchesExpectation": true,
@@ -16,6 +17,7 @@
       },
       "GuardedScore": {
         "ExpectedHallucination": false,
+        "ExpectedAbstention": false,
         "HallucinationDetected": false,
         "WasAbstention": false,
         "MatchesExpectation": true,
@@ -29,6 +31,7 @@
       "GuardedOutput": "Par\u00EDs",
       "BaselineScore": {
         "ExpectedHallucination": false,
+        "ExpectedAbstention": false,
         "HallucinationDetected": false,
         "WasAbstention": false,
         "MatchesExpectation": true,
@@ -36,6 +39,7 @@
       },
       "GuardedScore": {
         "ExpectedHallucination": false,
+        "ExpectedAbstention": false,
         "HallucinationDetected": false,
         "WasAbstention": false,
         "MatchesExpectation": true,
@@ -49,16 +53,18 @@
       "GuardedOutput": "La capital de Francia es Par\u00EDs.",
       "BaselineScore": {
         "ExpectedHallucination": true,
+        "ExpectedAbstention": false,
         "HallucinationDetected": true,
         "WasAbstention": false,
         "MatchesExpectation": true,
         "HallucinationRate": 1
       },
       "GuardedScore": {
-        "ExpectedHallucination": true,
+        "ExpectedHallucination": false,
+        "ExpectedAbstention": true,
         "HallucinationDetected": true,
         "WasAbstention": false,
-        "MatchesExpectation": true,
+        "MatchesExpectation": false,
         "HallucinationRate": 1
       }
     },
@@ -69,16 +75,18 @@
       "GuardedOutput": "La capital de Francia es Par\u00EDs.",
       "BaselineScore": {
         "ExpectedHallucination": true,
+        "ExpectedAbstention": false,
         "HallucinationDetected": true,
         "WasAbstention": false,
         "MatchesExpectation": true,
         "HallucinationRate": 1
       },
       "GuardedScore": {
-        "ExpectedHallucination": true,
+        "ExpectedHallucination": false,
+        "ExpectedAbstention": true,
         "HallucinationDetected": true,
         "WasAbstention": false,
-        "MatchesExpectation": true,
+        "MatchesExpectation": false,
         "HallucinationRate": 1
       }
     },
@@ -89,16 +97,18 @@
       "GuardedOutput": "La capital de Francia es Par\u00EDs.",
       "BaselineScore": {
         "ExpectedHallucination": true,
+        "ExpectedAbstention": false,
         "HallucinationDetected": true,
         "WasAbstention": false,
         "MatchesExpectation": true,
         "HallucinationRate": 1
       },
       "GuardedScore": {
-        "ExpectedHallucination": true,
+        "ExpectedHallucination": false,
+        "ExpectedAbstention": true,
         "HallucinationDetected": true,
         "WasAbstention": false,
-        "MatchesExpectation": true,
+        "MatchesExpectation": false,
         "HallucinationRate": 1
       }
     },
@@ -109,16 +119,18 @@
       "GuardedOutput": "La capital de Francia es Par\u00EDs.",
       "BaselineScore": {
         "ExpectedHallucination": true,
+        "ExpectedAbstention": false,
         "HallucinationDetected": true,
         "WasAbstention": false,
         "MatchesExpectation": true,
         "HallucinationRate": 1
       },
       "GuardedScore": {
-        "ExpectedHallucination": true,
+        "ExpectedHallucination": false,
+        "ExpectedAbstention": true,
         "HallucinationDetected": true,
         "WasAbstention": false,
-        "MatchesExpectation": true,
+        "MatchesExpectation": false,
         "HallucinationRate": 1
       }
     },
@@ -129,16 +141,18 @@
       "GuardedOutput": "La capital de Francia es Par\u00EDs.",
       "BaselineScore": {
         "ExpectedHallucination": true,
+        "ExpectedAbstention": false,
         "HallucinationDetected": true,
         "WasAbstention": false,
         "MatchesExpectation": true,
         "HallucinationRate": 1
       },
       "GuardedScore": {
-        "ExpectedHallucination": true,
+        "ExpectedHallucination": false,
+        "ExpectedAbstention": true,
         "HallucinationDetected": true,
         "WasAbstention": false,
-        "MatchesExpectation": true,
+        "MatchesExpectation": false,
         "HallucinationRate": 1
       }
     },
@@ -149,16 +163,18 @@
       "GuardedOutput": "La capital de Francia es Par\u00EDs.",
       "BaselineScore": {
         "ExpectedHallucination": true,
+        "ExpectedAbstention": false,
         "HallucinationDetected": true,
         "WasAbstention": false,
         "MatchesExpectation": true,
         "HallucinationRate": 1
       },
       "GuardedScore": {
-        "ExpectedHallucination": true,
+        "ExpectedHallucination": false,
+        "ExpectedAbstention": true,
         "HallucinationDetected": true,
         "WasAbstention": false,
-        "MatchesExpectation": true,
+        "MatchesExpectation": false,
         "HallucinationRate": 1
       }
     },
@@ -169,16 +185,18 @@
       "GuardedOutput": "La capital de Francia es Par\u00EDs.",
       "BaselineScore": {
         "ExpectedHallucination": true,
+        "ExpectedAbstention": false,
         "HallucinationDetected": true,
         "WasAbstention": false,
         "MatchesExpectation": true,
         "HallucinationRate": 1
       },
       "GuardedScore": {
-        "ExpectedHallucination": true,
+        "ExpectedHallucination": false,
+        "ExpectedAbstention": true,
         "HallucinationDetected": true,
         "WasAbstention": false,
-        "MatchesExpectation": true,
+        "MatchesExpectation": false,
         "HallucinationRate": 1
       }
     },
@@ -189,16 +207,18 @@
       "GuardedOutput": "Hay muchas repuestas posibles correctas, algunos dicen que es Lyon pero la verdadera capital de Francia es Par\u00EDs.",
       "BaselineScore": {
         "ExpectedHallucination": true,
+        "ExpectedAbstention": false,
         "HallucinationDetected": true,
         "WasAbstention": false,
         "MatchesExpectation": true,
         "HallucinationRate": 1
       },
       "GuardedScore": {
-        "ExpectedHallucination": true,
+        "ExpectedHallucination": false,
+        "ExpectedAbstention": true,
         "HallucinationDetected": true,
         "WasAbstention": false,
-        "MatchesExpectation": true,
+        "MatchesExpectation": false,
         "HallucinationRate": 1
       }
     },
@@ -209,16 +229,18 @@
       "GuardedOutput": "Hay muchas repuestas posibles correctas, algunos dicen que es Lyon pero la verdadera capital de Francia es Par\u00EDs.",
       "BaselineScore": {
         "ExpectedHallucination": true,
+        "ExpectedAbstention": false,
         "HallucinationDetected": true,
         "WasAbstention": false,
         "MatchesExpectation": true,
         "HallucinationRate": 1
       },
       "GuardedScore": {
-        "ExpectedHallucination": true,
+        "ExpectedHallucination": false,
+        "ExpectedAbstention": true,
         "HallucinationDetected": true,
         "WasAbstention": false,
-        "MatchesExpectation": true,
+        "MatchesExpectation": false,
         "HallucinationRate": 1
       }
     },
@@ -229,16 +251,18 @@
       "GuardedOutput": "Hay muchas repuestas posibles correctas, algunos dicen que es Lyon pero la verdadera capital de Francia es Par\u00EDs.",
       "BaselineScore": {
         "ExpectedHallucination": true,
+        "ExpectedAbstention": false,
         "HallucinationDetected": true,
         "WasAbstention": false,
         "MatchesExpectation": true,
         "HallucinationRate": 1
       },
       "GuardedScore": {
-        "ExpectedHallucination": true,
+        "ExpectedHallucination": false,
+        "ExpectedAbstention": true,
         "HallucinationDetected": true,
         "WasAbstention": false,
-        "MatchesExpectation": true,
+        "MatchesExpectation": false,
         "HallucinationRate": 1
       }
     },
@@ -249,16 +273,18 @@
       "GuardedOutput": "Hay muchas repuestas posibles correctas, algunos dicen que es Lyon pero la verdadera capital de Francia es Par\u00EDs.",
       "BaselineScore": {
         "ExpectedHallucination": true,
+        "ExpectedAbstention": false,
         "HallucinationDetected": true,
         "WasAbstention": false,
         "MatchesExpectation": true,
         "HallucinationRate": 1
       },
       "GuardedScore": {
-        "ExpectedHallucination": true,
+        "ExpectedHallucination": false,
+        "ExpectedAbstention": true,
         "HallucinationDetected": true,
         "WasAbstention": false,
-        "MatchesExpectation": true,
+        "MatchesExpectation": false,
         "HallucinationRate": 1
       }
     }
@@ -270,7 +296,7 @@
   },
   "Guarded": {
     "CaseCount": 13,
-    "ExpectationAccuracy": 1,
+    "ExpectationAccuracy": 0.15384615384615385,
     "AvgHallucinationRate": 0.8461538461538461
   }
 }

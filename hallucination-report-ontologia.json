@@ -1,5 +1,5 @@
 {
-  "ExecutedAtUtc": "2026-06-05T08:38:25.5023014+00:00",
+  "ExecutedAtUtc": "2026-06-05T08:47:45.977795+00:00",
   "BackendName": "ReplayModelBackend",
   "Cases": [
     {
@@ -9,6 +9,7 @@
       "GuardedOutput": "Par\u00EDs",
       "BaselineScore": {
         "ExpectedHallucination": false,
+        "ExpectedAbstention": false,
         "HallucinationDetected": false,
         "WasAbstention": false,
         "MatchesExpectation": true,
@@ -16,6 +17,7 @@
       },
       "GuardedScore": {
         "ExpectedHallucination": false,
+        "ExpectedAbstention": false,
         "HallucinationDetected": false,
         "WasAbstention": false,
         "MatchesExpectation": true,
@@ -29,6 +31,7 @@
       "GuardedOutput": "Par\u00EDs",
       "BaselineScore": {
         "ExpectedHallucination": false,
+        "ExpectedAbstention": false,
         "HallucinationDetected": false,
         "WasAbstention": false,
         "MatchesExpectation": true,
@@ -36,6 +39,7 @@
       },
       "GuardedScore": {
         "ExpectedHallucination": false,
+        "ExpectedAbstention": false,
         "HallucinationDetected": false,
         "WasAbstention": false,
         "MatchesExpectation": true,
@@ -49,13 +53,15 @@
       "GuardedOutput": "Me abstengo: no hay acoplamiento suficiente.",
       "BaselineScore": {
         "ExpectedHallucination": true,
+        "ExpectedAbstention": false,
         "HallucinationDetected": true,
         "WasAbstention": false,
         "MatchesExpectation": true,
         "HallucinationRate": 1
       },
       "GuardedScore": {
-        "ExpectedHallucination": true,
+        "ExpectedHallucination": false,
+        "ExpectedAbstention": true,
         "HallucinationDetected": false,
         "WasAbstention": true,
         "MatchesExpectation": true,
@@ -69,13 +75,15 @@
       "GuardedOutput": "Me abstengo: no hay acoplamiento suficiente.",
       "BaselineScore": {
         "ExpectedHallucination": true,
+        "ExpectedAbstention": false,
         "HallucinationDetected": true,
         "WasAbstention": false,
         "MatchesExpectation": true,
         "HallucinationRate": 1
       },
       "GuardedScore": {
-        "ExpectedHallucination": true,
+        "ExpectedHallucination": false,
+        "ExpectedAbstention": true,
         "HallucinationDetected": false,
         "WasAbstention": true,
         "MatchesExpectation": true,
@@ -89,13 +97,15 @@
       "GuardedOutput": "Me abstengo: no hay acoplamiento suficiente.",
       "BaselineScore": {
         "ExpectedHallucination": true,
+        "ExpectedAbstention": false,
         "HallucinationDetected": true,
         "WasAbstention": false,
         "MatchesExpectation": true,
         "HallucinationRate": 1
       },
       "GuardedScore": {
-        "ExpectedHallucination": true,
+        "ExpectedHallucination": false,
+        "ExpectedAbstention": true,
         "HallucinationDetected": false,
         "WasAbstention": true,
         "MatchesExpectation": true,
@@ -109,13 +119,15 @@
       "GuardedOutput": "Me abstengo: no hay acoplamiento suficiente.",
       "BaselineScore": {
         "ExpectedHallucination": true,
+        "ExpectedAbstention": false,
         "HallucinationDetected": true,
         "WasAbstention": false,
         "MatchesExpectation": true,
         "HallucinationRate": 1
       },
       "GuardedScore": {
-        "ExpectedHallucination": true,
+        "ExpectedHallucination": false,
+        "ExpectedAbstention": true,
         "HallucinationDetected": false,
         "WasAbstention": true,
         "MatchesExpectation": true,
@@ -129,13 +141,15 @@
       "GuardedOutput": "Me abstengo: no hay acoplamiento suficiente.",
       "BaselineScore": {
         "ExpectedHallucination": true,
+        "ExpectedAbstention": false,
         "HallucinationDetected": true,
         "WasAbstention": false,
         "MatchesExpectation": true,
         "HallucinationRate": 1
       },
       "GuardedScore": {
-        "ExpectedHallucination": true,
+        "ExpectedHallucination": false,
+        "ExpectedAbstention": true,
         "HallucinationDetected": false,
         "WasAbstention": true,
         "MatchesExpectation": true,
@@ -149,13 +163,15 @@
       "GuardedOutput": "Me abstengo: no hay acoplamiento suficiente.",
       "BaselineScore": {
         "ExpectedHallucination": true,
+        "ExpectedAbstention": false,
         "HallucinationDetected": true,
         "WasAbstention": false,
         "MatchesExpectation": true,
         "HallucinationRate": 1
       },
       "GuardedScore": {
-        "ExpectedHallucination": true,
+        "ExpectedHallucination": false,
+        "ExpectedAbstention": true,
         "HallucinationDetected": false,
         "WasAbstention": true,
         "MatchesExpectation": true,
@@ -169,13 +185,15 @@
       "GuardedOutput": "Me abstengo: no hay acoplamiento suficiente.",
       "BaselineScore": {
         "ExpectedHallucination": true,
+        "ExpectedAbstention": false,
         "HallucinationDetected": true,
         "WasAbstention": false,
         "MatchesExpectation": true,
         "HallucinationRate": 1
       },
       "GuardedScore": {
-        "ExpectedHallucination": true,
+        "ExpectedHallucination": false,
+        "ExpectedAbstention": true,
         "HallucinationDetected": false,
         "WasAbstention": true,
         "MatchesExpectation": true,
@@ -189,13 +207,15 @@
       "GuardedOutput": "Me abstengo: no hay acoplamiento suficiente.",
       "BaselineScore": {
         "ExpectedHallucination": true,
+        "ExpectedAbstention": false,
         "HallucinationDetected": true,
         "WasAbstention": false,
         "MatchesExpectation": true,
         "HallucinationRate": 1
       },
       "GuardedScore": {
-        "ExpectedHallucination": true,
+        "ExpectedHallucination": false,
+        "ExpectedAbstention": true,
         "HallucinationDetected": false,
         "WasAbstention": true,
         "MatchesExpectation": true,
@@ -209,13 +229,15 @@
       "GuardedOutput": "Me abstengo: no hay acoplamiento suficiente.",
       "BaselineScore": {
         "ExpectedHallucination": true,
+        "ExpectedAbstention": false,
         "HallucinationDetected": true,
         "WasAbstention": false,
         "MatchesExpectation": true,
         "HallucinationRate": 1
       },
       "GuardedScore": {
-        "ExpectedHallucination": true,
+        "ExpectedHallucination": false,
+        "ExpectedAbstention": true,
         "HallucinationDetected": false,
         "WasAbstention": true,
         "MatchesExpectation": true,
@@ -229,13 +251,15 @@
       "GuardedOutput": "Me abstengo: no hay acoplamiento suficiente.",
       "BaselineScore": {
         "ExpectedHallucination": true,
+        "ExpectedAbstention": false,
         "HallucinationDetected": true,
         "WasAbstention": false,
         "MatchesExpectation": true,
         "HallucinationRate": 1
       },
       "GuardedScore": {
-        "ExpectedHallucination": true,
+        "ExpectedHallucination": false,
+        "ExpectedAbstention": true,
         "HallucinationDetected": false,
         "WasAbstention": true,
         "MatchesExpectation": true,
@@ -249,13 +273,15 @@
       "GuardedOutput": "Me abstengo: no hay acoplamiento suficiente.",
       "BaselineScore": {
         "ExpectedHallucination": true,
+        "ExpectedAbstention": false,
         "HallucinationDetected": true,
         "WasAbstention": false,
         "MatchesExpectation": true,
         "HallucinationRate": 1
       },
       "GuardedScore": {
-        "ExpectedHallucination": true,
+        "ExpectedHallucination": false,
+        "ExpectedAbstention": true,
         "HallucinationDetected": false,
         "WasAbstention": true,
         "MatchesExpectation": true,
