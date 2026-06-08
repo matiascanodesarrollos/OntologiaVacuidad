@@ -1,4 +1,5 @@
 using FluentAssertions;
+using System.Linq;
 namespace Models.Tests;
 
 public class AITests
@@ -362,4 +363,96 @@ public class AITests
             esperado: true);
         alucina.Should().BeTrue(detalleFallo);
     }
+
+    [Fact]
+    public void Modelo_ConTextoYVentanaCoherentes_Harmoniza()
+    {
+        // Arrange: se amplia el umbral de magnitud para evaluar casi exclusivamente armonizacion.
+        var verdad = "Francia:capital:París";
+        var prompt = "¿Cuál es la capital de Francia?";
+        var respuesta = "La capital de Francia es París.";
+        var referenciaPromptVerdad = new double[]
+        {
+            /*¿Cuál */ 0,2,2,2,2,0,
+            /*es */ 2,2,0,
+            /*la */ 2,2,0,
+            /*capital */ 2,2,2,2,2,2,2,0,
+            /*de */ 1,1,0,
+            /*Francia?*/ 1,1,1,1,1,1,1,0
+        };
+        var referenciaRespuestaPrompt = new double[]
+        {
+            /*La */ -4,-4,0,
+            /*capital */ 2,2,2,2,2,2,2,0,
+            /*de */ -4,-4,0,
+            /*Francia */ 1,1,1,1,1,1,1,0,
+            /*es */ -4,-4,0,
+            /*París.*/ 3,3,3,3,3,0
+        };
+
+        // Act
+        var (alucina, detalleFallo) = _helper.EvaluarAlucina(
+            verdad,
+            prompt,
+            respuesta,
+            referenciaPromptVerdad,
+            referenciaRespuestaPrompt,
+            toleranciaRacional: 0.005,
+            maxDenominador: 32,
+            factorUmbralMagnitud: 1000.0,
+            energia: prompt.Length,
+            esperado: false);
+
+        // Assert
+        alucina.Should().BeFalse(detalleFallo);
+    }
+
+    [Fact]
+    public void Modelo_ConTextoAjenoYVentanaOscilatoria_NoArmoniza()
+    {
+        // Arrange: mismo prompt, respuesta ajena y ventana oscilatoria intensa por caracter.
+        var verdad = "Francia:capital:París";
+        var prompt = "¿Cuál es la capital de Francia?";
+        var respuesta = "La receta de pizza lleva harina, agua, levadura y horno; no responde la capital de Francia.";
+        var referenciaPromptVerdad = new double[]
+        {
+            /*¿Cuál */ 0,2,2,2,2,0,
+            /*es */ 2,2,0,
+            /*la */ 2,2,0,
+            /*capital */ 2,2,2,2,2,2,2,0,
+            /*de */ 1,1,0,
+            /*Francia?*/ 1,1,1,1,1,1,1,0
+        };
+        var referenciaRespuestaPrompt = respuesta
+            .Select((c, i) =>
+            {
+                if (char.IsWhiteSpace(c) || char.IsPunctuation(c))
+                {
+                    return 0.0;
+                }
+                
+                var amplitud = 35.0;
+                return i % 2 == 0 ? amplitud : -amplitud;
+            })
+            .ToArray();
+
+        // Act
+        var (alucina, detalleFallo) = _helper.EvaluarAlucina(
+            verdad,
+            prompt,
+            respuesta,
+            referenciaPromptVerdad,
+            referenciaRespuestaPrompt,
+            toleranciaRacional: 0.0001,
+            maxDenominador: 8,
+            factorUmbralMagnitud: 1000.0,
+            energia: prompt.Length,
+            esperado: true);
+
+        // Assert
+        alucina.Should().BeTrue(detalleFallo);
+        detalleFallo.Should().Contain("Armonizacion frecuencial insuficiente");
+    }
+
+    
 }
