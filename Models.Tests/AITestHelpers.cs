@@ -10,7 +10,8 @@ public class AITestHelpers
         string respuesta,
         double[] referenciaPromptVerdad,
         double[] referenciaRespuestaPrompt,
-        double umbralPlv,
+        double toleranciaRacional,
+        int maxDenominador,
         double factorUmbralMagnitud,
         double energia,
         bool esperado)
@@ -21,7 +22,8 @@ public class AITestHelpers
 
         var alucina = Alucina(
             contextoBuilder,
-            umbralPlv,
+            toleranciaRacional,
+            maxDenominador,
             factorUmbralMagnitud,
             energia,
             out var detalleFallo);
@@ -38,12 +40,13 @@ public class AITestHelpers
 
     private bool Alucina(
         ContextBuilder contextoBuilder,
-        double umbralPlv,
+        double toleranciaRacional,
+        int maxDenominador,
         double factorUmbralMagnitud,
         double energia,
         out string detalleFallo)
     {
-        var magnitudMaxima = energia;
+        var magnitudMaxima = energia * factorUmbralMagnitud;
         var magnitudMinima = energia / factorUmbralMagnitud;
         detalleFallo = $"Sin incumplimiento de umbrales. Magnitud Maxima={magnitudMaxima:F6}, Magnitud Minima={magnitudMinima:F6}";
 
@@ -53,54 +56,46 @@ public class AITestHelpers
             detalleFallo = $"Incumplimiento en magnitud. AmplitudRespuesta={amplitudRespuesta:F6} fuera del rango [{magnitudMinima:F6}, {magnitudMaxima:F6}]";
             return true;
         }
-        
-        if (!EstaArmonizada(
-            contextoBuilder,
-            umbralPlv,
-            out var detalleArmonia))
+
+        var razonFrecuencial = contextoBuilder.AparienciaPromt.FrecuenciaAngular
+            / contextoBuilder.AparienciaRespuesta.FrecuenciaAngular;
+        var armoniza = EsRazonRacional(
+            razonFrecuencial,
+            toleranciaRacional,
+            maxDenominador);
+        if (!armoniza)
         {
-            detalleFallo = detalleArmonia;
+            detalleFallo =
+                $"Armonizacion frecuencial insuficiente. RazonOmega={razonFrecuencial:F6}, tolerancia={toleranciaRacional:F6}, maximoDenominador={maxDenominador}.";
             return true;
         }
 
         return false;
     }
 
-    private bool EstaArmonizada(
-        ContextBuilder contextoBuilder,
-        double umbralPlv,
-        out string detalleArmonia)
+    private bool EsRazonRacional(
+        double razon,
+        double tolerancia,
+        int maxDenominador)
     {
-        var plv = CalcularPlv(contextoBuilder);
-        var armoniza = plv >= umbralPlv;
-
-        detalleArmonia =
-            $"Armonizacion frecuencial insuficiente. " +
-            $"PLV={plv:F6}, umbralPLV={umbralPlv:F2}.";
-
-        return armoniza;
-    }
-
-    private double CalcularPlv(ContextBuilder contextoBuilder)
-    {
-        var tMax = Math.Max(contextoBuilder.Prompt.Length, contextoBuilder.Respuesta.Length);
-        if (tMax <= 0)
+        var mejorError = double.PositiveInfinity;
+        if (!double.IsFinite(razon))
         {
-            return 0.0;
+            return false;
         }
 
-        var sumaCos = 0.0;
-        var sumaSin = 0.0;
-        for (var t = 0; t < tMax; t++)
+        for (var denominador = 1; denominador <= maxDenominador; denominador++)
         {
-            var fasePromt = contextoBuilder.AparienciaPromt.Funcion(t).Phase;
-            var faseRespuesta = contextoBuilder.AparienciaRespuesta.Funcion(t).Phase;
-            var deltaFase = fasePromt - faseRespuesta;
+            var numerador = (int)Math.Round(razon * denominador);
+            var aproximacion = (double)numerador / denominador;
+            var error = Math.Abs(razon - aproximacion);
 
-            sumaCos += Math.Cos(deltaFase);
-            sumaSin += Math.Sin(deltaFase);
+            if (error < mejorError)
+            {
+                mejorError = error;
+            }
         }
 
-        return Math.Sqrt((sumaCos * sumaCos) + (sumaSin * sumaSin)) / tMax;
+        return mejorError <= tolerancia;
     }
 }

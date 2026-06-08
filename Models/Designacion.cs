@@ -74,9 +74,10 @@ public class Designacion : Nombre
 
         for (var n = 0; n < totalMuestras; n++)
         {
-            suma += apariencia.Funcion(n)
-                * Complex.Conjugate(Ventana(n - tau))
-                * Complex.FromPolarCoordinates(1.0, -omega * n); // Paso temporal de 1 por caracter del contexto  
+            var muestra = apariencia.Funcion(n);
+            var ventana = Complex.Conjugate(Ventana(n - tau));
+            var factor = Complex.FromPolarCoordinates(1.0, -omega * n);
+            suma += muestra * ventana * factor; // Paso temporal de 1 por caracter del contexto  
         }
 
         return suma;

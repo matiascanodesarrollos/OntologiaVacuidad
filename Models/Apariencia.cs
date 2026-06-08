@@ -43,13 +43,15 @@ public class Apariencia
     /// <returns>El integral complejo de la ventana.</returns>
     public virtual Complex CalcularAmplitud(Nombre nombre, double omega)
     {
-        var muestras = Math.Max(1, nombre.Texto.Length);
+        var muestras = Math.Max(1, nombre.Contexto.Length);
         var integral = Complex.Zero;
 
         // Integral discreta con paso temporal unitario por caracter del contexto.
         for (var t = 0; t < muestras; t++)
         {
-            integral += nombre.Ventana(t) * Complex.FromPolarCoordinates(1.0, -omega * t);
+            var muestra = Complex.Conjugate(nombre.Ventana(t));
+            var factor = Complex.FromPolarCoordinates(1.0, -omega * t);
+            integral += muestra * factor;
         }
 
         return integral;

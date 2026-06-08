@@ -17,7 +17,7 @@ public class AITestDiagnostics
         var carpetaFase = Path.Combine(salida, "fase");
         Directory.CreateDirectory(carpetaMagnitud);
         Directory.CreateDirectory(carpetaFase);
-
+        
         var tMax = Math.Max(contextoBuilder.Prompt.Length, contextoBuilder.Respuesta.Length);
         CrearGrafico(contextoBuilder.AparienciaPromt, "Prompt", carpetaMagnitud, carpetaFase, tMax);
         CrearGrafico(contextoBuilder.AparienciaRespuesta, "Respuesta", carpetaMagnitud, carpetaFase, tMax);
@@ -36,7 +36,10 @@ public class AITestDiagnostics
         var fase = new double[tMax];
         for (int t = 0; t < tMax; t++)
         {
-            var valor = apariencia.Funcion(t);
+            var valorInicial = apariencia.Funcion(t);
+            var valorFinal = apariencia.Funcion(t + 1.0);
+            var valor = 0.5 * (valorInicial + valorFinal);
+
             magnitud[t] = valor.Magnitude;
             fase[t] = valor.Phase;
         }
@@ -46,7 +49,10 @@ public class AITestDiagnostics
 
     private static void GuardarSerie(double[] serie, string titulo, string ejeX, string ejeY, string ruta)
     {
-        var xs = Enumerable.Range(0, serie.Length).Select(i => (double)i).ToArray();
+        var xs = Enumerable
+            .Range(0, serie.Length)
+            .Select(i => (double)i)
+            .ToArray();
         var plot = new Plot();
         plot.Add.Scatter(xs, serie);
         plot.Title(titulo);

@@ -102,10 +102,15 @@ public class Nombre
 
             for (int t = 0; t < totalMuestras; t++)
             {
-                var muestra = Ventana(t);
-                suma += muestra * Complex.FromPolarCoordinates(1.0, -omega * t);
+                var muestra = Complex.Conjugate(Ventana(t));
+                var factor = Complex.FromPolarCoordinates(1.0, -omega * t);
+                suma += muestra * factor;
             }
-            resultado.Add(omega, suma);
+            
+            if(suma != Complex.Zero)
+            {
+                resultado.Add(omega, suma);
+            }
         }
 
         return resultado;

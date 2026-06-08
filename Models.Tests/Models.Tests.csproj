@@ -26,4 +26,8 @@
     <ProjectReference Include="..\HallucinationLab\HallucinationLab.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="TestResults\" />
+  </ItemGroup>
+
 </Project>
