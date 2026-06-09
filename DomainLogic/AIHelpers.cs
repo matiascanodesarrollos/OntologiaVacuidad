@@ -1,8 +1,8 @@
-namespace Models.Tests;
+namespace DomainLogic;
 
-public class AITestHelpers
+public class AIHelpers
 {
-    private readonly AITestDiagnostics _diagnostics = new AITestDiagnostics();
+    private readonly AIDiagnostics _diagnostics = new AIDiagnostics();
 
     public (bool alucina, string detalleFallo) EvaluarAlucina(
         string verdad,

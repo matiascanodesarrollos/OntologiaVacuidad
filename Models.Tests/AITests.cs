@@ -1,9 +1,10 @@
+using DomainLogic;
 using FluentAssertions;
 namespace Models.Tests;
 
 public class AITests
 {
-    private readonly AITestHelpers _helper = new AITestHelpers();
+    private readonly AIHelpers _helper = new AIHelpers();
 
     [Theory]
     [InlineData(0.005, 32, 2.0, 10)]

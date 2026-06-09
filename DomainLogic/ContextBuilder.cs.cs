@@ -1,6 +1,6 @@
 using System.Numerics;
 
-namespace Models.Tests;
+namespace DomainLogic;
 
 public class ContextBuilder
 {
