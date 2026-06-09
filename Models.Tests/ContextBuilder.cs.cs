@@ -51,6 +51,16 @@ public class ContextBuilder
         return this;
     }
 
+    public Designacion CrearDesignacion()
+    {
+        if (NombrePromt == null || NombreRespuesta == null)
+        {
+            throw new InvalidOperationException("Debe configurar el prompt y la respuesta antes de crear la designación.");
+        }
+
+        return new Designacion(AparienciaPromt, NombreRespuesta);
+    }
+
     private Func<double, Complex> GetVentana(double[] referencia) => t =>
     {
         var indice = (int)t;

@@ -19,13 +19,6 @@ public class Apariencia
             Amplitud.Value * Complex.FromPolarCoordinates(1, FrecuenciaAngular * t);
     }
 
-    internal Apariencia(double frecuenciaAngular, Func<double, Complex> funcion)
-    {
-        Id = Guid.NewGuid();
-        FrecuenciaAngular = frecuenciaAngular;
-        Funcion = funcion;
-    }
-
     internal Apariencia(double frecuenciaAngular, Func<double, Complex> funcion, double energia)
     {
         Id = Guid.NewGuid();
@@ -49,7 +42,7 @@ public class Apariencia
         // Integral discreta con paso temporal unitario por caracter del contexto.
         for (var t = 0; t < muestras; t++)
         {
-            var muestra = Complex.Conjugate(nombre.Ventana(t));
+            var muestra = nombre.Ventana(t);
             var factor = Complex.FromPolarCoordinates(1.0, -omega * t);
             integral += muestra * factor;
         }

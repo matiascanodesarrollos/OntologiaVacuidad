@@ -32,16 +32,17 @@ public class AITestDiagnostics
 
     private static void CrearGrafico(Apariencia apariencia, string tipo, string carpetaMagnitud, string carpetaFase, int tMax)
     {
-        var magnitud = new double[tMax];
-        var fase = new double[tMax];
-        for (int t = 0; t < tMax; t++)
+        var muestrasPorUnidad = 10;
+        var muestras = tMax * muestrasPorUnidad; // 10 muestras por unidad de tiempo
+        var magnitud = new double[muestras];
+        var fase = new double[muestras];
+        for (var t = 0.01; t <= tMax; t += 1.0 / muestrasPorUnidad)
         {
-            var valorInicial = apariencia.Funcion(t);
-            var valorFinal = apariencia.Funcion(t + 1.0);
-            var valor = 0.5 * (valorInicial + valorFinal);
+            var valor = apariencia.Funcion(t);
 
-            magnitud[t] = valor.Magnitude;
-            fase[t] = valor.Phase;
+            var indice = (int)((t - 1.0 / muestrasPorUnidad) * muestrasPorUnidad);
+            magnitud[indice] = valor.Magnitude;
+            fase[indice] = valor.Phase;
         }
         GuardarSerie(magnitud, $"{tipo} Magnitud", "t", "|A(t)|", Path.Combine(carpetaMagnitud, $"{tipo.ToLower()}_magnitud.png"));
         GuardarSerie(fase, $"{tipo} Fase", "t", "fase(rad)", Path.Combine(carpetaFase, $"{tipo.ToLower()}_fase.png"));

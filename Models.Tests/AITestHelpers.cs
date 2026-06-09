@@ -14,6 +14,7 @@ public class AITestHelpers
         int maxDenominador,
         double factorUmbralMagnitud,
         double energia,
+        double toleranciaPermanencia,
         bool esperado)
     {
         var contextoBuilder = new ContextBuilder(verdad)
@@ -24,8 +25,9 @@ public class AITestHelpers
             contextoBuilder,
             toleranciaRacional,
             maxDenominador,
-            factorUmbralMagnitud,
+            factorUmbralMagnitud,            
             energia,
+            toleranciaPermanencia,
             out var detalleFallo);
 
         if (alucina != esperado)
@@ -44,6 +46,7 @@ public class AITestHelpers
         int maxDenominador,
         double factorUmbralMagnitud,
         double energia,
+        double toleranciaPermanencia,
         out string detalleFallo)
     {
         var magnitudMaxima = energia * factorUmbralMagnitud;
@@ -70,7 +73,29 @@ public class AITestHelpers
             return true;
         }
 
-        return false;
+        var anulaVibracion = false;
+        if(toleranciaPermanencia >= 0)
+        {
+            var designacion = contextoBuilder.CrearDesignacion();
+            
+            var tMax = Math.Max(contextoBuilder.Prompt.Length, contextoBuilder.Respuesta.Length);
+            foreach(var omega in contextoBuilder.NombrePromt.Fourier.Keys)
+            {
+                var valorAnterior = designacion.Ventana(0);
+                for(var t = 0.01; t <= tMax; t += 0.01)
+                {
+                    var valorSTFT = designacion.Ventana(t);
+                    if (Math.Abs(valorAnterior.Magnitude - valorSTFT.Magnitude) > toleranciaPermanencia)
+                    {
+                        anulaVibracion = true;
+                        detalleFallo = $"Incumplimiento en permanencia. Omega={omega:F6} no se cancela, t={t:F2} valorSTFT={valorSTFT.Magnitude:F6}, valorAnterior={valorAnterior.Magnitude:F6}.";
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return anulaVibracion;
     }
 
     private bool EsRazonRacional(
