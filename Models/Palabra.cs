@@ -3,13 +3,11 @@ using System.Numerics;
 
 public class Palabra : Apariencia
 {
-    public string Texto { get; }    
     public new Func<double, double, Complex> Funcion { get; }
     public Designacion Esencia { get; }
     public Apariencia Efecto { get; internal set; }
 
     private Palabra(
-        string texto,
         Func<double, double, Complex> funcion,
         double energia)
         : base(
@@ -19,12 +17,10 @@ public class Palabra : Apariencia
                 : Complex.One, 
             energia)
     {
-        Texto = texto;
         Funcion = funcion;
     }
 
     public static Palabra Gozo(double energia) => new Palabra(
-        "gozo",
         (tau, t) => 
             Complex.FromPolarCoordinates(1.0, energia) 
             * (t <= 0
