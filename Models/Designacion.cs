@@ -35,7 +35,7 @@ public class Designacion : Nombre
         : base(nombre)
     {
         Id = Guid.NewGuid();
-        Esencia = apariencia.Causa;
+        Esencia = apariencia.Causa.Value;
         STFT = (tau, omega) => CalcularSTFT(tau, omega);
     }
 

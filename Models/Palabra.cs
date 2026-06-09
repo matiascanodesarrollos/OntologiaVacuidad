@@ -41,7 +41,7 @@ public class Palabra : Apariencia
         Funcion = (tau, t) => 
             Complex.FromPolarCoordinates(1.0, FrecuenciaAngular * tau) 
             * designacion.Ventana(t - tau);
-        Causa = this;
+        Causa = new Lazy<Palabra>(() => this);
         Efecto = this;
     }
 

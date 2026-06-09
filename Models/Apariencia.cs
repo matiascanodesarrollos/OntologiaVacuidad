@@ -7,7 +7,7 @@ public class Apariencia
     public Guid Id { get; }
     public double FrecuenciaAngular { get; }
     public Func<double, Complex> Funcion { get; }
-    public Palabra Causa { get; internal set; }
+    public Lazy<Palabra> Causa { get; internal set; }
     public Lazy<Complex> Amplitud { get; }
 
     public Apariencia(Nombre nombre)
@@ -17,6 +17,7 @@ public class Apariencia
         Amplitud = new Lazy<Complex>(() => CalcularAmplitud(nombre, FrecuenciaAngular));
         Funcion = t => 
             Amplitud.Value * Complex.FromPolarCoordinates(1, FrecuenciaAngular * t);
+        Causa = new Lazy<Palabra>(() => Palabra.Gozo(Amplitud.Value.Magnitude));
     }
 
     internal Apariencia(double frecuenciaAngular, Func<double, Complex> funcion, double energia)
@@ -24,7 +25,7 @@ public class Apariencia
         Id = Guid.NewGuid();
         FrecuenciaAngular = frecuenciaAngular;
         Funcion = funcion;
-        Causa = Palabra.Gozo(energia);
+        Causa = new Lazy<Palabra>(() => Palabra.Gozo(energia));
     }
 
     /// <summary>

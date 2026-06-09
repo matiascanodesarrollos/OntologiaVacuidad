@@ -6,8 +6,8 @@ public class AITests
     private readonly AITestHelpers _helper = new AITestHelpers();
 
     [Theory]
-    [InlineData(0.005, 32, 2.0, 4.0)]
-    public void Modelo_ConPreguntaLargaRespuestaMuyCorta_Alucina(double toleranciaRacional, int maxDenominador, double factorUmbralMagnitud, double toleranciaPermanencia)
+    [InlineData(0.005, 32, 2.0, 10)]
+    public void Modelo_ConPreguntaLargaRespuestaMuyCorta_Alucina(double toleranciaRacional, int maxDenominador, double factorUmbralMagnitud, double oscilacionMaximaPermitida)
     {
         //Arrage
         //Valores de verdad= 1:2:3:-X=Pregunta:>=5verdadesAjenas:-1<x<1Falsedad
@@ -57,14 +57,14 @@ public class AITests
             maxDenominador,
             factorUmbralMagnitud,
             energia,
-            toleranciaPermanencia,
+            oscilacionMaximaPermitida,
             esperado: true);
         alucina.Should().BeTrue(detalleFallo);
     }
 
     [Theory]
-    [InlineData(0.005, 32, 2.0, -1.0)]
-    public void Modelo_ConPreguntaLargaRespuestaAcordeSinEvaluarPermanencia_NoAlucina(double toleranciaRacional, int maxDenominador, double factorUmbralMagnitud, double toleranciaPermanencia)
+    [InlineData(0.005, 32, 2.0, double.MaxValue)]
+    public void Modelo_ConPreguntaLargaRespuestaAcordeSinEvaluarOscilacionMaxima_NoAlucina(double toleranciaRacional, int maxDenominador, double factorUmbralMagnitud, double oscilacionMaximaPermitida)
     {
         //Arrage
         //Valores de verdad= 1:2:3:-X=Pregunta:>=5verdadesAjenas:-1<x<1Falsedad
@@ -146,14 +146,14 @@ public class AITests
             maxDenominador,
             factorUmbralMagnitud,
             energia,
-            toleranciaPermanencia,
+            oscilacionMaximaPermitida,
             esperado: false);
         alucina.Should().BeFalse(detalleFallo);
     }
 
     [Theory]
-    [InlineData(0.005, 32, 2.0, 4.0)]
-    public void Modelo_ConPreguntaConcisaRespuestaConcisa_NoAlucina(double toleranciaRacional, int maxDenominador, double factorUmbralMagnitud, double toleranciaPermanencia)
+    [InlineData(0.005, 32, 2.0, 10)]
+    public void Modelo_ConPreguntaConcisaRespuestaConcisa_NoAlucina(double toleranciaRacional, int maxDenominador, double factorUmbralMagnitud, double oscilacionMaximaPermitida)
     {
         //Arrage
         //Valores de verdad= 1:2:3:-X=Pregunta:>=5verdadesAjenas:-1<x<1Falsedad
@@ -192,14 +192,14 @@ public class AITests
             maxDenominador,
             factorUmbralMagnitud,
             energia,
-            toleranciaPermanencia,
+            oscilacionMaximaPermitida,
             esperado: false);
         alucina.Should().BeFalse(detalleFallo);
     }
 
     [Theory]
-    [InlineData(0.005, 32, 2.0, 4.0)]
-    public void Modelo_ConPreguntaConcisaRespuestaMuchoRelleno_Alucina(double toleranciaRacional, int maxDenominador, double factorUmbralMagnitud, double toleranciaPermanencia)
+    [InlineData(0.005, 32, 2.0, 10)]
+    public void Modelo_ConPreguntaConcisaRespuestaMuchoRelleno_Alucina(double toleranciaRacional, int maxDenominador, double factorUmbralMagnitud, double oscilacionMaximaPermitida)
     {
         //Arrage
         //Valores de verdad= 1:2:3:-X=Pregunta:>=5verdadesAjenas:-1<x<1Falsedad
@@ -250,14 +250,14 @@ public class AITests
             maxDenominador,
             factorUmbralMagnitud,
             energia,
-            toleranciaPermanencia,
+            oscilacionMaximaPermitida,
             esperado: true);
         alucina.Should().BeTrue(detalleFallo);
     }
 
     [Theory]
-    [InlineData(0.005, 32, 2.0, 4.0)]
-    public void Modelo_ConPreguntaConcisaRespuestaCortaFalsa_Alucina(double toleranciaRacional, int maxDenominador, double factorUmbralMagnitud, double toleranciaPermanencia)
+    [InlineData(0.005, 32, 2.0, 10)]
+    public void Modelo_ConPreguntaConcisaRespuestaCortaFalsa_Alucina(double toleranciaRacional, int maxDenominador, double factorUmbralMagnitud, double oscilacionMaximaPermitida)
     {
         //Arrage
         //Valores de verdad= 1:2:3:-X=Pregunta:>=5verdadesAjenas:-1<x<1Falsedad
@@ -291,14 +291,14 @@ public class AITests
             maxDenominador,
             factorUmbralMagnitud,
             energia,
-            toleranciaPermanencia,
+            oscilacionMaximaPermitida,
             esperado: true);
         alucina.Should().BeTrue(detalleFallo);
     }
 
     [Theory]
-    [InlineData(0.005, 32, 2.0, 4.0)]
-    public void Modelo_ConPreguntaConcisaRespuestaLargaFalsa_Alucina(double toleranciaRacional, int maxDenominador, double factorUmbralMagnitud, double toleranciaPermanencia)
+    [InlineData(0.005, 32, 2.0, 10)]
+    public void Modelo_ConPreguntaConcisaRespuestaLargaFalsa_Alucina(double toleranciaRacional, int maxDenominador, double factorUmbralMagnitud, double oscilacionMaximaPermitida)
     {
         //Arrage
         //Valores de verdad= 1:2:3:-X=Pregunta:>=5verdadesAjenas:-1<x<1Falsedad
@@ -364,7 +364,7 @@ public class AITests
             maxDenominador,
             factorUmbralMagnitud,
             energia,
-            toleranciaPermanencia,
+            oscilacionMaximaPermitida,
             esperado: true);
         alucina.Should().BeTrue(detalleFallo);
     }
@@ -406,7 +406,7 @@ public class AITests
             maxDenominador: 32,
             factorUmbralMagnitud: 1000.0,
             energia: prompt.Length,
-            toleranciaPermanencia: 4.0,
+            oscilacionMaximaPermitida: 10,
             esperado: false);
 
         // Assert
@@ -453,7 +453,7 @@ public class AITests
             maxDenominador: 8,
             factorUmbralMagnitud: 1000.0,
             energia: prompt.Length,
-            toleranciaPermanencia: 4.0,
+            oscilacionMaximaPermitida: 10,
             esperado: true);
 
         // Assert

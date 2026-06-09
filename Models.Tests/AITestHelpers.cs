@@ -14,7 +14,7 @@ public class AITestHelpers
         int maxDenominador,
         double factorUmbralMagnitud,
         double energia,
-        double toleranciaPermanencia,
+        double oscilacionMaximaPermitida,
         bool esperado)
     {
         var contextoBuilder = new ContextBuilder(verdad)
@@ -27,7 +27,7 @@ public class AITestHelpers
             maxDenominador,
             factorUmbralMagnitud,            
             energia,
-            toleranciaPermanencia,
+            oscilacionMaximaPermitida,
             out var detalleFallo);
 
         if (alucina != esperado)
@@ -46,7 +46,7 @@ public class AITestHelpers
         int maxDenominador,
         double factorUmbralMagnitud,
         double energia,
-        double toleranciaPermanencia,
+        double oscilacionMaximaPermitida,
         out string detalleFallo)
     {
         var magnitudMaxima = energia * factorUmbralMagnitud;
@@ -73,29 +73,30 @@ public class AITestHelpers
             return true;
         }
 
-        var anulaVibracion = false;
-        if(toleranciaPermanencia >= 0)
-        {
-            var designacion = contextoBuilder.CrearDesignacion();
+        var designacion = contextoBuilder.CrearDesignacion();
             
-            var tMax = Math.Max(contextoBuilder.Prompt.Length, contextoBuilder.Respuesta.Length);
-            foreach(var omega in contextoBuilder.NombrePromt.Fourier.Keys)
+        var tMax = Math.Max(contextoBuilder.Prompt.Length, contextoBuilder.Respuesta.Length);
+        foreach (var omega in contextoBuilder.NombrePromt.Fourier.Keys)
+        {
+            double? valorInicial = null;
+            for (var tau = 0.0; tau <= tMax; tau += 0.01)
             {
-                var valorAnterior = designacion.Ventana(0);
-                for(var t = 0.01; t <= tMax; t += 0.01)
+                var valorSTFT = designacion.STFT(tau, omega);
+                if (valorInicial is null && valorSTFT.Magnitude > oscilacionMaximaPermitida)
                 {
-                    var valorSTFT = designacion.Ventana(t);
-                    if (Math.Abs(valorAnterior.Magnitude - valorSTFT.Magnitude) > toleranciaPermanencia)
-                    {
-                        anulaVibracion = true;
-                        detalleFallo = $"Incumplimiento en permanencia. Omega={omega:F6} no se cancela, t={t:F2} valorSTFT={valorSTFT.Magnitude:F6}, valorAnterior={valorAnterior.Magnitude:F6}.";
-                        return true;
-                    }
+                    valorInicial = valorSTFT.Magnitude;
+                }
+
+                if (valorInicial is not null
+                    && Math.Abs(valorInicial.Value - valorSTFT.Magnitude) > oscilacionMaximaPermitida)
+                {
+                    detalleFallo = $"Incumplimiento en oscilacion máxima. Omega={omega:F6} no se cancela, tau={tau:F2} valorSTFT={valorSTFT.Magnitude:F6}, valorInicial={valorInicial.Value:F6}.";
+                    return true;
                 }
             }
         }
 
-        return anulaVibracion;
+        return false;
     }
 
     private bool EsRazonRacional(
