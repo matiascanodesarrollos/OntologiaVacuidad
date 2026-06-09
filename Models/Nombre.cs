@@ -45,13 +45,12 @@ public class Nombre
     /// <summary>
     /// Crea una palabra para este nombre de frecuencia angular igual a la suma de las frecuencias de Fourier.
     /// </summary>
-    /// <param name="designacion">Designación elegida para expresar el concepto.</param>
-    /// <param name="texto">Texto para la palabra.</param>
+    /// <param name="apariencia">Apariencia elegida para expresar el concepto.</param>
     /// <returns>La palabra construida.</returns>
-    public Palabra Mostrarse(Apariencia apariencia)
+    public Designacion Mostrarse(Apariencia apariencia)
     {
         var designacion = new Designacion(apariencia, this);
-        return designacion.Esencia;
+        return designacion;
     }    
 
     /// <summary>

@@ -32,27 +32,14 @@ public class Palabra : Apariencia
                 : new Complex(0.0, energia / (2 * Math.PI * t))),
         energia);
 
-    internal Palabra(
-        string texto,
-        Designacion designacion)
-        : base(designacion)
-    {
-        Texto = texto;
-        Funcion = (tau, t) => 
-            Complex.FromPolarCoordinates(1.0, FrecuenciaAngular * tau) 
-            * designacion.Ventana(t - tau);
-        Causa = new Lazy<Palabra>(() => this);
-        Efecto = this;
-    }
-
     /// <summary>
     /// Crea una apariencia evaluando la STFT en un punto complejo z (representa la persona que pregunta).
     /// La nueva apariencia se vuelve el efecto de esta palabra.
     /// </summary>
     /// <param name="z">Punto complejo para evaluar la STFT.</param>
-    /// <param name="texto">Texto que se usará para nombrar la nueva apariencia.</param>
+    /// <param name="respuesta">Respuesta adaptada a esa persona.</param>
     /// <returns>Una nueva apariencia cuya causa es la palabra.</returns>
-    public Apariencia Aparecer(Complex z, string texto)
+    public Apariencia Aparecer(Complex z, string respuesta)
     {
         var muestras = Math.Max(1, Esencia.Contexto.Length);
         var omega = z.Phase;
@@ -68,7 +55,7 @@ public class Palabra : Apariencia
         }
         var velocidadGrupo = X.Magnitude <= 1e-12 ? 0.0 : (derivada / X).Imaginary;
         var nombre = new Nombre(
-            texto,
+            respuesta,
             Esencia.Texto,
             t => t > 0 ? X : Complex.Zero,
             velocidadGrupo);
