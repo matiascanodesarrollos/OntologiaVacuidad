@@ -1,38 +1,59 @@
 # OntologiaVacuidad
 
-Solución C# para Ontología Vacuidad:
+Repositorio C# para explorar la propuesta de Ontologia Vacuidad.
 
-Aplicación de consola y librerías para probar el sistema diseñado en el artículo de Medim titulado "Ontología de la vacuidad: un sistema para entender la realidad como modulación (AM-FM-PM) y plasma primordial (RGB)".
-
+Articulo base:
 https://medium.com/@heroe.vajradharma/ontolog%C3%ADa-de-la-vacuidad-un-sistema-para-entender-la-realidad-como-modulaci%C3%B3n-am-fm-fsk-y-plasma-2c8b56f2d8ed
 
-## Experimento de alucinaciones
+## Estado actual del repositorio
 
-Se agrego el proyecto `HallucinationLab` para comparar:
+Proyectos principales:
 
-1. Salida baseline de un modelo existente.
-2. La misma salida, postprocesada con un guard ontologico basado en este repositorio.
+1. `Models` (netstandard2.1): nucleo de tipos y logica.
+2. `Models.Tests` (net10.0): tests unitarios y utilidades de diagnostico.
 
-### Resultados preliminares
+La solucion `OntologiaVacuidad.sln` incluye `Models` y `Models.Tests`.
 
-En la corrida local actual con `ReplayModelBackend` y 13 casos (alineados a `Models.Tests/AITests.cs`):
+## Scope del proyecto
 
-1. Con `--guard pass`: `ExpectationAccuracy=100%` y `AvgHallucinationRate=84.62%`.
-2. Con `--guard ontologia`: `ExpectationAccuracy=100%` y `AvgHallucinationRate=0%`.
+Este repositorio tiene alcance de investigacion y validacion tecnica local:
 
-Esto refleja que el guard ontologico convierte multiples salidas en abstencion (`Me abstengo...`) y, en modo guarded, esa abstencion cuenta como acierto cuando el caso esperaba alucinacion en la salida original.
+1. Modelar conceptos de Ontologia Vacuidad en estructuras C# (`Models`).
+2. Verificar consistencia matematica y reglas esperadas mediante la deteccion de alucionaciones en un modelo de relay de IA completamente controlado (`Models.Tests`).
+3. Producir diagnosticos de apoyo cuando una prueba falla.
 
-Esto sugiere que, con estos parametros, el guard corta salida riesgosa de forma agresiva y cumple su objetivo de contencion en el dataset actual.
+Fuera de scope actual:
 
-### Evaluacion tecnica
+1. Integracion con modelos de IA en produccion.
+2. Servicio/API desplegable.
+3. Garantias de performance o escalabilidad para cargas reales.
 
-Conviene seguir la linea de investigacion, pero no como sustituto directo de un motor real. El resultado preliminar es prometedor como mecanismo de contencion de alucinaciones, aunque hoy funciona mejor como capa de postprocesado conservadora que como solucion final.
+## Ejecucion
 
-Para motores reales, la linea tiene sentido si se la continua en estas direcciones:
+Pruebas:
 
-1. Conectar la evaluacion a una referencia mas rica que simples coincidencias textuales.
-2. Medir el costo de abstenerse frente al beneficio de eliminar claims inventadas.
-3. Probar el guard con salidas reales de modelos, no solo con replay local.
-4. Ajustar el criterio para no penalizar respuestas correctas pero parciales.
+```bash
+dotnet test Models.Tests/Models.Tests.csproj
+```
 
-En resumen: si, vale la pena seguirla, pero como investigacion exploratoria para reducir alucinaciones y no como una garantia de calidad ya cerrada.
+## Notas de diagnostico
+
+Cuando un test de `Models.Tests` falla, se generan artefactos en:
+
+`Models.Tests/TestResults/diagnostics/`
+
+Incluyen series de magnitud/fase y metadata de prompt/respuesta para inspeccion.
+
+## Como leer los resultados de tests
+
+Salida esperada al ejecutar `dotnet test Models.Tests/Models.Tests.csproj`:
+
+1. Si aparece `failed: 0` y `succeeded: N`, el comportamiento actual coincide con las expectativas codificadas.
+2. Si hay fallos, el mensaje de asercion indica el escenario que rompio y la condicion no cumplida.
+
+Para los tests de IA (archivo `Models.Tests/AITests.cs`):
+
+1. `..._NoAlucina`: el test espera `alucina == false`.
+2. `..._Alucina`: el test espera `alucina == true`.
+
+Cuando un caso falla en estos tests, el detalle incluye umbrales (magnitud/frecuencia) y una ruta de diagnostico para inspeccionar graficos y metadata del prompt/respuesta.

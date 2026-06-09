@@ -6,36 +6,12 @@ public class Designacion : Nombre
     public new Guid Id { get; }
     public Palabra Esencia { get; }
     public Func<double, double, Complex> STFT { get; }
-
-    /// <summary>
-    /// Crea una designación con una STFT predefinida.
-    /// </summary>
-    /// <param name="nombre">Nombre asociado a la designación.</param>
-    /// <param name="texto">Texto de la palabra.</param>
-    /// <param name="tiempoPalabra">Momento relativo a tau en que se pronuncia la palabra.</param>
-    public Designacion(Nombre nombre, string texto, double tiempoPalabra)
-        : base(nombre)
-    {
-        Id = Guid.NewGuid();
-        Esencia = new Palabra(texto, this);
-        STFT = (tau, omega) => nombre.Fourier.TryGetValue(omega, out var valor) 
-            ? valor * Esencia.Funcion(tau, tiempoPalabra) 
-            : Complex.Zero;
-    }
     
-    /// <summary>
-    /// Crea una designación calculando una STFT con la funcion de la apariencia y la ventana del nombre.
-    /// La funcion en si de la STFT se puede sobreescribir para implementar diferentes formas de análisis.
-    /// Su esencia es la apariencia de entrada.
-    /// </summary>
-    /// <param name="apariencia">Apariencia de entrada.</param>
-    /// <param name="nombre">Nombre que aporta la ventana de análisis.</param>
-    /// <returns>Una nueva designación vinculada a la apariencia de entrada.</returns>
-    public Designacion(Apariencia apariencia, Nombre nombre)
+    internal Designacion(Apariencia apariencia, Nombre nombre)
         : base(nombre)
     {
         Id = Guid.NewGuid();
-        Esencia = apariencia.Causa;
+        Esencia = apariencia.Causa.Value;
         STFT = (tau, omega) => CalcularSTFT(tau, omega);
     }
 
@@ -74,9 +50,10 @@ public class Designacion : Nombre
 
         for (var n = 0; n < totalMuestras; n++)
         {
-            suma += apariencia.Funcion(n)
-                * Complex.Conjugate(Ventana(n - tau))
-                * Complex.FromPolarCoordinates(1.0, -omega * n); // Paso temporal de 1 por caracter del contexto  
+            var muestra = apariencia.Funcion(n);
+            var ventana = Complex.Conjugate(Ventana(n - tau));
+            var factor = Complex.FromPolarCoordinates(1.0, -omega * n);
+            suma += muestra * ventana * factor; // Paso temporal de 1 por caracter del contexto  
         }
 
         return suma;

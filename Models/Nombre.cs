@@ -45,13 +45,12 @@ public class Nombre
     /// <summary>
     /// Crea una palabra para este nombre de frecuencia angular igual a la suma de las frecuencias de Fourier.
     /// </summary>
-    /// <param name="designacion">Designación elegida para expresar el concepto.</param>
-    /// <param name="texto">Texto para la palabra.</param>
+    /// <param name="apariencia">Apariencia elegida para expresar el concepto.</param>
     /// <returns>La palabra construida.</returns>
-    public Palabra Mostrarse(Apariencia apariencia)
+    public Designacion Mostrarse(Apariencia apariencia)
     {
         var designacion = new Designacion(apariencia, this);
-        return designacion.Esencia;
+        return designacion;
     }    
 
     /// <summary>
@@ -92,22 +91,27 @@ public class Nombre
     protected virtual Dictionary<double, Complex> CalcularTransformadaFourier()
     {
         var totalMuestras = Math.Max(1, Contexto.Length);
-        var resultado = new (double Omega, Complex Valor)[totalMuestras];
+        var omegas = Contexto.GroupBy(c => c + 1);
+        var resultado = new Dictionary<double, Complex>();
 
-        for (int k = 0; k < totalMuestras; k++)
+        foreach(var grupo in omegas)
         {
-            var omega = 2.0 * Math.PI * k / totalMuestras;
+            var omega = grupo.Key;
             var suma = Complex.Zero;
 
             for (int t = 0; t < totalMuestras; t++)
             {
-                var muestra = Ventana(t);
-                suma += muestra * Complex.FromPolarCoordinates(1.0, -omega * t);
+                var muestra = Complex.Conjugate(Ventana(t));
+                var factor = Complex.FromPolarCoordinates(1.0, -omega * t);
+                suma += muestra * factor;
             }
-
-            resultado[k] = (omega, suma);
+            
+            if(suma != Complex.Zero)
+            {
+                resultado.Add(omega, suma);
+            }
         }
 
-        return resultado.ToDictionary(p => p.Omega, p => p.Valor);
+        return resultado;
     }
 }
