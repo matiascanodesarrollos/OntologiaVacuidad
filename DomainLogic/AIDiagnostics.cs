@@ -4,7 +4,7 @@ namespace DomainLogic;
 
 public class AIDiagnostics
 {
-    public string GenerarDiagnosticos(ContextBuilder contextoBuilder)
+    public string GenerarDiagnosticos(DetectorAlucinacionIA evaluador)
     {
         var carpetaProyectoTests = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", ".."));
         var salida = Path.Combine(
@@ -20,14 +20,14 @@ public class AIDiagnostics
         Directory.CreateDirectory(carpetaFase);
         Directory.CreateDirectory(carpetaHeatMap);
         
-        var tMax = Math.Max(contextoBuilder.Prompt.Length, contextoBuilder.Respuesta.Length);
-        CrearGrafico(contextoBuilder.NombrePromt.Esencia, "Prompt", carpetaMagnitud, carpetaFase, tMax);
-        CrearGrafico(contextoBuilder.NombreRespuesta.Esencia, "Respuesta", carpetaMagnitud, carpetaFase, tMax);
+        var tMax = Math.Max(evaluador.Prompt.Length, evaluador.Respuesta.Length);
+        CrearGrafico(evaluador.NombrePromt.Esencia, "Prompt", carpetaMagnitud, carpetaFase, tMax);
+        CrearGrafico(evaluador.NombreRespuesta.Esencia, "Respuesta", carpetaMagnitud, carpetaFase, tMax);
 
         var metadata = Path.Combine(salida, "metadata.txt");
         File.WriteAllText(
             metadata,
-            $"prompt={contextoBuilder.Prompt}{Environment.NewLine}respuesta={contextoBuilder.Respuesta}{Environment.NewLine}");
+            $"prompt={evaluador.Prompt}{Environment.NewLine}respuesta={evaluador.Respuesta}{Environment.NewLine}");
 
         return salida;
     }

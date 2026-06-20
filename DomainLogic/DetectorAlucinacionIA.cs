@@ -2,27 +2,27 @@ using System.Numerics;
 
 namespace DomainLogic;
 
-public class ContextBuilder
+public class DetectorAlucinacionIA
 {
     private readonly string _verdad;
     public string Prompt { get; private set; }
     public Nombre NombrePromt;
     public string Respuesta { get; private set; }
     public Nombre NombreRespuesta;
+    private List<Func<bool>> Evaluaciones = new List<Func<bool>>();
 
-    public ContextBuilder(string verdad)
+    public DetectorAlucinacionIA(string verdad)
     {
         _verdad = verdad;
     }
 
-    public ContextBuilder ConPrompt(
+    public DetectorAlucinacionIA ConPrompt(
         string prompt, 
-        double[] referenciaPromptVerdad, 
+        Func<double, Complex> admitancia, 
         double frecuenciaAngularRespiracion)
     {
         Prompt = prompt;
-
-        var admitancia = GetAdmitancia(referenciaPromptVerdad);        
+     
         var palabra = new Palabra(
             Prompt,
             _verdad,
@@ -38,9 +38,9 @@ public class ContextBuilder
         return this;
     }    
 
-    public ContextBuilder ConRespuesta(
+    public DetectorAlucinacionIA ConRespuesta(
         string respuesta, 
-        double[] referenciaRespuestaPrompt, 
+        Func<double, Complex> admitancia, 
         double frecuenciaAngularRespiracion,
         double tiempoRespuesta)
     {
@@ -50,7 +50,6 @@ public class ContextBuilder
         }
 
         Respuesta = respuesta;
-        var admitancia = GetAdmitancia(referenciaRespuestaPrompt);
         NombreRespuesta = new Nombre(
             respuesta,
             _verdad,
@@ -59,14 +58,24 @@ public class ContextBuilder
         return this;
     }
 
-    private Func<double, Complex> GetAdmitancia(double[] referencia) => t =>
+    public DetectorAlucinacionIA AgregarEvaluacion(Func<bool> evaluacion)
     {
-        var indice = (int)t;
-        if (indice >= 0 && indice < referencia.Length)
-        {
-            return referencia[indice];
-        }
+        Evaluaciones.Add(evaluacion);
+        return this;
+    }
 
-        return 0;
-    };
+    public bool Alucina()
+    {
+        var alucina = false;
+        foreach (var evaluacion in Evaluaciones)
+        {
+            if (evaluacion())
+            {
+                alucina = true;
+                break;
+            }
+        }
+        
+        return alucina;
+    }
 }

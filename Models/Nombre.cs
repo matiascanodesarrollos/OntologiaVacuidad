@@ -16,7 +16,7 @@ public class Nombre
 
     protected Nombre(Nombre otro)
     {
-        Id = otro.Id;        
+        Id = otro.Id;
         Texto = otro.Texto;
         Contexto = otro.Contexto;
         FrecuenciasAngulares = otro.FrecuenciasAngulares;
