@@ -4,39 +4,99 @@ using System.Numerics;
 public class Designacion : Nombre
 {
     public new Guid Id { get; }
-    public Palabra Esencia { get; }
-    public Func<double, double, Complex> STFT { get; }
+    internal new Apariencia Esencia { get; }
+    private Func<Complex, Complex> Laplace { get; }
+    
+    internal Designacion(Apariencia apariencia, Nombre nombre)
+        : base(nombre)
+    {
+        Id = Guid.NewGuid();
+        Esencia = apariencia;
+        Laplace = CalcularLaplace;
+    }
 
     /// <summary>
-    /// Crea una designación con una STFT predefinida.
+    /// Calcula la transformada de Laplace evaluando la función de la esencia en la ventana del nombre 
+    /// con un paso temporal de 1 por caracter del contexto.
+    /// Sobreescribir para implementar diferentes formas de análisis o pasos temporales.
     /// </summary>
-    /// <param name="nombre">Nombre asociado a la designación.</param>
-    /// <param name="texto">Texto de la palabra.</param>
-    /// <param name="tiempoPalabra">Momento relativo a tau en que se pronuncia la palabra.</param>
-    public Designacion(Nombre nombre, string texto, double tiempoPalabra)
-        : base(nombre)
-    {
-        Id = Guid.NewGuid();
-        Esencia = new Palabra(texto, this);
-        STFT = (tau, omega) => nombre.Fourier.TryGetValue(omega, out var valor) 
-            ? valor * Esencia.Funcion(tau, tiempoPalabra) 
-            : Complex.Zero;
+    /// <param name="s">Parámetro complejo de la transformada de Laplace.</param>
+    /// <returns>Valor complejo de la transformada de Laplace en el punto s.</returns>
+    protected virtual Complex CalcularLaplace(Complex s)
+    {        
+        var totalMuestras = Math.Max(1, Contexto.Length);
+        var suma = Complex.Zero;
+
+        // Paso temporal de 1 por caracter del contexto  
+        for (var n = 0; n < totalMuestras; n++)
+        {
+            var muestra = Esencia.Funcion(n);
+            var factor = Complex.Exp(-s * n);
+            suma += muestra * factor; 
+        }
+
+        return suma;
     }
-    
+
     /// <summary>
-    /// Crea una designación calculando una STFT con la funcion de la apariencia y la ventana del nombre.
-    /// La funcion en si de la STFT se puede sobreescribir para implementar diferentes formas de análisis.
-    /// Su esencia es la apariencia de entrada.
-    /// </summary>
-    /// <param name="apariencia">Apariencia de entrada.</param>
-    /// <param name="nombre">Nombre que aporta la ventana de análisis.</param>
-    /// <returns>Una nueva designación vinculada a la apariencia de entrada.</returns>
-    public Designacion(Apariencia apariencia, Nombre nombre)
-        : base(nombre)
-    {
-        Id = Guid.NewGuid();
-        Esencia = apariencia.Causa;
-        STFT = (tau, omega) => CalcularSTFT(tau, omega);
+    /// Crea una nueva palabra a partir de z, el periodo de muestreo T y el texto deseado.
+    /// Sobreescribir para implementar diferentes formas de aparición o análisis de la respuesta.
+    /// </summary>    
+    /// <param name="z">Variable z, representación de la intención de quien aparenta.</param>
+    /// <param name="T">Periodo de muestreo.</param>
+    /// <param name="texto">Texto que se desea que aparezca.</param>
+    /// <returns>La nueva palabra.</returns>
+    public virtual Palabra Aparecer(
+        Complex z, 
+        double T,
+        string texto)
+    {        
+        var muestras = Math.Max(1, Contexto.Length);
+        var paso = 0.01;
+        var X = Complex.Zero;
+        var derivada = Complex.Zero;
+        var periodoMuestreo = Math.Abs(T);
+
+        for (int n = 0; n < muestras; n++)
+        {
+            var t = n * periodoMuestreo;
+            var valor = Esencia.Funcion(t);
+            var factor = Complex.Pow(z, -n);
+            X += valor * factor;
+
+            var valorPasoPositivo = Esencia.Funcion(t + paso);
+            var valorPasoNegativo = Esencia.Funcion(t - paso);            
+            derivada += (valorPasoPositivo - valorPasoNegativo) * factor / (2.0 * paso);
+        }
+
+        var s = 2 / periodoMuestreo 
+            * ((z - Complex.One) / (z + Complex.One)); //Aproximación bilineal para convertir z a s
+        var valorLaplace = Laplace(s);
+        var flujo = valorLaplace * Complex.Conjugate(X); //Producto punto entre la designación y como se desea que aparezca
+        Func<double, Complex> funcion = t => 
+            flujo.Magnitude
+            * Math.Cos(
+                z.Phase * t 
+                + flujo.Phase);
+        var apariencia = new Apariencia(funcion)
+        {
+            Esencia = this,
+        };
+
+        var velocidadGrupo = X.Magnitude <= 1e-12 ? X.Magnitude : (derivada / X).Imaginary;
+        var nombre = new Nombre(
+            texto,
+            Texto,
+            Admitancia)
+        {
+            VelocidadGrupo = velocidadGrupo,
+        };
+        var palabra = new Palabra(texto, nombre, apariencia)
+        {
+            Efecto = nombre,
+        };
+        nombre.Causa = palabra;
+        return palabra;
     }
 
     /// <summary>
@@ -57,28 +117,4 @@ public class Designacion : Nombre
     /// </summary>
     /// <returns>El hash code de la designación.</returns>
     public override int GetHashCode() => Id.GetHashCode();
-
-    /// <summary>
-    /// Calcula la STFT evaluando la función de la esencia en la ventana del nombre 
-    /// con un paso temporal de 1 por caracter del contexto.
-    /// Sobreescribir para implementar diferentes formas de análisis o pasos temporales.
-    /// </summary>
-    /// <param name="tau">Desplazamiento temporal de la ventana.</param>
-    /// <param name="omega">Frecuencia angular de analisis.</param>
-    /// <returns>Valor complejo de la STFT en el punto (tau, omega).</returns>
-    protected virtual Complex CalcularSTFT(double tau, double omega)
-    {        
-        var totalMuestras = Math.Max(1, Contexto.Length);
-        var suma = Complex.Zero;
-        var apariencia = Esencia as Apariencia;
-
-        for (var n = 0; n < totalMuestras; n++)
-        {
-            suma += apariencia.Funcion(n)
-                * Complex.Conjugate(Ventana(n - tau))
-                * Complex.FromPolarCoordinates(1.0, -omega * n); // Paso temporal de 1 por caracter del contexto  
-        }
-
-        return suma;
-    }
 }

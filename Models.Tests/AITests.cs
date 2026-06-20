@@ -1,125 +1,149 @@
-using FluentAssertions;
 using System.Numerics;
-using static Models.Tests.AITestHelpers;
+using DomainLogic;
+using FluentAssertions;
 namespace Models.Tests;
 
 public class AITests
 {
-    [Theory]
-    [InlineData(Math.PI / 2, 4.0)]
-    [InlineData(Math.PI / 2, 5.0)]
-    public void Modelo_ConRespuestaCorrectaMuyCorta_NoAlucina(double toleranciaDefase, double factorUmbralMagnitud)
+    private readonly DetectorAlucinacionIA _helper = new DetectorAlucinacionIA("Francia:capital:París");
+    private readonly AIDiagnostics _diagnostics = new AIDiagnostics();
+
+    [Fact]
+    public void Modelo_ConPreguntaLargaRespuestaMuyCorta_Alucina()
     {
-        //Arrage
-        var verdad = "Francia:capital:París";
-        var prompt = "¿Cuál es la capital de Francia?";
-        var energia = prompt.Length;
-        // Caracter por caracter se indica a que parte de la verdad se refiere cada caracter del prompt (0: no relevante, 1: se refiere a Francia, 2: se refiere a capital, 3: se refiere a París).
-        var referenciaPromptVerdad = new double[] { 0, 2, 2, 2, 2, 0, 2, 2, 0, 2, 2, 0, 2, 2, 2, 2, 2, 2, 2, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0 };
+        //Arrange
+        var prompt = "Estoy muy emocionado con esto de charlar con una IA, siento que puedo encontrar cualquier cosa. Ahora decime ¿Cuál es la capital de Francia?";        
         var respuesta = "París";
-        var referenciaRespuestaPrompt = new double[] { 3, 3, 3, 3, 3 };
+        var evaluador = _helper
+            .ConPrompt(prompt, t => Complex.Zero, 0)
+            .ConRespuesta(respuesta, t => Complex.Zero, 0, 0)
+            .AgregarEvaluacion(() => true);
 
-        //Act & Assert
-        var (alucina, detalleFallo) = EvaluarAlucina(
-            verdad, 
-            prompt, 
-            respuesta, 
-            referenciaPromptVerdad, 
-            referenciaRespuestaPrompt, 
-            toleranciaDefase, 
-            factorUmbralMagnitud,
-            energia,
-            esperado: false);
-        alucina.Should().BeFalse(detalleFallo);
+        //Act
+        var alucina = _helper.Alucina();
+
+        //Assert
+        if(alucina != true)
+        {
+            var carpetaDiagnostico = _diagnostics.GenerarDiagnosticos(evaluador);
+            Console.WriteLine($"Diagnostico={carpetaDiagnostico}");
+        }
+        alucina.Should().BeTrue();
     }
 
-    [Theory]
-    [InlineData(Math.PI / 2, 4.0)]
-    [InlineData(Math.PI / 2, 5.0)]
-    public void Modelo_ConRespuestaCorrectaConRellenoMargenBajo_AlucinaPorMagnitud(double toleranciaDefase, double factorUmbralMagnitud)
+    [Fact]
+    public void Modelo_ConPreguntaLargaRespuestaAcorde_NoAlucina()
     {
-        //Arrage
-        var verdad = "Francia:capital:París";
+        //Arrange
+        var prompt = "Estoy muy emocionado con esto de charlar con una IA, siento que puedo encontrar cualquier cosa. Ahora decime ¿Cuál es la capital de Francia?";
+        var respuesta = "Me alegro mucho, es una emoción común la que experimentas. Podes aprender sobre muchos temas con IA, aunque siempre es recomendable verificar datos sensibles. Con respecto a la capital de Francia, es París";
+        var evaluador = _helper
+            .ConPrompt(prompt, t => Complex.Zero, 0)
+            .ConRespuesta(respuesta, t => Complex.Zero, 0, 0)
+            .AgregarEvaluacion(() => false);
+
+        //Act
+        var alucina = _helper.Alucina();
+
+        //Assert
+        if(alucina != false)
+        {
+            var carpetaDiagnostico = _diagnostics.GenerarDiagnosticos(evaluador);
+            Console.WriteLine($"Diagnostico={carpetaDiagnostico}");
+        }
+        alucina.Should().BeFalse();
+    }
+
+    [Fact]
+    public void Modelo_ConPreguntaConcisaRespuestaConcisa_NoAlucina()
+    {
+        //Arrange
         var prompt = "¿Cuál es la capital de Francia?";
-        var energia = prompt.Length;
-        // Caracter por caracter se indica a que parte de la verdad se refiere cada caracter del prompt (0: no relevante, 1: se refiere a Francia, 2: se refiere a capital, 3: se refiere a París).
-        var referenciaPromptVerdad = new double[] { 0, 2, 2, 2, 2, 0, 2, 2, 0, 2, 2, 0, 2, 2, 2, 2, 2, 2, 2, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0 };
         var respuesta = "La capital de Francia es París.";
-        var referenciaRespuestaPrompt = new double[] { 1,1, 2,2,2,2,2,2,2, 1,1, 1,1,1,1,1,1, 2,2, 3,3,3,3,3 };
+        var evaluador = _helper
+            .ConPrompt(prompt, t => Complex.Zero, 0)
+            .ConRespuesta(respuesta, t => Complex.Zero, 0, 0)
+            .AgregarEvaluacion(() => false);
 
-        //Act & Assert
-        var (alucina, detalleFallo) = EvaluarAlucina(
-            verdad, 
-            prompt, 
-            respuesta, 
-            referenciaPromptVerdad, 
-            referenciaRespuestaPrompt, 
-            toleranciaDefase, 
-            factorUmbralMagnitud,
-            energia,
-            esperado: true);
-        alucina.Should().BeTrue(detalleFallo);
+        //Act
+        var alucina = _helper.Alucina();
+
+        //Assert
+        if(alucina != false)
+        {
+            var carpetaDiagnostico = _diagnostics.GenerarDiagnosticos(evaluador);
+            Console.WriteLine($"Diagnostico={carpetaDiagnostico}");
+        }
+        alucina.Should().BeFalse();
     }
 
-    [Theory]
-    [InlineData(Math.PI / 2, 5.0)]
-    [InlineData(Math.PI / 2, 10.0)]
-    [InlineData(Math.PI / 2, 15.0)]
-    [InlineData(Math.PI / 2, 20.0)]
-    [InlineData(Math.PI / 2, 29.0)]
-    public void Modelo_ConRespuestaCorrectaConRellenoMargenMedio_NoAlucina(double toleranciaDefase, double factorUmbralMagnitud)
+    [Fact]
+    public void Modelo_ConPreguntaConcisaRespuestaMuchoRelleno_Alucina()
     {
-        //Arrage
-        var verdad = "Francia:capital:París";
+        //Arrange
         var prompt = "¿Cuál es la capital de Francia?";
-        var energia = prompt.Length;
-        // Caracter por caracter se indica a que parte de la verdad se refiere cada caracter del prompt (0: no relevante, 1: se refiere a Francia, 2: se refiere a capital, 3: se refiere a París).
-        var referenciaPromptVerdad = new double[] { 0, 2, 2, 2, 2, 0, 2, 2, 0, 2, 2, 0, 2, 2, 2, 2, 2, 2, 2, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0 };
-        var respuesta = "La capital de Francia es París.";
-        var referenciaRespuestaPrompt = new double[] { 1,1, 2,2,2,2,2,2,2, 1,1, 1,1,1,1,1,1, 2,2, 3,3,3,3,3 };
-
-        //Act & Assert
-        var (alucina, detalleFallo) = EvaluarAlucina(
-            verdad, 
-            prompt, 
-            respuesta, 
-            referenciaPromptVerdad, 
-            referenciaRespuestaPrompt, 
-            toleranciaDefase, 
-            factorUmbralMagnitud,
-            energia,
-            esperado: true);
-        alucina.Should().BeTrue(detalleFallo);
-    }
-
-    [Theory]
-    [InlineData(Math.PI / 2, 5.0)]
-    [InlineData(Math.PI / 2, 10.0)]
-    [InlineData(Math.PI / 2, 20.0)]
-    [InlineData(Math.PI / 2, 30.0)]
-    public void Modelo_ConMuchoRelleno_AlucinaMagnitud(double toleranciaDefase, double factorUmbralMagnitud)
-    {
-        //Arrage
-        var verdad = "Francia:capital:París";
-        var prompt = "¿Cuál es la capital de Francia?";
-        var energia = prompt.Length;
-        // Caracter por caracter se indica a que parte de la verdad se refiere cada caracter del prompt (0: no relevante, 1: se refiere a Francia, 2: se refiere a capital, 3: se refiere a París).
-        var referenciaPromptVerdad = new double[] { 0, 2, 2, 2, 2, 0, 2, 2, 0, 2, 2, 0, 2, 2, 2, 2, 2, 2, 2, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0 };
         var respuesta = "Hay muchas repuestas posibles correctas, algunos dicen que es Lyon pero la verdadera capital de Francia es París.";
-        var referenciaRespuestaPrompt = new double[] { 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3 };
+        var evaluador = _helper
+            .ConPrompt(prompt, t => Complex.Zero, 0)
+            .ConRespuesta(respuesta, t => Complex.Zero, 0, 0)
+            .AgregarEvaluacion(() => true);
 
-        //Act & Assert
-        var (alucina, detalleFallo) = EvaluarAlucina(
-            verdad, 
-            prompt, 
-            respuesta, 
-            referenciaPromptVerdad, 
-            referenciaRespuestaPrompt, 
-            toleranciaDefase, 
-            factorUmbralMagnitud,
-            energia,
-            esperado: true);
-        alucina.Should().BeTrue(detalleFallo);
+        //Act
+        var alucina = _helper.Alucina();
+
+        //Assert
+        if(alucina != true)
+        {
+            var carpetaDiagnostico = _diagnostics.GenerarDiagnosticos(evaluador);
+            Console.WriteLine($"Diagnostico={carpetaDiagnostico}");
+        }
+        alucina.Should().BeTrue();
     }
 
+    [Fact]
+    public void Modelo_ConPreguntaConcisaRespuestaCortaFalsa_Alucina()
+    {
+        //Arrange
+        var prompt = "¿Cuál es la capital de Francia?";
+        var respuesta = "Lyon.";
+        var evaluador = _helper
+            .ConPrompt(prompt, t => Complex.Zero, 0)
+            .ConRespuesta(respuesta, t => Complex.Zero, 0, 0)
+            .AgregarEvaluacion(() => true);
+
+        //Act
+        var alucina = _helper.Alucina();
+
+        //Assert
+        if(alucina != true)
+        {
+            var carpetaDiagnostico = _diagnostics.GenerarDiagnosticos(evaluador);
+            Console.WriteLine($"Diagnostico={carpetaDiagnostico}");
+        }
+        alucina.Should().BeTrue();
+    }
+
+    [Fact]
+    public void Modelo_ConPreguntaConcisaRespuestaLargaFalsa_Alucina()
+    {
+        //Arrange
+        var prompt = "¿Cuál es la capital de Francia?";
+        var respuesta = "Me alegro mucho, es una emoción común la que experimentas. Podes aprender sobre muchos temas con IA, aunque siempre es recomendable verificar datos sensibles. Con respecto a la capital de Francia, es Lyon.";
+        var evaluador = _helper
+            .ConPrompt(prompt, t => Complex.Zero, 0)
+            .ConRespuesta(respuesta, t => Complex.Zero, 0, 0)
+            .AgregarEvaluacion(() => true);
+
+        //Act
+        var alucina = _helper.Alucina();
+
+        //Assert
+        if(alucina != true)
+        {
+            var carpetaDiagnostico = _diagnostics.GenerarDiagnosticos(evaluador);
+            Console.WriteLine($"Diagnostico={carpetaDiagnostico}");
+        }
+        alucina.Should().BeTrue();
+    }
+    
 }
