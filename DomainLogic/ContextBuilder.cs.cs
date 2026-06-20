@@ -7,32 +7,42 @@ public class ContextBuilder
     private readonly string _verdad;
     public string Prompt { get; private set; }
     public Nombre NombrePromt;
-    public Apariencia AparienciaPromt;
     public string Respuesta { get; private set; }
     public Nombre NombreRespuesta;
-    public Apariencia AparienciaRespuesta;
 
     public ContextBuilder(string verdad)
     {
         _verdad = verdad;
     }
 
-    public ContextBuilder ConPrompt(string prompt, double[] referenciaPromptVerdad, double velocidadGrupo)
+    public ContextBuilder ConPrompt(
+        string prompt, 
+        double[] referenciaPromptVerdad, 
+        double frecuenciaAngularRespiracion)
     {
         Prompt = prompt;
 
-        var ventana = GetVentana(referenciaPromptVerdad);
+        var admitancia = GetAdmitancia(referenciaPromptVerdad);        
+        var palabra = new Palabra(
+            Prompt,
+            _verdad,
+            frecuenciaAngularRespiracion,
+            0.0,
+            admitancia);
         NombrePromt = new Nombre(
             prompt,
             _verdad,
-            ventana,
-            velocidadGrupo);
-        AparienciaPromt = new Apariencia(NombrePromt);
-
+            admitancia);
+        var designacion = NombrePromt.Mostrarse(palabra);
+        var apariencia = designacion.Aparecer(Complex.One, 0.01, _verdad);
         return this;
     }    
 
-    public ContextBuilder ConRespuesta(string respuesta, double[] referenciaRespuestaPrompt, double velocidadGrupo)
+    public ContextBuilder ConRespuesta(
+        string respuesta, 
+        double[] referenciaRespuestaPrompt, 
+        double frecuenciaAngularRespiracion,
+        double tiempoRespuesta)
     {
         if (NombrePromt == null || Prompt == null)
         {
@@ -40,29 +50,16 @@ public class ContextBuilder
         }
 
         Respuesta = respuesta;
-        var ventana = GetVentana(referenciaRespuestaPrompt);
+        var admitancia = GetAdmitancia(referenciaRespuestaPrompt);
         NombreRespuesta = new Nombre(
             respuesta,
-            $"{_verdad}:{Prompt}",
-            ventana,
-            velocidadGrupo);
-        AparienciaRespuesta = new Apariencia(NombreRespuesta);
+            _verdad,
+            admitancia);
 
         return this;
     }
 
-    public Designacion CrearDesignacion()
-    {
-        if (NombrePromt == null || NombreRespuesta == null)
-        {
-            throw new InvalidOperationException("Debe configurar el prompt y la respuesta antes de crear la designación.");
-        }
-
-        var designacion = NombreRespuesta.Mostrarse(AparienciaPromt);
-        return designacion;
-    }
-
-    private Func<double, Complex> GetVentana(double[] referencia) => t =>
+    private Func<double, Complex> GetAdmitancia(double[] referencia) => t =>
     {
         var indice = (int)t;
         if (indice >= 0 && indice < referencia.Length)

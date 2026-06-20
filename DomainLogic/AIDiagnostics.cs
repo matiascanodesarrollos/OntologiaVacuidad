@@ -21,9 +21,8 @@ public class AIDiagnostics
         Directory.CreateDirectory(carpetaHeatMap);
         
         var tMax = Math.Max(contextoBuilder.Prompt.Length, contextoBuilder.Respuesta.Length);
-        CrearGrafico(contextoBuilder.AparienciaPromt, "Prompt", carpetaMagnitud, carpetaFase, tMax);
-        CrearGrafico(contextoBuilder.AparienciaRespuesta, "Respuesta", carpetaMagnitud, carpetaFase, tMax);
-        CrearHeatMap(contextoBuilder, carpetaHeatMap, tMax);
+        CrearGrafico(contextoBuilder.NombrePromt.Esencia, "Prompt", carpetaMagnitud, carpetaFase, tMax);
+        CrearGrafico(contextoBuilder.NombreRespuesta.Esencia, "Respuesta", carpetaMagnitud, carpetaFase, tMax);
 
         var metadata = Path.Combine(salida, "metadata.txt");
         File.WriteAllText(
@@ -63,63 +62,5 @@ public class AIDiagnostics
         plot.XLabel(ejeX);
         plot.YLabel(ejeY);
         plot.SavePng(ruta, 1200, 800);
-    }
-
-    private void CrearHeatMap(ContextBuilder contextoBuilder, string carpetaHeatMap, int tMax)
-    {
-        var designacion = contextoBuilder.CrearDesignacion();
-        var muestrasPorUnidad = 10;
-        var muestrasTau = Math.Max(tMax * muestrasPorUnidad, 1);
-        var omegasPrompt = contextoBuilder.NombrePromt.Fourier.Keys.ToHashSet();
-        var omegasRespuesta = contextoBuilder.NombreRespuesta.Fourier.Keys.ToHashSet();
-        var omegas = omegasPrompt
-            .Union(omegasRespuesta)
-            .OrderBy(omega => omega)
-            .ToArray();
-
-        if (omegas.Length == 0)
-        {
-            return;
-        }
-
-        var magnitudesStft = new double[omegas.Length, muestrasTau];
-        for (var iOmega = 0; iOmega < omegas.Length; iOmega++)
-        {
-            for (var iTau = 0; iTau < muestrasTau; iTau++)
-            {
-                var tau = iTau / (double)muestrasPorUnidad;
-                magnitudesStft[iOmega, iTau] = designacion.STFT(tau, omegas[iOmega]).Magnitude;
-            }
-        }
-
-        var plot = new Plot();
-        plot.Add.Heatmap(magnitudesStft);
-        for (var iOmega = 0; iOmega < omegas.Length; iOmega++)
-        {
-            var enPrompt = omegasPrompt.Contains(omegas[iOmega]);
-            var enRespuesta = omegasRespuesta.Contains(omegas[iOmega]);
-            var linea = plot.Add.HorizontalLine(iOmega);
-            linea.Color = ObtenerColorEtiqueta(enPrompt, enRespuesta);
-            linea.LineWidth = 1;
-        }
-        plot.Title("Designacion STFT | Magnitud");
-        plot.XLabel("tau");
-        plot.YLabel("omega (rojo=prompt, verde=ambos, transparente=respuesta)");
-        plot.SavePng(Path.Combine(carpetaHeatMap, "designacion_stft_heatmap.png"), 1200, 800);
-    }
-
-    private static Color ObtenerColorEtiqueta(bool enPrompt, bool enRespuesta)
-    {
-        if (enPrompt && enRespuesta)
-        {
-            return Colors.Green;
-        }
-
-        if (enPrompt)
-        {
-            return Colors.Red;
-        }
-
-        return Colors.Transparent;
     }
 }
