@@ -34,6 +34,14 @@ public class Palabra : Apariencia
     {
         Texto = texto;
         Efecto = efecto;
+        var deltaT = 0.01;
+        var muestraUno = apariencia.Funcion(0.0);
+        var muestraDos = apariencia.Funcion(deltaT);
+        var division = muestraDos / muestraUno;
+        var frecuenciaAngularRespiracion = division.Phase / deltaT;
+        Funcion = tau => 
+            Complex.FromPolarCoordinates(1.0, frecuenciaAngularRespiracion * tau)
+            * efecto.Admitancia(0.0 - tau);
     }
 
     internal static Palabra Gozo(double energia) => new Palabra(

@@ -5,7 +5,7 @@ public class Apariencia
 {
     public Guid Id { get; }
     public Func<double, Complex> Funcion { get; }
-    internal Designacion Esencia { get; set; }
+    public Designacion Esencia { get; set; }
 
     internal Apariencia(double frecuenciaAngular)
     {

@@ -12,7 +12,7 @@ public class Nombre
     internal double VelocidadGrupo { get; set; }
     internal Palabra Causa { get; set; }
     internal Dictionary<double, Complex> FrecuenciasAngulares { get; }
-    protected Func<double, Complex> Admitancia { get; }
+    internal Func<double, Complex> Admitancia { get; }
 
     protected Nombre(Nombre otro)
     {
@@ -56,40 +56,16 @@ public class Nombre
             t => new Complex(componenteReal, componenteImaginario));
 
     /// <summary>
-    /// Crea una palabra para este nombre de frecuencia angular igual a la suma de las frecuencias de Fourier.
+    /// Crea una apariencia para este nombre de frecuencia angular igual a la suma de las frecuencias de Fourier.
     /// </summary>
-    /// <param name="palabra">Palabra elegida para expresar el concepto.</param>
-    /// <returns>La palabra construida.</returns>
-    public Designacion Mostrarse(Palabra palabra)
+    /// <param name="apariencia">Apariencia elegida para expresar el concepto.</param>
+    /// <returns>La apariencia construida.</returns>
+    public Apariencia Mostrarse(Apariencia apariencia)
     {
+        var palabra = new Palabra(Texto, this, apariencia);
         var designacion = new Designacion(palabra, this);
-        return designacion;
-    }
-
-    /// <summary>
-    /// Devuelve una representación textual simple del nombre.
-    /// </summary>
-    /// <returns>Una cadena con texto y velocidad de grupo.</returns>
-    public override string ToString() => $"{Texto} (VelocidadGrupo: {VelocidadGrupo})";
-
-    /// <summary>
-    /// Compara nombres por su Id.
-    /// </summary>
-    /// <returns>True si ambos nombres tienen el mismo Id, false en caso contrario.</returns>
-    public override bool Equals(object obj)
-    {
-        if (obj is Nombre other)
-        {
-            return Id == other.Id;
-        }
-        return false;
-    }
-
-    /// <summary>
-    /// Genera el hash code a partir del Id.
-    /// </summary>
-    /// <returns>El hash code del Id del nombre.</returns>
-    public override int GetHashCode() => Id.GetHashCode();
+        return designacion.Esencia;
+    }    
 
     /// <summary>
     /// Calcula sigma como la transformada discreta de Fourier de la ventana sobre el contexto en la frecuencia angular especificada.
@@ -150,4 +126,29 @@ public class Nombre
 
         return resultado;
     }
+
+    /// <summary>
+    /// Devuelve una representación textual simple del nombre.
+    /// </summary>
+    /// <returns>Una cadena con texto y velocidad de grupo.</returns>
+    public override string ToString() => $"{Texto} (VelocidadGrupo: {VelocidadGrupo})";
+
+    /// <summary>
+    /// Compara nombres por su Id.
+    /// </summary>
+    /// <returns>True si ambos nombres tienen el mismo Id, false en caso contrario.</returns>
+    public override bool Equals(object obj)
+    {
+        if (obj is Nombre other)
+        {
+            return Id == other.Id;
+        }
+        return false;
+    }
+
+    /// <summary>
+    /// Genera el hash code a partir del Id.
+    /// </summary>
+    /// <returns>El hash code del Id del nombre.</returns>
+    public override int GetHashCode() => Id.GetHashCode();
 }

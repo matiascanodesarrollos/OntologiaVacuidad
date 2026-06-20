@@ -16,25 +16,6 @@ public class Designacion : Nombre
     }
 
     /// <summary>
-    /// Sobreescribe Equals para comparar designaciones por su Id.
-    /// </summary>
-    /// <returns>True si las designaciones son iguales, false en caso contrario.</returns>
-    public override bool Equals(object obj)
-    {
-        if (obj is Designacion other)
-        {
-            return Id == other.Id;
-        }
-        return false;
-    }
-
-    /// <summary>
-    /// Sobreescribe GetHashCode para comparar designaciones por su Id.
-    /// </summary>
-    /// <returns>El hash code de la designación.</returns>
-    public override int GetHashCode() => Id.GetHashCode();
-
-    /// <summary>
     /// Calcula la transformada de Laplace evaluando la función de la esencia en la ventana del nombre 
     /// con un paso temporal de 1 por caracter del contexto.
     /// Sobreescribir para implementar diferentes formas de análisis o pasos temporales.
@@ -58,7 +39,7 @@ public class Designacion : Nombre
     }
 
     /// <summary>
-    /// Crea una nueva palabra a partir de z y el periodo de muestreo T.
+    /// Crea una nueva palabra a partir de z, el periodo de muestreo T y el texto deseado.
     /// Sobreescribir para implementar diferentes formas de aparición o análisis de la respuesta.
     /// </summary>    
     /// <param name="z">Variable z, representación de la intención de quien aparenta.</param>
@@ -117,4 +98,23 @@ public class Designacion : Nombre
         nombre.Causa = palabra;
         return palabra;
     }
+
+    /// <summary>
+    /// Sobreescribe Equals para comparar designaciones por su Id.
+    /// </summary>
+    /// <returns>True si las designaciones son iguales, false en caso contrario.</returns>
+    public override bool Equals(object obj)
+    {
+        if (obj is Designacion other)
+        {
+            return Id == other.Id;
+        }
+        return false;
+    }
+
+    /// <summary>
+    /// Sobreescribe GetHashCode para comparar designaciones por su Id.
+    /// </summary>
+    /// <returns>El hash code de la designación.</returns>
+    public override int GetHashCode() => Id.GetHashCode();
 }

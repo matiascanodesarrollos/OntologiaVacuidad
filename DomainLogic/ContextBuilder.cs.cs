@@ -33,8 +33,8 @@ public class ContextBuilder
             prompt,
             _verdad,
             admitancia);
-        var designacion = NombrePromt.Mostrarse(palabra);
-        var apariencia = designacion.Aparecer(Complex.One, 0.01, _verdad);
+        var apariencia = NombrePromt.Mostrarse(palabra);
+        var respuesta = NombrePromt.Esencia.Esencia.Aparecer(Complex.One, 0.01, _verdad);
         return this;
     }    
 
