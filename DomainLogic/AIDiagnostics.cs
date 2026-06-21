@@ -20,9 +20,9 @@ public class AIDiagnostics
         Directory.CreateDirectory(carpetaFase);
         Directory.CreateDirectory(carpetaHeatMap);
         
-        var tMax = Math.Max(evaluador.Prompt.Length, evaluador.Respuesta.Length);
-        CrearGrafico(evaluador.NombrePromt.Esencia, "Prompt", carpetaMagnitud, carpetaFase, tMax);
-        CrearGrafico(evaluador.NombreRespuesta.Esencia, "Respuesta", carpetaMagnitud, carpetaFase, tMax);
+        var tMax = Math.Max(evaluador.Prompt.Texto.Length, evaluador.Respuesta.Texto.Length);
+        CrearGrafico(evaluador.Prompt.Apariencia, "Prompt", carpetaMagnitud, carpetaFase, tMax);
+        CrearGrafico(evaluador.Respuesta.Apariencia, "Respuesta", carpetaMagnitud, carpetaFase, tMax);
 
         var metadata = Path.Combine(salida, "metadata.txt");
         File.WriteAllText(

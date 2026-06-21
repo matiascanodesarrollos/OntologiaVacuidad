@@ -5,19 +5,18 @@ public class Palabra : Apariencia
 {
     public string Texto { get; }
     public Nombre Efecto { get; set; }
-    internal new Func<double, Complex> Funcion { get; }
+    public new Func<double, double, Complex> Funcion { get; }
 
     public Palabra(
         string texto,
         string contexto,
         double frecuenciaAngularRespiracion,
-        double tiempo,
         Func<double, Complex> admitancia)
         : base(frecuenciaAngularRespiracion)
     {
-        Funcion = tau => 
+        Funcion = (tau, t) => 
             Complex.FromPolarCoordinates(1.0, frecuenciaAngularRespiracion * tau)
-            * admitancia(tiempo - tau);
+            * admitancia(t - tau);
         Texto = texto;
         Efecto = new Nombre(
             texto,
@@ -39,15 +38,14 @@ public class Palabra : Apariencia
         var muestraDos = apariencia.Funcion(deltaT);
         var division = muestraDos / muestraUno;
         var frecuenciaAngularRespiracion = division.Phase / deltaT;
-        Funcion = tau => 
+        Funcion = (tau, t) => 
             Complex.FromPolarCoordinates(1.0, frecuenciaAngularRespiracion * tau)
-            * efecto.Admitancia(0.0 - tau);
+            * efecto.Admitancia(t - tau);
     }
 
     internal static Palabra Gozo(double energia) => new Palabra(
         nameof(Gozo),
         nameof(Nombre.Vacuidad),
-        0.0,
         0.0,
         (t) => 
             Complex.FromPolarCoordinates(1.0, energia) 

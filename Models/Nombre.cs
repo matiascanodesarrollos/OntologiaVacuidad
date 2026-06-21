@@ -5,21 +5,19 @@ using System.Numerics;
 
 public class Nombre
 {
-    public Guid Id { get; }    
+    public Guid Id { get; }
     public string Texto { get; }
     public string Contexto { get; }
     public Apariencia Esencia { get; }
+    internal Func<double, Complex> Admitancia { get; }
     internal double VelocidadGrupo { get; set; }
     internal Palabra Causa { get; set; }
-    internal Dictionary<double, Complex> FrecuenciasAngulares { get; }
-    internal Func<double, Complex> Admitancia { get; }
 
     protected Nombre(Nombre otro)
     {
         Id = otro.Id;
         Texto = otro.Texto;
         Contexto = otro.Contexto;
-        FrecuenciasAngulares = otro.FrecuenciasAngulares;
         Admitancia = otro.Admitancia;
         VelocidadGrupo = otro.VelocidadGrupo;
         Esencia = otro.Esencia;
@@ -41,8 +39,7 @@ public class Nombre
         Contexto = contexto;
         Admitancia = admitancia;
         VelocidadGrupo = 0.0;
-        FrecuenciasAngulares = EstimarFrecuencias();
-        var frecuenciaAngular = FrecuenciasAngulares.Keys.Sum();
+        var frecuenciaAngular = EstimarFrecuencias().Keys.Sum();
         Esencia = new Apariencia(frecuenciaAngular);
         Esencia.Esencia = new Designacion(Esencia, this);
     }
@@ -99,7 +96,7 @@ public class Nombre
     /// <see cref="FrecuenciasAngulares"/> y, por tanto, las frecuencias que <see cref="Mostrarse"/> usa
     /// para construir las palabras.
     /// </remarks>
-    protected virtual Dictionary<double, Complex> EstimarFrecuencias()
+    public virtual Dictionary<double, Complex> EstimarFrecuencias()
     {
         var totalMuestras = Math.Max(1, Contexto.Length);
         var omegas = Contexto.GroupBy(c => c + 1);
@@ -110,7 +107,7 @@ public class Nombre
             var sigma = grupo.Count();
             var omega = grupo.Key;            
             var suma = Complex.Zero;
-
+            
             for (int t = 0; t < totalMuestras; t++)
             {
                 var muestra = Complex.Conjugate(Admitancia(t));
