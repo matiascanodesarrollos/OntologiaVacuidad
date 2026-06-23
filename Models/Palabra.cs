@@ -40,7 +40,7 @@ public class Palabra : Apariencia
         var frecuenciaAngularRespiracion = division.Phase / deltaT;
         Funcion = (tau, t) => 
             Complex.FromPolarCoordinates(1.0, frecuenciaAngularRespiracion * tau)
-            * efecto.Admitancia(t - tau);
+            * efecto.Ventana(t - tau);
     }
 
     internal static Palabra Gozo(double energia) => new Palabra(
@@ -48,9 +48,10 @@ public class Palabra : Apariencia
         nameof(Nombre.Vacuidad),
         0.0,
         (t) => 
-            Complex.FromPolarCoordinates(1.0, energia) 
-            * (t <= 0
-                ? new Complex(0.5 * energia, 0.0)
-                : new Complex(0.0, energia / (2 * Math.PI * t)))
-        );    
+            t < 0
+                ? Complex.Zero
+                : t == 0
+                    ? new Complex(energia, 0.0)
+                    : new Complex(0.0, energia / (2 * Math.PI * t))
+        );
 }

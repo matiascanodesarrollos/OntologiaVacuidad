@@ -37,8 +37,8 @@ public class AITests
                 100)            
             .DebenDecaerEnMomentosCercanos(1000, 0.02, 20)
             .PortadorasDebenArmonizar(2, 1)
-            .ConFiltroPrompt(Complex.One, 0.01, string.Empty)
-            .ConFiltroRespuesta(Complex.One, 0.01, string.Empty);
+            .ConFiltroPrompt(400, respuesta)
+            .ConFiltroRespuesta(100, respuesta);
 
         //Act
         var alucina = _helper.Alucina();
@@ -144,8 +144,8 @@ public class AITests
                 400)
             .DebenDecaerEnMomentosCercanos(1000, 0.02, 20)
             .PortadorasDebenArmonizar(2, 1)
-            .ConFiltroPrompt(Complex.One, 0.01, string.Empty)
-            .ConFiltroRespuesta(Complex.One, 0.01, string.Empty);
+            .ConFiltroPrompt(100, respuesta)
+            .ConFiltroRespuesta(400, respuesta);
 
         //Act
         var alucina = _helper.Alucina();
@@ -177,9 +177,7 @@ public class AITests
                 t => 0, 
                 0)
             .DebenDecaerEnMomentosCercanos(1000, 0.02, 20)
-            .PortadorasDebenArmonizar(2, 1)
-            .ConFiltroPrompt(Complex.One, 0.01, string.Empty)
-            .ConFiltroRespuesta(Complex.One, 0.01, string.Empty);
+            .PortadorasDebenArmonizar(2, 1);
 
         //Act
         var alucina = _helper.Alucina();
@@ -214,9 +212,7 @@ public class AITests
                     + 5 * Complex.Exp(new Complex(-0.01, 100) * t), 
                 400)
             .DebenDecaerEnMomentosCercanos(1000, 0.02, 20)
-            .PortadorasDebenArmonizar(2, 1)
-            .ConFiltroPrompt(Complex.One, 0.01, string.Empty)
-            .ConFiltroRespuesta(Complex.One, 0.01, string.Empty);
+            .PortadorasDebenArmonizar(2, 1);
 
         //Act
         var alucina = _helper.Alucina();

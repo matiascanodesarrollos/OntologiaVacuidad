@@ -83,8 +83,7 @@ public class DetectorAlucinacionIA
     }
 
     public DetectorAlucinacionIA ConFiltroPrompt(
-        Complex intencion, 
-        double tiempoMuestreo, 
+        double frecuenciaAngularRespiracion, 
         string textoDeseado)
     {
         if (Prompt == null)
@@ -96,15 +95,14 @@ public class DetectorAlucinacionIA
             var esencia = Prompt
                 .Apariencia
                 .Esencia
-                .Aparecer(intencion, tiempoMuestreo, textoDeseado);
+                .Aparecer(frecuenciaAngularRespiracion, textoDeseado);
             return false;
         });
         return this;
     }
 
     public DetectorAlucinacionIA ConFiltroRespuesta(
-        Complex intencion, 
-        double tiempoMuestreo, 
+        double frecuenciaAngularRespiracion, 
         string textoDeseado)
     {
         if (Respuesta == null)
@@ -116,7 +114,7 @@ public class DetectorAlucinacionIA
             var esencia = Respuesta
                 .Apariencia
                 .Esencia
-                .Aparecer(intencion, tiempoMuestreo, textoDeseado);
+                .Aparecer(frecuenciaAngularRespiracion, textoDeseado);
             return false;
         });
         return this;
