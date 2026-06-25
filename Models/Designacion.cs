@@ -46,7 +46,7 @@ public class Designacion : Nombre
     /// <returns>Valor complejo de la transformada Z en el punto z.</returns>
     internal virtual Complex CalcularTransformadaZ(Complex z)
     {        
-        var muestras = 5000;
+        var muestras = 300;
         var X = Complex.Zero;
         var periodoMuestreo = 0.01;
 
@@ -63,7 +63,7 @@ public class Designacion : Nombre
 
     internal virtual Complex CalcularSTFT(double omega, double tau)
     {
-        var muestras = 5000;
+        var muestras = 300;
         var periodoMuestreo = 0.01;
         var paso = 0.01;
         var X = Complex.Zero;

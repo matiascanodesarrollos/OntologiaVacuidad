@@ -9,7 +9,8 @@ public class Nombre
     public string Texto { get; }
     public string Contexto { get; }
     public Apariencia Esencia { get; }
-    internal Func<double, Complex> Ventana { get; }
+    public Func<double, Complex> Ventana { get; }
+    internal double FrecuenciaAngular { get; }
     internal Palabra Causa { get; set; }
 
     protected Nombre(Nombre otro)
@@ -20,6 +21,7 @@ public class Nombre
         Ventana = otro.Ventana;
         Esencia = otro.Esencia;
         Causa = otro.Causa;
+        FrecuenciaAngular = otro.FrecuenciaAngular;
     }
 
     /// <summary>
@@ -36,8 +38,8 @@ public class Nombre
         Texto = texto;
         Contexto = contexto;
         Ventana = admitancia;
-        var frecuenciaAngular = EstimarFrecuencias().Keys.Sum();
-        Esencia = new Apariencia(frecuenciaAngular);
+        FrecuenciaAngular = EstimarFrecuencias().Keys.Sum();
+        Esencia = new Apariencia(FrecuenciaAngular);
         Esencia.Esencia = new Designacion(Esencia, this);
     }
 
@@ -58,9 +60,8 @@ public class Nombre
     public Apariencia Mostrarse(Palabra palabra)
     {
         var designacion = new Designacion(palabra, this);
-        var frecuenciaAngular = EstimarFrecuencias().Keys.Sum();
         var apariencia = new Apariencia(
-            tau => designacion.STFT(frecuenciaAngular, tau))
+            tau => designacion.STFT(FrecuenciaAngular, tau))
         {
             Esencia = designacion,
         };
@@ -75,7 +76,7 @@ public class Nombre
     /// <returns>El integral complejo de la ventana.</returns>
     public virtual Complex Fourier(double omega)
     {
-        var muestras = 5000;
+        var muestras = 100;
         var periodoMuestreo = 0.01;
         var integral = Complex.Zero;
 
@@ -97,11 +98,13 @@ public class Nombre
     /// </summary>
     public virtual Dictionary<double, Complex> EstimarFrecuencias()
     {
-        var muestras = 5000;
+        var muestras = 100;
+        var frecuenciaMaxima = 5000;
+        var deltaFrecuencia = 100;
         var periodoMuestreo = 0.01;
         var resultado = new Dictionary<double, Complex>();
 
-        for(var omega = 0.0; omega <= 30000; omega += 100)
+        for(var omega = 0.0; omega <= frecuenciaMaxima; omega += deltaFrecuencia)
         {         
             var suma = Complex.Zero;            
             for (int n = 0; n < muestras; n++)
@@ -115,10 +118,6 @@ public class Nombre
             if(suma.Magnitude > 1e-6)
             {
                 resultado.Add(omega, suma);
-                if(omega > 0)
-                {
-                    resultado.Add(-omega, suma);
-                }
             }            
         }
 

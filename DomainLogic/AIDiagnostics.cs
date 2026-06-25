@@ -1,3 +1,4 @@
+using System.Numerics;
 using ScottPlot;
 
 namespace DomainLogic;
@@ -11,18 +12,22 @@ public class AIDiagnostics
             carpetaProyectoTests,
             "TestResults",
             "diagnostics",
-            $"diag_{DateTime.UtcNow:yyyyMMdd_HHmmss_fff}_{Guid.NewGuid():N}");
+            DateTime.UtcNow.ToString("yyyyMMdd_HHmm"));
         Directory.CreateDirectory(salida);
         var carpetaMagnitud = Path.Combine(salida, "magnitud");
         var carpetaFase = Path.Combine(salida, "fase");
-        var carpetaHeatMap = Path.Combine(salida, "heatmap");
         Directory.CreateDirectory(carpetaMagnitud);
         Directory.CreateDirectory(carpetaFase);
-        Directory.CreateDirectory(carpetaHeatMap);
-        
-        var tMax = Math.Max(evaluador.Prompt.Texto.Length, evaluador.Respuesta.Texto.Length);
-        CrearGrafico(evaluador.Prompt.Apariencia, "Prompt", carpetaMagnitud, carpetaFase, tMax);
-        CrearGrafico(evaluador.Respuesta.Apariencia, "Respuesta", carpetaMagnitud, carpetaFase, tMax);
+
+        CrearGrafico((t) => evaluador.Prompt.Funcion(t, 0), $"Prompt", carpetaMagnitud, carpetaFase);
+        var aparienciaPrompt = evaluador.Prompt as Apariencia;
+        CrearGrafico(aparienciaPrompt.Funcion, $"Prompt_Apariencia", carpetaMagnitud, carpetaFase);
+        CrearGrafico(evaluador.Prompt.Efecto.Ventana, $"Prompt_Ventana", carpetaMagnitud, carpetaFase);
+
+        CrearGrafico((t) => evaluador.Respuesta.Funcion(t, 0), $"Respuesta", carpetaMagnitud, carpetaFase);
+        var aparienciaRespuesta = evaluador.Respuesta as Apariencia;
+        CrearGrafico(aparienciaRespuesta.Funcion, $"Respuesta_Apariencia", carpetaMagnitud, carpetaFase);
+        CrearGrafico(evaluador.Respuesta.Efecto.Ventana, $"Respuesta_Ventana", carpetaMagnitud, carpetaFase);
 
         var metadata = Path.Combine(salida, "metadata.txt");
         File.WriteAllText(
@@ -32,19 +37,19 @@ public class AIDiagnostics
         return salida;
     }
 
-    private void CrearGrafico(Apariencia apariencia, string tipo, string carpetaMagnitud, string carpetaFase, int tMax)
+    private void CrearGrafico(Func<double, Complex> funcion, string tipo, string carpetaMagnitud, string carpetaFase)
     {
-        var muestrasPorUnidad = 10;
-        var muestras = tMax * muestrasPorUnidad; // 10 muestras por unidad de tiempo
+        var muestras = 100;
+        var periodoMuestreo = 0.01;
         var magnitud = new double[muestras];
         var fase = new double[muestras];
-        for (var t = 0.01; t <= tMax; t += 1.0 / muestrasPorUnidad)
+        for (var n = 0; n < muestras; n++)
         {
-            var valor = apariencia.Funcion(t);
+            var t = n * periodoMuestreo;
+            var valor = funcion(t);
 
-            var indice = (int)((t - 1.0 / muestrasPorUnidad) * muestrasPorUnidad);
-            magnitud[indice] = valor.Magnitude;
-            fase[indice] = valor.Phase;
+            magnitud[n] = valor.Magnitude > 0 ? valor.Magnitude : 0.0;
+            fase[n] = valor.Phase > 0 ? valor.Phase : 0.0;
         }
         GuardarSerie(magnitud, $"{tipo} Magnitud", "t", "|A(t)|", Path.Combine(carpetaMagnitud, $"{tipo.ToLower()}_magnitud.png"));
         GuardarSerie(fase, $"{tipo} Fase", "t", "fase(rad)", Path.Combine(carpetaFase, $"{tipo.ToLower()}_fase.png"));

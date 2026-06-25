@@ -6,8 +6,9 @@ namespace DomainLogic;
 public class DetectorAlucinacionIA
 {
     private readonly string _verdad;    
-    public Evaluador Prompt { get; private set; }
-    public Evaluador Respuesta { get; private set; }
+    public Palabra Prompt { get; private set; }
+    private double _frecuenciaAngularRespiracionPrompt;
+    public Palabra Respuesta { get; private set; }
     private List<Func<bool>> Evaluaciones = new List<Func<bool>>();
     private ITestOutputHelper _output;
 
@@ -21,24 +22,14 @@ public class DetectorAlucinacionIA
         Func<double, Complex> admitancia, 
         double frecuenciaAngularRespiracion)
     {
-        var palabra = new Palabra(
+        _frecuenciaAngularRespiracionPrompt = frecuenciaAngularRespiracion;
+        Prompt = new Palabra(
             prompt,
             _verdad,
             frecuenciaAngularRespiracion,
             admitancia);
-        var nombre = new Nombre(
-            prompt,
-            _verdad,
-            admitancia);
-        Prompt = new Evaluador()
-        {
-            Texto = prompt,
-            Palabra = palabra,
-            Nombre = nombre,
-            Apariencia = nombre.Mostrarse(palabra),
-        };
         return this;
-    }    
+    }  
 
     public DetectorAlucinacionIA ConRespuesta(
         string respuesta, 
@@ -50,23 +41,11 @@ public class DetectorAlucinacionIA
             throw new InvalidOperationException("Debe configurar el prompt antes de la respuesta.");
         }
 
-        var palabra = new Palabra(
+        Respuesta = new Palabra(
             respuesta,
-            _verdad,
+            Prompt.Texto,
             frecuenciaAngularRespiracion,
             admitancia);
-        var nombre = new Nombre(
-            respuesta,
-            _verdad,
-            admitancia);
-        Respuesta = new Evaluador()
-        {
-            Texto = respuesta,
-            Palabra = palabra,
-            Nombre = nombre,
-            Apariencia = nombre.Mostrarse(palabra),
-        };
-
         return this;
     }    
 
@@ -82,49 +61,13 @@ public class DetectorAlucinacionIA
         return this;
     }
 
-    public DetectorAlucinacionIA ConFiltroPrompt(
-        double frecuenciaAngularRespiracion, 
-        string textoDeseado)
-    {
-        if (Prompt == null)
-        {
-            throw new InvalidOperationException("Debe configurar el prompt antes de aplicar el filtro.");
-        }
-
-        AgregarEvaluacion(() => {
-            var esencia = Prompt
-                .Apariencia
-                .Esencia
-                .Aparecer(frecuenciaAngularRespiracion, textoDeseado);
-            return false;
-        });
-        return this;
-    }
-
-    public DetectorAlucinacionIA ConFiltroRespuesta(
-        double frecuenciaAngularRespiracion, 
-        string textoDeseado)
-    {
-        if (Respuesta == null)
-        {
-            throw new InvalidOperationException("Debe configurar la respuesta antes de aplicar el filtro.");
-        }
-
-        AgregarEvaluacion(() => {
-            var esencia = Respuesta
-                .Apariencia
-                .Esencia
-                .Aparecer(frecuenciaAngularRespiracion, textoDeseado);
-            return false;
-        });
-        return this;
-    }
-
     public DetectorAlucinacionIA PortadorasDebenArmonizar(double tolerancia, uint maximoArmonicos)
     {
         AgregarEvaluacion(() => {
-            var frecuenciaPrompt = Helper.ObtenerFrecuenciaDominante(Prompt.Apariencia.Funcion);
-            var frecuenciaRespuesta = Helper.ObtenerFrecuenciaDominante(Respuesta.Apariencia.Funcion);
+            var aparienciaPrompt = Prompt as Apariencia;
+            var frecuenciaPrompt = Helper.ObtenerFrecuenciaDominante(aparienciaPrompt.Funcion);
+            var aparienciaRespuesta = Respuesta as Apariencia;            
+            var frecuenciaRespuesta = Helper.ObtenerFrecuenciaDominante(aparienciaRespuesta.Funcion);
             if (_output != null)
             {
                 _output.WriteLine($"FrecuenciaPrompt={frecuenciaPrompt}, frecuenciaRespuesta={frecuenciaRespuesta}, tolerancia={tolerancia}, maximoArmonicos={maximoArmonicos}.");
@@ -150,8 +93,8 @@ public class DetectorAlucinacionIA
         double tolerancia)
     {
         AgregarEvaluacion(() => {
-            var tiempoFinalPrompt = Helper.ObtenerTiempoFinal(Prompt.Palabra.Funcion, 0.0, tiempoMaximo, umbral);
-            var tiempoFinalRespuesta = Helper.ObtenerTiempoFinal(Respuesta.Palabra.Funcion, 1.0, tiempoMaximo, umbral);
+            var tiempoFinalPrompt = Helper.ObtenerTiempoFinal(Prompt.Funcion, tiempoMaximo, umbral);
+            var tiempoFinalRespuesta = Helper.ObtenerTiempoFinal(Respuesta.Funcion, tiempoMaximo, umbral);
             if (_output != null)
             {
                 _output.WriteLine($"TiempoFinalPrompt={tiempoFinalPrompt}, TiempoFinalRespuesta={tiempoFinalRespuesta}, tiempoMaximo={tiempoMaximo}, umbral={umbral}.");
@@ -181,13 +124,5 @@ public class DetectorAlucinacionIA
         }
         
         return alucina;
-    }
-
-    public class Evaluador
-    {
-        public string Texto { get; set; }
-        public Palabra Palabra { get; set; }
-        public Nombre Nombre { get; set; }
-        public Apariencia Apariencia { get; set; }
     }
 }

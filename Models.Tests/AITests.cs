@@ -26,19 +26,17 @@ public class AITests
             .ConPrompt(
                 prompt, 
                 t => 
-                    3 * Complex.Exp(new Complex(-0.8, 300) * t) 
-                    + 10 * Complex.Exp(new Complex(-0.09, 200) * t) 
-                    + 5 * Complex.Exp(new Complex(-0.01, 100) * t), 
+                    Complex.Exp(new Complex(0.5 * t, 300 * t)) 
+                    + Complex.Exp(new Complex(0.01 * t, 200 * t))
+                    + Complex.Exp(new Complex(0.4 * t, 100 * t)), 
                 400)            
             .ConRespuesta(
                 respuesta, 
                 t => 
-                    2 * Complex.Exp(new Complex(-5, 100) * t), 
+                    Complex.Exp(new Complex(0.1 * t, 100 * t)), 
                 100)            
             .DebenDecaerEnMomentosCercanos(1000, 0.02, 20)
-            .PortadorasDebenArmonizar(2, 1)
-            .ConFiltroPrompt(400, respuesta)
-            .ConFiltroRespuesta(100, respuesta);
+            .PortadorasDebenArmonizar(2, 1);
 
         //Act
         var alucina = _helper.Alucina();
@@ -49,7 +47,7 @@ public class AITests
             var carpetaDiagnostico = _diagnostics.GenerarDiagnosticos(evaluador);
             _output.WriteLine($"Diagnostico={carpetaDiagnostico}");
         }
-        alucina.Should().BeTrue();
+        alucina.Should().BeTrue("la respuesta con mucho relleno y desviación de la pregunta original.");
     }
 
     [Fact]
@@ -63,16 +61,16 @@ public class AITests
             .ConPrompt(
                 prompt, 
                 t => 
-                    6 * Complex.Exp(new Complex(-0.8, 300) * t) 
-                    + 10 * Complex.Exp(new Complex(-0.09, 200) * t) 
-                    + 5 * Complex.Exp(new Complex(-0.01, 100) * t), 
+                    Complex.Exp(new Complex(0.8 * t, 300 * t)) 
+                    + Complex.Exp(new Complex(0.01 * t, 200 * t)) 
+                    + Complex.Exp(new Complex(0.3 * t, 100 * t)), 
                 400)
             .ConRespuesta(
                 respuesta, 
                 t => 
-                    6 * Complex.Exp(new Complex(-0.8, 300) * t) 
-                    + 20 * Complex.Exp(new Complex(-0.01, 200) * t)
-                    + 5 * Complex.Exp(new Complex(-0.01, 100) * t), 
+                    Complex.Exp(new Complex(0.8 * t, 300 * t)) 
+                    + Complex.Exp(new Complex(0.01 * t, 200 * t))
+                    + Complex.Exp(new Complex(0.3 * t, 100 * t)), 
                 400)
             .DebenDecaerEnMomentosCercanos(1000, 0.02, 20)
             .PortadorasDebenArmonizar(2, 1);
@@ -86,7 +84,7 @@ public class AITests
             var carpetaDiagnostico = _diagnostics.GenerarDiagnosticos(evaluador);
             _output.WriteLine($"Diagnostico={carpetaDiagnostico}");
         }
-        alucina.Should().BeFalse();
+        alucina.Should().BeFalse("la respuesta concisa y correcta.");
     }
 
     [Fact]
@@ -100,12 +98,12 @@ public class AITests
             .ConPrompt(
                 prompt, 
                 t => 
-                    5 * Complex.Exp(new Complex(-0.01, 100) * t), 
+                    Complex.Exp(new Complex(0.1 * t, 100 * t)), 
                 100)
             .ConRespuesta(
                 respuesta, 
                 t => 
-                    5 * Complex.Exp(new Complex(-0.01, 100) * t), 
+                    Complex.Exp(new Complex(0.1 * t, 100 * t)), 
                 100)
             .DebenDecaerEnMomentosCercanos(1000, 0.02, 20)
             .PortadorasDebenArmonizar(2, 1);
@@ -119,7 +117,7 @@ public class AITests
             var carpetaDiagnostico = _diagnostics.GenerarDiagnosticos(evaluador);
             _output.WriteLine($"Diagnostico={carpetaDiagnostico}");
         }
-        alucina.Should().BeFalse();
+        alucina.Should().BeFalse("la respuesta concisa y correcta.");
     }
 
     [Fact]
@@ -133,19 +131,15 @@ public class AITests
             .ConPrompt(
                 prompt, 
                 t => 
-                    5 * Complex.Exp(new Complex(-0.01, 100) * t), 
+                    Complex.Exp(new Complex(0.2 * t, 100 * t)), 
                 100)
             .ConRespuesta(
                 respuesta, 
                 t => 
-                    6 * Complex.Exp(new Complex(-0.8, 300) * t) 
-                    + 5 * Complex.Exp(new Complex(-0.7, 200) * t)
-                    + 5 * Complex.Exp(new Complex(-0.01, 100) * t), 
-                400)
-            .DebenDecaerEnMomentosCercanos(1000, 0.02, 20)
-            .PortadorasDebenArmonizar(2, 1)
-            .ConFiltroPrompt(100, respuesta)
-            .ConFiltroRespuesta(400, respuesta);
+                    Complex.Exp(new Complex(0.8 * t, 100 * t)),
+                100)
+            .DebenDecaerEnMomentosCercanos(5000, 0.1, 5)
+            .PortadorasDebenArmonizar(2, 1);
 
         //Act
         var alucina = _helper.Alucina();
@@ -156,7 +150,7 @@ public class AITests
             var carpetaDiagnostico = _diagnostics.GenerarDiagnosticos(evaluador);
             _output.WriteLine($"Diagnostico={carpetaDiagnostico}");
         }
-        alucina.Should().BeTrue();
+        alucina.Should().BeTrue("la respuesta con mucho relleno y desviación de la pregunta original.");
     }
 
     [Fact]
@@ -170,7 +164,7 @@ public class AITests
             .ConPrompt(
                 prompt, 
                 t => 
-                    5 * Complex.Exp(new Complex(-0.01, 100) * t), 
+                    Complex.Exp(new Complex(0.3 * t, 100 * t)), 
                 100)
             .ConRespuesta(
                 respuesta, 
@@ -188,7 +182,7 @@ public class AITests
             var carpetaDiagnostico = _diagnostics.GenerarDiagnosticos(evaluador);
             _output.WriteLine($"Diagnostico={carpetaDiagnostico}");
         }
-        alucina.Should().BeTrue();
+        alucina.Should().BeTrue("la respuesta corta y falsa.");
     }
 
     [Fact]
@@ -202,14 +196,14 @@ public class AITests
             .ConPrompt(
                 prompt, 
                 t => 
-                    5 * Complex.Exp(new Complex(-0.01, 100) * t), 
+                    Complex.Exp(new Complex(0.2 * t, 100 * t)), 
                 100)
             .ConRespuesta(
                 respuesta, 
                 t => 
-                    6 * Complex.Exp(new Complex(-0.8, 300) * t) 
-                    + 5 * Complex.Exp(new Complex(-0.7, 200) * t)
-                    + 5 * Complex.Exp(new Complex(-0.01, 100) * t), 
+                    Complex.Exp(new Complex(0.8 * t, 300 * t)) 
+                    + Complex.Exp(new Complex(0.01 * t, 200 * t))
+                    + Complex.Exp(new Complex(0.2 * t, 100 * t)), 
                 400)
             .DebenDecaerEnMomentosCercanos(1000, 0.02, 20)
             .PortadorasDebenArmonizar(2, 1);
@@ -223,7 +217,7 @@ public class AITests
             var carpetaDiagnostico = _diagnostics.GenerarDiagnosticos(evaluador);
             _output.WriteLine($"Diagnostico={carpetaDiagnostico}");
         }
-        alucina.Should().BeTrue();
+        alucina.Should().BeTrue("la respuesta larga y falsa.");
     }
     
 }

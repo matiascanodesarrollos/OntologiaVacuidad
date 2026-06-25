@@ -42,13 +42,12 @@ public static class Helper
 
     public static double ObtenerTiempoFinal(
         Func<double, double, Complex> onda, 
-        double tiempoInicio, 
         double tiempoMaximo,
         double umbral)
     {
-        for(var t = 0.0; t < tiempoMaximo; t += 0.01)
+        for(var t = 0.0; t < tiempoMaximo; t += 1)
         {
-            var valor = onda(t, tiempoInicio);
+            var valor = onda(t, 0);
             if (valor.Magnitude < umbral)
             {
                 return t;
