@@ -52,8 +52,8 @@ public class Designacion : Nombre
 
         for (int n = 0; n < muestras; n++)
         {
-            var t = n * periodoMuestreo;
-            var valor = Esencia.Funcion(t);
+            var t = (n - muestras / 2) * periodoMuestreo;
+            var valor = Ventana(t);
             var factor = Complex.Pow(z, -n);
             X += valor * factor;
         }
@@ -71,7 +71,7 @@ public class Designacion : Nombre
 
         for (int n = 0; n < muestras; n++)
         {
-            var t = n * periodoMuestreo;
+            var t = (n - muestras / 2) * periodoMuestreo;
             var valor = Esencia.Funcion(t);
             var w = Ventana(t - tau);
             var factor = Complex.FromPolarCoordinates(1.0, -omega * t);
@@ -96,23 +96,25 @@ public class Designacion : Nombre
     public virtual Palabra Aparecer(Complex z, string texto)
     {
         var X = TransformadaZ(z);
-        var apariencia = new Apariencia(t => 
-            Complex.Exp(z.Magnitude * t) 
-            * X
-            * Complex.FromPolarCoordinates(1, z.Phase * t))
+        var apariencia = new Apariencia(
+            funcion: t => 
+                Complex.Exp(z.Magnitude * t) 
+                * X
+                * Complex.FromPolarCoordinates(1, z.Phase * t))
         {
             Esencia = this,
         };
 
         //Causa y efecto se invierten        
         var nombre = new Nombre(
-            texto,
-            Texto,
-            Ventana);
-        var palabra = new Palabra(texto, nombre, apariencia)
-        {
-            Efecto = nombre, //El efecto ocurre primero que la causa (se piensa antes que la acción).            
-        };
+            texto: texto,
+            contexto: Texto,
+            admitancia: Ventana);
+        //El efecto ocurre primero que la causa (se piensa antes que la acción).  
+        var palabra = new Palabra(
+            texto: texto, 
+            efecto: nombre, 
+            apariencia: apariencia);
         nombre.Causa = palabra;
         return palabra;
     }

@@ -19,15 +19,17 @@ public class AIDiagnostics
         Directory.CreateDirectory(carpetaMagnitud);
         Directory.CreateDirectory(carpetaFase);
 
-        CrearGrafico((t) => evaluador.Prompt.Funcion(t, 0), $"Prompt", carpetaMagnitud, carpetaFase);
-        var aparienciaPrompt = evaluador.Prompt as Apariencia;
-        CrearGrafico(aparienciaPrompt.Funcion, $"Prompt_Apariencia", carpetaMagnitud, carpetaFase);
-        CrearGrafico(evaluador.Prompt.Efecto.Ventana, $"Prompt_Ventana", carpetaMagnitud, carpetaFase);
+        CrearGrafico(evaluador.Prompt.Apariencia.Funcion, $"Prompt_Apariencia", carpetaMagnitud, carpetaFase);
+        CrearGrafico(evaluador.Prompt.AparienciaDesignacion.Funcion, $"Prompt_Designacion", carpetaMagnitud, carpetaFase);
+        CrearGrafico(tau => evaluador.Prompt.Palabra.Funcion(tau, 0), $"Prompt_Palabra", carpetaMagnitud, carpetaFase);
+        CrearGrafico(evaluador.Prompt.Palabra.Efecto.Ventana, $"Prompt_Ventana", carpetaMagnitud, carpetaFase);
+        CrearGrafico(evaluador.Prompt.AparienciaContextual.Funcion, $"Prompt_Contexto", carpetaMagnitud, carpetaFase);
 
-        CrearGrafico((t) => evaluador.Respuesta.Funcion(t, 0), $"Respuesta", carpetaMagnitud, carpetaFase);
-        var aparienciaRespuesta = evaluador.Respuesta as Apariencia;
-        CrearGrafico(aparienciaRespuesta.Funcion, $"Respuesta_Apariencia", carpetaMagnitud, carpetaFase);
-        CrearGrafico(evaluador.Respuesta.Efecto.Ventana, $"Respuesta_Ventana", carpetaMagnitud, carpetaFase);
+        CrearGrafico(evaluador.Respuesta.Apariencia.Funcion, $"Respuesta_Apariencia", carpetaMagnitud, carpetaFase);
+        CrearGrafico(evaluador.Respuesta.AparienciaDesignacion.Funcion, $"Respuesta_Designacion", carpetaMagnitud, carpetaFase);
+        CrearGrafico(tau => evaluador.Respuesta.Palabra.Funcion(tau, 0), $"Respuesta_Palabra", carpetaMagnitud, carpetaFase);
+        CrearGrafico(evaluador.Respuesta.Palabra.Efecto.Ventana, $"Respuesta_Ventana", carpetaMagnitud, carpetaFase);
+        CrearGrafico(evaluador.Respuesta.AparienciaContextual.Funcion, $"Respuesta_Contexto", carpetaMagnitud, carpetaFase);
 
         var metadata = Path.Combine(salida, "metadata.txt");
         File.WriteAllText(
@@ -45,7 +47,7 @@ public class AIDiagnostics
         var fase = new double[muestras];
         for (var n = 0; n < muestras; n++)
         {
-            var t = n * periodoMuestreo;
+            var t = (n - muestras / 2) * periodoMuestreo;
             var valor = funcion(t);
 
             magnitud[n] = valor.Magnitude > 0 ? valor.Magnitude : 0.0;
@@ -57,8 +59,9 @@ public class AIDiagnostics
 
     private void GuardarSerie(double[] serie, string titulo, string ejeX, string ejeY, string ruta)
     {
+        var centerIndex = serie.Length / 2;
         var xs = Enumerable
-            .Range(0, serie.Length)
+            .Range(-centerIndex, serie.Length)
             .Select(i => (double)i)
             .ToArray();
         var plot = new Plot();

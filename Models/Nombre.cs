@@ -39,17 +39,20 @@ public class Nombre
         Contexto = contexto;
         Ventana = admitancia;
         FrecuenciaAngular = EstimarFrecuencias().Keys.Sum();
-        Esencia = new Apariencia(FrecuenciaAngular);
-        Esencia.Esencia = new Designacion(Esencia, this);
+        Esencia = new Apariencia(
+            frecuenciaAngular: FrecuenciaAngular);
+        Esencia.Esencia = new Designacion(
+            apariencia: Esencia, 
+            nombre: this);
     }
 
     internal static Nombre Vacuidad(
         string contexto,
         double flujoRespiracion, 
         double intencionControl) => new Nombre(
-            nameof(Vacuidad),
-            contexto,
-            t => new Complex(flujoRespiracion, intencionControl));
+            texto: nameof(Vacuidad),
+            contexto: contexto,
+            admitancia: t => new Complex(flujoRespiracion, intencionControl));
 
     /// <summary>
     /// Crea una designación para la palabra y el nombre. 
@@ -59,14 +62,16 @@ public class Nombre
     /// <returns>La apariencia construida.</returns>
     public Apariencia Mostrarse(Palabra palabra)
     {
-        var designacion = new Designacion(palabra, this);
+        var designacion = new Designacion(
+            apariencia: palabra, 
+            nombre: this);
         var apariencia = new Apariencia(
-            tau => designacion.STFT(FrecuenciaAngular, tau))
+            funcion: tau => designacion.STFT(palabra.Efecto.FrecuenciaAngular, tau))
         {
             Esencia = designacion,
         };
         return apariencia;
-    }    
+    }
 
     /// <summary>
     /// Calcula la transformada de Fourier de la ventana.
@@ -82,7 +87,7 @@ public class Nombre
 
         for (var n = 0; n < muestras; n++)
         {
-            var t = n * periodoMuestreo;
+            var t = (n - muestras / 2) * periodoMuestreo;
             var muestra = Ventana(t);
             var factor = Complex.FromPolarCoordinates(1.0, -omega * t);
             integral += muestra * factor;
@@ -109,7 +114,7 @@ public class Nombre
             var suma = Complex.Zero;            
             for (int n = 0; n < muestras; n++)
             {
-                var t = n * periodoMuestreo;
+                var t = (n - muestras / 2) * periodoMuestreo;
                 var muestra = Ventana(t);
                 var factor = Complex.FromPolarCoordinates(1, -omega * t);
                 suma += muestra * factor;

@@ -19,13 +19,15 @@ public class Palabra : Apariencia
             * admitancia(t - tau);
         Texto = texto;
         Efecto = new Nombre(
-            texto,
-            contexto,
-            admitancia)
+            texto: texto,
+            contexto: contexto,
+            admitancia: admitancia)
         {
             Causa = this,
         };
-        Esencia = new Designacion(this, Efecto);
+        Esencia = new Designacion(
+            apariencia: this, 
+            nombre: Efecto);
     }
 
     internal Palabra(string texto, Nombre efecto, Apariencia apariencia)
@@ -44,10 +46,10 @@ public class Palabra : Apariencia
     }
 
     internal static Palabra Gozo(double energia) => new Palabra(
-        nameof(Gozo),
-        nameof(Nombre.Vacuidad),
-        0.0,
-        (t) => 
+        texto: nameof(Gozo),
+        contexto: nameof(Nombre.Vacuidad),
+        frecuenciaAngularRespiracion: 0.0,
+        admitancia: (t) => 
             t < 0
                 ? Complex.Zero
                 : t == 0

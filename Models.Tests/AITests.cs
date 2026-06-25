@@ -26,15 +26,15 @@ public class AITests
             .ConPrompt(
                 prompt, 
                 t => 
-                    Complex.Exp(new Complex(0.5 * t, 300 * t)) 
-                    + Complex.Exp(new Complex(0.01 * t, 200 * t))
-                    + Complex.Exp(new Complex(0.4 * t, 100 * t)), 
-                400)            
+                    Complex.Exp(5 * t) * Complex.FromPolarCoordinates(20, 300 * t)
+                    + Complex.Exp(1 * t) * Complex.FromPolarCoordinates(1, 200 * t)
+                    + Complex.Exp(4 * t) * Complex.FromPolarCoordinates(3, 100 * t),
+                Complex.Zero)
             .ConRespuesta(
                 respuesta, 
                 t => 
-                    Complex.Exp(new Complex(0.1 * t, 100 * t)), 
-                100)            
+                    Complex.Exp(0.1 * t) * Complex.FromPolarCoordinates(1, 100 * t),
+                Complex.Zero)
             .DebenDecaerEnMomentosCercanos(1000, 0.02, 20)
             .PortadorasDebenArmonizar(2, 1);
 
@@ -61,17 +61,17 @@ public class AITests
             .ConPrompt(
                 prompt, 
                 t => 
-                    Complex.Exp(new Complex(0.8 * t, 300 * t)) 
-                    + Complex.Exp(new Complex(0.01 * t, 200 * t)) 
-                    + Complex.Exp(new Complex(0.3 * t, 100 * t)), 
-                400)
+                    Complex.Exp(8 * t) * Complex.FromPolarCoordinates(20, 300 * t)
+                    + Complex.Exp(1 * t) * Complex.FromPolarCoordinates(1, 200 * t)
+                    + Complex.Exp(4 * t) * Complex.FromPolarCoordinates(3, 100 * t),
+                Complex.Zero)
             .ConRespuesta(
                 respuesta, 
                 t => 
-                    Complex.Exp(new Complex(0.8 * t, 300 * t)) 
-                    + Complex.Exp(new Complex(0.01 * t, 200 * t))
-                    + Complex.Exp(new Complex(0.3 * t, 100 * t)), 
-                400)
+                    Complex.Exp(8 * t) * Complex.FromPolarCoordinates(20, 300 * t)
+                    + Complex.Exp(1 * t) * Complex.FromPolarCoordinates(1, 200 * t)
+                    + Complex.Exp(3 * t) * Complex.FromPolarCoordinates(3, 100 * t),
+                Complex.Zero)
             .DebenDecaerEnMomentosCercanos(1000, 0.02, 20)
             .PortadorasDebenArmonizar(2, 1);
 
@@ -98,13 +98,13 @@ public class AITests
             .ConPrompt(
                 prompt, 
                 t => 
-                    Complex.Exp(new Complex(0.1 * t, 100 * t)), 
-                100)
+                    Complex.Exp(1 * t) * Complex.FromPolarCoordinates(3, 100 * t),
+                Complex.Zero)
             .ConRespuesta(
                 respuesta, 
                 t => 
-                    Complex.Exp(new Complex(0.1 * t, 100 * t)), 
-                100)
+                    Complex.Exp(1 * t) * Complex.FromPolarCoordinates(3, 100 * t),
+                Complex.Zero)
             .DebenDecaerEnMomentosCercanos(1000, 0.02, 20)
             .PortadorasDebenArmonizar(2, 1);
 
@@ -131,13 +131,13 @@ public class AITests
             .ConPrompt(
                 prompt, 
                 t => 
-                    Complex.Exp(new Complex(0.2 * t, 100 * t)), 
-                100)
+                    Complex.Exp(2 * t) * Complex.FromPolarCoordinates(3, 100 * t),
+                Complex.Zero)
             .ConRespuesta(
                 respuesta, 
                 t => 
-                    Complex.Exp(new Complex(0.8 * t, 100 * t)),
-                100)
+                    Complex.Exp(-2 * t) * Complex.FromPolarCoordinates(20, 100 * t),
+                Complex.Zero)
             .DebenDecaerEnMomentosCercanos(5000, 0.1, 5)
             .PortadorasDebenArmonizar(2, 1);
 
@@ -164,12 +164,12 @@ public class AITests
             .ConPrompt(
                 prompt, 
                 t => 
-                    Complex.Exp(new Complex(0.3 * t, 100 * t)), 
-                100)
+                    Complex.Exp(3 * t) * Complex.FromPolarCoordinates(3, 100 * t),
+                Complex.Zero)
             .ConRespuesta(
                 respuesta, 
-                t => 0, 
-                0)
+                t => 0,
+                Complex.Zero)
             .DebenDecaerEnMomentosCercanos(1000, 0.02, 20)
             .PortadorasDebenArmonizar(2, 1);
 
@@ -196,15 +196,15 @@ public class AITests
             .ConPrompt(
                 prompt, 
                 t => 
-                    Complex.Exp(new Complex(0.2 * t, 100 * t)), 
-                100)
+                    Complex.Exp(2 * t) * Complex.FromPolarCoordinates(3, 100 * t),
+                Complex.Zero)
             .ConRespuesta(
                 respuesta, 
                 t => 
-                    Complex.Exp(new Complex(0.8 * t, 300 * t)) 
-                    + Complex.Exp(new Complex(0.01 * t, 200 * t))
-                    + Complex.Exp(new Complex(0.2 * t, 100 * t)), 
-                400)
+                    Complex.Exp(-8 * t) * Complex.FromPolarCoordinates(20, 300 * t)
+                    + Complex.Exp(-1 * t) * Complex.FromPolarCoordinates(3, 200 * t)
+                    + Complex.Exp(2 * t) * Complex.FromPolarCoordinates(0, 200 * t),
+                Complex.Zero)
             .DebenDecaerEnMomentosCercanos(1000, 0.02, 20)
             .PortadorasDebenArmonizar(2, 1);
 

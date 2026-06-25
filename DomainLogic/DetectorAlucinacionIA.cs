@@ -6,9 +6,8 @@ namespace DomainLogic;
 public class DetectorAlucinacionIA
 {
     private readonly string _verdad;    
-    public Palabra Prompt { get; private set; }
-    private double _frecuenciaAngularRespiracionPrompt;
-    public Palabra Respuesta { get; private set; }
+    public Evaluacion Prompt { get; private set; }
+    public Evaluacion Respuesta { get; private set; }
     private List<Func<bool>> Evaluaciones = new List<Func<bool>>();
     private ITestOutputHelper _output;
 
@@ -19,33 +18,61 @@ public class DetectorAlucinacionIA
 
     public DetectorAlucinacionIA ConPrompt(
         string prompt, 
-        Func<double, Complex> admitancia, 
-        double frecuenciaAngularRespiracion)
+        Func<double, Complex> admitancia,
+        Complex z)
     {
-        _frecuenciaAngularRespiracionPrompt = frecuenciaAngularRespiracion;
-        Prompt = new Palabra(
-            prompt,
-            _verdad,
-            frecuenciaAngularRespiracion,
-            admitancia);
+        var palabra = new Palabra(
+            texto: prompt,
+            contexto: _verdad,
+            frecuenciaAngularRespiracion: 20,
+            admitancia: admitancia);
+        Prompt = new Evaluacion
+        {
+            Texto = prompt,
+            Palabra = palabra,
+            Apariencia = palabra.Efecto.Esencia,
+            AparienciaDesignacion = palabra
+                .Efecto
+                .Mostrarse(palabra),
+            AparienciaContextual = palabra
+                .Efecto
+                .Esencia
+                .Esencia
+                .Aparecer(z, prompt)
+        };
+
         return this;
     }  
 
     public DetectorAlucinacionIA ConRespuesta(
         string respuesta, 
-        Func<double, Complex> admitancia, 
-        double frecuenciaAngularRespiracion)
+        Func<double, Complex> admitancia,
+        Complex z)
     {
         if (Prompt == null)
         {
             throw new InvalidOperationException("Debe configurar el prompt antes de la respuesta.");
         }
 
-        Respuesta = new Palabra(
-            respuesta,
-            Prompt.Texto,
-            frecuenciaAngularRespiracion,
-            admitancia);
+        var palabra = new Palabra(
+            texto: respuesta,
+            contexto: Prompt.Texto,
+            frecuenciaAngularRespiracion: 500,
+            admitancia: admitancia);
+        Respuesta = new Evaluacion
+        {
+            Texto = respuesta,
+            Palabra = palabra,
+            Apariencia = palabra.Efecto.Esencia,
+            AparienciaDesignacion = palabra
+                .Efecto
+                .Mostrarse(palabra),
+            AparienciaContextual = palabra
+                .Efecto
+                .Esencia
+                .Esencia
+                .Aparecer(z, respuesta)
+        };
         return this;
     }    
 
@@ -64,10 +91,8 @@ public class DetectorAlucinacionIA
     public DetectorAlucinacionIA PortadorasDebenArmonizar(double tolerancia, uint maximoArmonicos)
     {
         AgregarEvaluacion(() => {
-            var aparienciaPrompt = Prompt as Apariencia;
-            var frecuenciaPrompt = Helper.ObtenerFrecuenciaDominante(aparienciaPrompt.Funcion);
-            var aparienciaRespuesta = Respuesta as Apariencia;            
-            var frecuenciaRespuesta = Helper.ObtenerFrecuenciaDominante(aparienciaRespuesta.Funcion);
+            var frecuenciaPrompt = Helper.ObtenerFrecuenciaDominante(Prompt.Apariencia.Funcion);
+            var frecuenciaRespuesta = Helper.ObtenerFrecuenciaDominante(Respuesta.Apariencia.Funcion);
             if (_output != null)
             {
                 _output.WriteLine($"FrecuenciaPrompt={frecuenciaPrompt}, frecuenciaRespuesta={frecuenciaRespuesta}, tolerancia={tolerancia}, maximoArmonicos={maximoArmonicos}.");
@@ -93,8 +118,8 @@ public class DetectorAlucinacionIA
         double tolerancia)
     {
         AgregarEvaluacion(() => {
-            var tiempoFinalPrompt = Helper.ObtenerTiempoFinal(Prompt.Funcion, tiempoMaximo, umbral);
-            var tiempoFinalRespuesta = Helper.ObtenerTiempoFinal(Respuesta.Funcion, tiempoMaximo, umbral);
+            var tiempoFinalPrompt = Helper.ObtenerTiempoFinal(tau => Prompt.Palabra.Funcion(tau, 0), tiempoMaximo, umbral);
+            var tiempoFinalRespuesta = Helper.ObtenerTiempoFinal(tau => Respuesta.Palabra.Funcion(tau, 0), tiempoMaximo, umbral);
             if (_output != null)
             {
                 _output.WriteLine($"TiempoFinalPrompt={tiempoFinalPrompt}, TiempoFinalRespuesta={tiempoFinalRespuesta}, tiempoMaximo={tiempoMaximo}, umbral={umbral}.");
@@ -124,5 +149,15 @@ public class DetectorAlucinacionIA
         }
         
         return alucina;
+    }
+
+    public class Evaluacion
+    {
+        public string Texto { get; set; }
+        public Palabra Palabra { get; set; }
+        public Apariencia Apariencia { get; set;}
+        public Apariencia AparienciaDesignacion { get; set;}
+        public Apariencia AparienciaContextual { get; set;}
+
     }
 }
