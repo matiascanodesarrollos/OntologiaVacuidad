@@ -42,13 +42,12 @@ public class Palabra : Apariencia
 
     internal static Palabra Gozo(double energia) 
     {
-        var nombre = Nombre.Vacuidad(
-            contexto: nameof(Gozo),
-            conductancia: 0.0,
-            susceptancia: energia);
         var designacion = new Designacion(
             sTFT: (omega, tau) => energia,
-            nombre: nombre);
+            nombre: Nombre.Vacuidad(
+                contexto: nameof(Gozo),
+                conductancia: 0.0,
+                susceptancia: energia));
         var palabra = new Palabra(
             texto: nameof(Gozo),
             admitancia: (t) => 
