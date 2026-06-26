@@ -21,24 +21,26 @@ public class DetectorAlucinacionIA
         Func<double, Complex> admitancia,
         Complex z)
     {
-        var palabra = new Palabra(
+        var nombre = new Nombre(
             texto: prompt,
             contexto: _verdad,
-            frecuenciaAngularRespiracion: 20,
             admitancia: admitancia);
+        var designacion = new Designacion(
+            nombre: nombre);
+        var palabra = new Palabra(
+            texto: prompt,
+            admitancia: admitancia,
+            efecto: designacion);
+        designacion.Causa = palabra;
         Prompt = new Evaluacion
         {
             Texto = prompt,
             Palabra = palabra,
-            Apariencia = palabra.Efecto.Esencia,
-            AparienciaDesignacion = palabra
-                .Efecto
+            Apariencia = nombre.Esencia,
+            AparienciaDesignacion = designacion
                 .Mostrarse(palabra),
-            AparienciaContextual = palabra
-                .Efecto
-                .Esencia
-                .Esencia
-                .Aparecer(z, prompt)
+            AparienciaContextual = nombre
+                .Aparecer(z, prompt),
         };
 
         return this;
@@ -54,24 +56,26 @@ public class DetectorAlucinacionIA
             throw new InvalidOperationException("Debe configurar el prompt antes de la respuesta.");
         }
 
-        var palabra = new Palabra(
+        var nombre = new Nombre(
             texto: respuesta,
             contexto: Prompt.Texto,
-            frecuenciaAngularRespiracion: 500,
             admitancia: admitancia);
+        var designacion = new Designacion(
+            nombre: nombre);
+        var palabra = new Palabra(
+            texto: respuesta,
+            admitancia: admitancia,
+            efecto: designacion);
+        designacion.Causa = palabra;
         Respuesta = new Evaluacion
         {
             Texto = respuesta,
             Palabra = palabra,
-            Apariencia = palabra.Efecto.Esencia,
-            AparienciaDesignacion = palabra
-                .Efecto
+            Apariencia = nombre.Esencia,
+            AparienciaDesignacion = designacion
                 .Mostrarse(palabra),
-            AparienciaContextual = palabra
-                .Efecto
-                .Esencia
-                .Esencia
-                .Aparecer(z, respuesta)
+            AparienciaContextual = nombre
+                .Aparecer(z, respuesta),
         };
         return this;
     }    

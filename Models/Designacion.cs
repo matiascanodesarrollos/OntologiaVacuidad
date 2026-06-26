@@ -1,73 +1,70 @@
 using System;
+using System.Linq;
 using System.Numerics;
 
 public class Designacion : Nombre
 {
     public new Guid Id { get; }
-    internal double VelocidadGrupo { get; private set; }
-    internal new Apariencia Esencia { get; }
+    public Palabra Causa { get; set; }
+    public new Apariencia Esencia { get; set; }
     internal Func<double, double, Complex> STFT { get; }
-    private Func<Complex, Complex> TransformadaZ { get; }
+    internal double FrecuenciaAngular { get; private set; }
 
     /// <summary>
-    /// Crea una designación dados su función de frecuencial/temporal, palabra y nombre. 
+    /// Crea una designación dados su palabra y nombre. 
     /// Es análogo a crear una idea.
     /// </summary>
-    /// <param name="sTFT">Función de Transformada de Fourier de Tiempo Corto.</param>
-    /// <param name="palabra">Palabra que expresa la idea.</param>
     /// <param name="nombre">Nombre asociado a la designación.</param>
-    public Designacion(
+    public Designacion(Nombre nombre)
+        : base(nombre)
+    {
+        Id = Guid.NewGuid();
+        STFT = (omega, tau) => 
+            nombre.Fourier(omega) 
+            * Complex.FromPolarCoordinates(1.0, omega * tau);
+        Esencia = nombre.Esencia;
+        FrecuenciaAngular = ObtenerFrecuencia();
+    }
+
+    internal Designacion(
         Func<double, double, Complex> sTFT, 
-        Palabra palabra, 
         Nombre nombre)
         : base(nombre)
     {
         Id = Guid.NewGuid();
-        Esencia = palabra;
         STFT = sTFT;
-        TransformadaZ = CalcularTransformadaZ;
+        Esencia = nombre.Esencia;
+        FrecuenciaAngular = ObtenerFrecuencia();
     }
     
     internal Designacion(Apariencia apariencia, Nombre nombre)
         : base(nombre)
     {
         Id = Guid.NewGuid();
-        Esencia = apariencia;
         STFT = CalcularSTFT;
-        TransformadaZ = CalcularTransformadaZ;
+        Esencia = apariencia;
+        FrecuenciaAngular = ObtenerFrecuencia();
     }
 
     /// <summary>
-    /// Calcula la transformada Z evaluando la función de la esencia en la ventana del nombre 
-    /// con un paso temporal de 1 por caracter del contexto.
-    /// Sobreescribir para implementar diferentes formas de análisis o pasos temporales.
+    /// Calcula la frecuencia angular de la designación a partir de su esencia, asumiendo que es una portadora pura.
+    /// Se puede sobreescribir para implementar diferentes formas de cálculo de la frecuencia.
     /// </summary>
-    /// <param name="z">Parámetro complejo de la transformada Z.</param>
-    /// <returns>Valor complejo de la transformada Z en el punto z.</returns>
-    internal virtual Complex CalcularTransformadaZ(Complex z)
-    {        
-        var muestras = 300;
-        var X = Complex.Zero;
-        var periodoMuestreo = 0.01;
-
-        for (int n = 0; n < muestras; n++)
-        {
-            var t = (n - muestras / 2) * periodoMuestreo;
-            var valor = Ventana(t);
-            var factor = Complex.Pow(z, -n);
-            X += valor * factor;
-        }
-        
-        return X;
+    /// <returns>La frecuencia angular calculada.</returns>
+    protected virtual double ObtenerFrecuencia()
+    {
+        var deltaT = 0.01;
+        var muestraUno = Esencia.Funcion(0.0);
+        var muestraDos = Esencia.Funcion(deltaT);
+        var division = muestraDos / muestraUno;
+        return division.Phase / deltaT;
     }
 
     internal virtual Complex CalcularSTFT(double omega, double tau)
     {
         var muestras = 300;
-        var periodoMuestreo = 0.01;
-        var paso = 0.01;
+        var periodoMuestreo = 0.01;        
         var X = Complex.Zero;
-        var derivada = Complex.Zero;
 
         for (int n = 0; n < muestras; n++)
         {
@@ -75,49 +72,34 @@ public class Designacion : Nombre
             var valor = Esencia.Funcion(t);
             var w = Ventana(t - tau);
             var factor = Complex.FromPolarCoordinates(1.0, -omega * t);
-            X += valor * w * factor;
-
-            var valorPasoPositivo = Esencia.Funcion(t + paso);
-            var valorPasoNegativo = Esencia.Funcion(t - paso);            
-            derivada += (valorPasoPositivo - valorPasoNegativo) * factor / (2.0 * paso);
-        }
-        VelocidadGrupo = derivada.Magnitude > 0 ? X.Magnitude / derivada.Magnitude : 0.0;
+            X += valor * w * factor;            
+        }        
 
         return X;
     }
 
     /// <summary>
-    /// Crea una nueva palabra a partir de z y el texto deseado.
-    /// Sobreescribir para implementar diferentes formas de aparición o análisis de la respuesta.
-    /// </summary>    
-    /// <param name="z">Valor complejo para la transformación Z.</param>
-    /// <param name="texto">Texto que se desea que aparezca.</param>
-    /// <returns>La nueva palabra.</returns>
-    public virtual Palabra Aparecer(Complex z, string texto)
+    /// Crea una apariencia para dada una palabra y se agrega a la misma como efecto. 
+    /// Usa la STFT con la suma de las frecuencias (distintas) de los efectos de la palabra para crear la apariencia resultante.
+    /// </summary>
+    /// <param name="palabra">Palabra que dicta la onda portadora.</param>
+    /// <returns>La apariencia construida.</returns>
+    public Apariencia Mostrarse(Palabra palabra)
     {
-        var X = TransformadaZ(z);
+        palabra.Efectos.Add(this);
+        var frecuencia = palabra
+            .Efectos
+            .Select(e => e.FrecuenciaAngular)
+            .Distinct()
+            .Sum();
         var apariencia = new Apariencia(
-            funcion: t => 
-                Complex.Exp(z.Magnitude * t) 
-                * X
-                * Complex.FromPolarCoordinates(1, z.Phase * t))
+            funcion: tau => STFT(frecuencia, tau))
         {
             Esencia = this,
-        };
-
-        //Causa y efecto se invierten        
-        var nombre = new Nombre(
-            texto: texto,
-            contexto: Texto,
-            admitancia: Ventana);
-        //El efecto ocurre primero que la causa (se piensa antes que la acción).  
-        var palabra = new Palabra(
-            texto: texto, 
-            efecto: nombre, 
-            apariencia: apariencia);
-        nombre.Causa = palabra;
-        return palabra;
+        };        
+        return apariencia;
     }
+    
 
     /// <summary>
     /// Sobreescribe Equals para comparar designaciones por su Id.

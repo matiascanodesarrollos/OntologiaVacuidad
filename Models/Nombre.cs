@@ -1,6 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Numerics;
 
 public class Nombre
@@ -10,8 +8,8 @@ public class Nombre
     public string Contexto { get; }
     public Apariencia Esencia { get; }
     public Func<double, Complex> Ventana { get; }
-    internal double FrecuenciaAngular { get; }
-    internal Palabra Causa { get; set; }
+    private double VelocidadGrupo { get; set; }
+    private Func<Complex, Complex> TransformadaZ { get; }
 
     protected Nombre(Nombre otro)
     {
@@ -20,8 +18,8 @@ public class Nombre
         Contexto = otro.Contexto;
         Ventana = otro.Ventana;
         Esencia = otro.Esencia;
-        Causa = otro.Causa;
-        FrecuenciaAngular = otro.FrecuenciaAngular;
+        VelocidadGrupo = otro.VelocidadGrupo;
+        TransformadaZ = otro.TransformadaZ;
     }
 
     /// <summary>
@@ -38,39 +36,72 @@ public class Nombre
         Texto = texto;
         Contexto = contexto;
         Ventana = admitancia;
-        FrecuenciaAngular = EstimarFrecuencias().Keys.Sum();
         Esencia = new Apariencia(
-            frecuenciaAngular: FrecuenciaAngular);
-        Esencia.Esencia = new Designacion(
-            apariencia: Esencia, 
-            nombre: this);
+            funcion: t => admitancia(t)
+        );
+        TransformadaZ = CalcularTransformadaZ;
     }
 
     internal static Nombre Vacuidad(
         string contexto,
-        double flujoRespiracion, 
-        double intencionControl) => new Nombre(
+        double conductancia, 
+        double susceptancia) => new Nombre(
             texto: nameof(Vacuidad),
             contexto: contexto,
-            admitancia: t => new Complex(flujoRespiracion, intencionControl));
+            admitancia: t => new Complex(conductancia, susceptancia));
 
     /// <summary>
-    /// Crea una designación para la palabra y el nombre. 
-    /// Usa la STFT para crear la apariencia resultante.
+    /// Calcula la transformada Z evaluando la función de la esencia en la ventana del nombre 
+    /// con un paso temporal de 1 por caracter del contexto.
+    /// Sobreescribir para implementar diferentes formas de análisis o pasos temporales.
     /// </summary>
-    /// <param name="palabra">Palabra que se desea mostrar.</param>
-    /// <returns>La apariencia construida.</returns>
-    public Apariencia Mostrarse(Palabra palabra)
-    {
-        var designacion = new Designacion(
-            apariencia: palabra, 
-            nombre: this);
-        var apariencia = new Apariencia(
-            funcion: tau => designacion.STFT(palabra.Efecto.FrecuenciaAngular, tau))
+    /// <param name="z">Parámetro complejo de la transformada Z.</param>
+    /// <returns>Valor complejo de la transformada Z en el punto z.</returns>
+    internal virtual Complex CalcularTransformadaZ(Complex z)
+    {        
+        var muestras = 300;
+        var X = Complex.Zero;
+        var periodoMuestreo = 0.01;
+
+        for (int n = 0; n < muestras; n++)
         {
-            Esencia = designacion,
-        };
-        return apariencia;
+            var t = (n - muestras / 2) * periodoMuestreo;
+            var valor = Ventana(t);
+            var factor = Complex.Pow(z, -n);
+            X += valor * factor;
+        }
+        
+        return X;
+    }
+
+    /// <summary>
+    /// Crea una nueva palabra a partir de z y el texto deseado.
+    /// Sobreescribir para implementar diferentes formas de aparición o análisis de la respuesta.
+    /// </summary>    
+    /// <param name="z">Valor complejo para la transformación Z.</param>
+    /// <param name="texto">Texto que se desea que aparezca.</param>
+    /// <returns>La nueva palabra.</returns>
+    public virtual Palabra Aparecer(Complex z, string texto)
+    {
+        var X = TransformadaZ(z);
+        var apariencia = new Apariencia(
+            funcion: t => 
+                Complex.Exp(z.Magnitude * t) 
+                * X
+                * Complex.FromPolarCoordinates(1, z.Phase * t));
+        var designacion = new Designacion(
+            apariencia: apariencia, 
+            nombre: this);
+        apariencia.Esencia = designacion;
+
+        //Causa y efecto se invierten, el efecto ocurre primero que la causa 
+        // (se piensa antes que la acción).  
+        var palabra = new Palabra(
+            texto: texto, 
+            efecto: designacion, 
+            apariencia: apariencia);
+        designacion.Causa = palabra;
+        return palabra;
     }
 
     /// <summary>
@@ -83,7 +114,9 @@ public class Nombre
     {
         var muestras = 100;
         var periodoMuestreo = 0.01;
+        var paso = 0.01;
         var integral = Complex.Zero;
+        var derivada = Complex.Zero;
 
         for (var n = 0; n < muestras; n++)
         {
@@ -91,43 +124,15 @@ public class Nombre
             var muestra = Ventana(t);
             var factor = Complex.FromPolarCoordinates(1.0, -omega * t);
             integral += muestra * factor;
+
+            var valorPasoPositivo = Esencia.Funcion(t + paso);
+            var valorPasoNegativo = Esencia.Funcion(t - paso);            
+            derivada += (valorPasoPositivo - valorPasoNegativo) * factor / (2.0 * paso);
         }
+        VelocidadGrupo = derivada.Magnitude > 0 ? integral.Magnitude / derivada.Magnitude : 0.0;
 
         return integral;
-    }
-
-    /// <summary>
-    /// Calcula la transformada de Fourier discreta completa de la ventana
-    /// usando un paso temporal de 1 por carácter del contexto y saltos de 100 en la frecuencia angular hasta 30000.
-    /// Sobreescribir para definir otro criterio de estimación de frecuencias.
-    /// </summary>
-    public virtual Dictionary<double, Complex> EstimarFrecuencias()
-    {
-        var muestras = 100;
-        var frecuenciaMaxima = 5000;
-        var deltaFrecuencia = 100;
-        var periodoMuestreo = 0.01;
-        var resultado = new Dictionary<double, Complex>();
-
-        for(var omega = 0.0; omega <= frecuenciaMaxima; omega += deltaFrecuencia)
-        {         
-            var suma = Complex.Zero;            
-            for (int n = 0; n < muestras; n++)
-            {
-                var t = (n - muestras / 2) * periodoMuestreo;
-                var muestra = Ventana(t);
-                var factor = Complex.FromPolarCoordinates(1, -omega * t);
-                suma += muestra * factor;
-            }
-
-            if(suma.Magnitude > 1e-6)
-            {
-                resultado.Add(omega, suma);
-            }            
-        }
-
-        return resultado;
-    }
+    }    
 
     /// <summary>
     /// Devuelve una representación textual simple del nombre.

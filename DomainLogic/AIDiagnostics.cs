@@ -22,13 +22,13 @@ public class AIDiagnostics
         CrearGrafico(evaluador.Prompt.Apariencia.Funcion, $"Prompt_Apariencia", carpetaMagnitud, carpetaFase);
         CrearGrafico(evaluador.Prompt.AparienciaDesignacion.Funcion, $"Prompt_Designacion", carpetaMagnitud, carpetaFase);
         CrearGrafico(tau => evaluador.Prompt.Palabra.Funcion(tau, 0), $"Prompt_Palabra", carpetaMagnitud, carpetaFase);
-        CrearGrafico(evaluador.Prompt.Palabra.Efecto.Ventana, $"Prompt_Ventana", carpetaMagnitud, carpetaFase);
+        CrearGrafico(evaluador.Prompt.Palabra.Efectos.First().Ventana, $"Prompt_Ventana", carpetaMagnitud, carpetaFase);
         CrearGrafico(evaluador.Prompt.AparienciaContextual.Funcion, $"Prompt_Contexto", carpetaMagnitud, carpetaFase);
 
         CrearGrafico(evaluador.Respuesta.Apariencia.Funcion, $"Respuesta_Apariencia", carpetaMagnitud, carpetaFase);
         CrearGrafico(evaluador.Respuesta.AparienciaDesignacion.Funcion, $"Respuesta_Designacion", carpetaMagnitud, carpetaFase);
         CrearGrafico(tau => evaluador.Respuesta.Palabra.Funcion(tau, 0), $"Respuesta_Palabra", carpetaMagnitud, carpetaFase);
-        CrearGrafico(evaluador.Respuesta.Palabra.Efecto.Ventana, $"Respuesta_Ventana", carpetaMagnitud, carpetaFase);
+        CrearGrafico(evaluador.Respuesta.Palabra.Efectos.First().Ventana, $"Respuesta_Ventana", carpetaMagnitud, carpetaFase);
         CrearGrafico(evaluador.Respuesta.AparienciaContextual.Funcion, $"Respuesta_Contexto", carpetaMagnitud, carpetaFase);
 
         var metadata = Path.Combine(salida, "metadata.txt");
