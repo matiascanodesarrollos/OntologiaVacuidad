@@ -8,6 +8,14 @@ public class Palabra : Apariencia
     public List<Designacion> Efectos { get; } = new List<Designacion>();
     public new Func<double, double, Complex> Funcion { get; }
 
+    /// <summary>
+    /// Crea una palabra con un texto, admitancia y un efecto (designación).
+    /// Causa y efecto se invierten, el efecto ocurre primero que la causa.
+    /// Es decir la palabra cobra significado después de ser designada externamente.
+    /// </summary>
+    /// <param name="texto">Texto de la palabra.</param>
+    /// <param name="admitancia">Función de admitancia de la palabra.</param>
+    /// <param name="efecto">Designación que representa el efecto de la palabra.</param>
     public Palabra(
         string texto,
         Func<double, Complex> admitancia,

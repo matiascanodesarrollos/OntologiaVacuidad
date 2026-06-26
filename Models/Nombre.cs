@@ -93,9 +93,7 @@ public class Nombre
             apariencia: apariencia, 
             nombre: this);
         apariencia.Esencia = designacion;
-
-        //Causa y efecto se invierten, el efecto ocurre primero que la causa 
-        // (se piensa antes que la acción).  
+        
         var palabra = new Palabra(
             texto: texto, 
             efecto: designacion, 
