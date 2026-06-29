@@ -6,10 +6,8 @@ public class Nombre
     public Guid Id { get; }
     public string Texto { get; }
     public string Contexto { get; }
-    public Apariencia Esencia { get; }
+    public Apariencia Esencia { get; internal set; }
     public Func<double, Complex> Ventana { get; }
-    private double VelocidadGrupo { get; set; }
-    private Func<Complex, Complex> TransformadaZ { get; }
 
     protected Nombre(Nombre otro)
     {
@@ -18,86 +16,57 @@ public class Nombre
         Contexto = otro.Contexto;
         Ventana = otro.Ventana;
         Esencia = otro.Esencia;
-        VelocidadGrupo = otro.VelocidadGrupo;
-        TransformadaZ = otro.TransformadaZ;
     }
 
-    /// <summary>
-    /// Crea un nuevo nombre con texto, contexto y su transformada de Fourier.
-    /// </summary>
-    /// <param name="texto">Texto del nombre.</param>
-    /// <param name="contexto">Contexto donde se evaluan apariciones del texto.</param>
-    /// <param name="admitancia">Función de ventana: debe ponderar la referencia al nombre en cada momento del contexto.</param>
-    public Nombre(string texto, 
+    internal Nombre(string texto, 
         string contexto,
-        Func<double, Complex> admitancia)
+        Func<double, Complex> admitancia,
+        Apariencia esencia)
     {
         Id = Guid.NewGuid();
         Texto = texto;
         Contexto = contexto;
         Ventana = admitancia;
-        Esencia = new Apariencia(
-            funcion: t => admitancia(t)
-        );
-        TransformadaZ = CalcularTransformadaZ;
+        Esencia = esencia;
     }
 
     internal static Nombre Vacuidad(
-        string contexto,
-        double conductancia, 
-        double susceptancia) => new Nombre(
+        string contexto) => new Nombre(
             texto: nameof(Vacuidad),
             contexto: contexto,
-            admitancia: t => new Complex(conductancia, susceptancia));
+            admitancia: t => Complex.Zero,
+            esencia: new Apariencia(
+                funcion: t => Complex.Zero)
+        );
 
     /// <summary>
-    /// Calcula la transformada Z evaluando la función de la esencia en la ventana del nombre 
-    /// con un paso temporal de 1 por caracter del contexto.
-    /// Sobreescribir para implementar diferentes formas de análisis o pasos temporales.
-    /// </summary>
-    /// <param name="z">Parámetro complejo de la transformada Z.</param>
-    /// <returns>Valor complejo de la transformada Z en el punto z.</returns>
-    internal virtual Complex CalcularTransformadaZ(Complex z)
-    {        
-        var muestras = 300;
-        var X = Complex.Zero;
-        var periodoMuestreo = 0.01;
-
-        for (int n = 0; n < muestras; n++)
-        {
-            var t = (n - muestras / 2) * periodoMuestreo;
-            var valor = Ventana(t);
-            var factor = Complex.Pow(z, -n);
-            X += valor * factor;
-        }
-        
-        return X;
-    }
-
-    /// <summary>
-    /// Crea una nueva palabra a partir de z y el texto deseado.
+    /// Crea una nueva palabra a partir de s y el texto deseado.
     /// Sobreescribir para implementar diferentes formas de aparición o análisis de la respuesta.
     /// </summary>    
-    /// <param name="z">Valor complejo para la transformación Z.</param>
-    /// <param name="texto">Texto que se desea que aparezca.</param>
+    /// <param name="s">Valor complejo para la transformación de Laplace.</param>
+    /// <param name="textoPalabra">Texto que se desea que aparezca.</param>
     /// <returns>La nueva palabra.</returns>
-    public virtual Palabra Aparecer(Complex z, string texto)
+    public virtual Palabra Aparecer(Complex s, string textoPalabra)
     {
-        var X = TransformadaZ(z);
+        var X = CalcularLaplace(s);
+        var periodoMuestreo = 0.01;
+        var z = Complex.Exp(s * periodoMuestreo);
+        var H = Esencia.Esencia?.CalcularTransformadaZ(z) ?? Complex.One;
+        var Y = H * X;
+
         var apariencia = new Apariencia(
-            funcion: t => 
-                Complex.Exp(z.Magnitude * t) 
-                * X
-                * Complex.FromPolarCoordinates(1, z.Phase * t));
+            funcion: t => Y * Complex.FromPolarCoordinates(1, s.Phase * t));
         var designacion = new Designacion(
             apariencia: apariencia, 
             nombre: this);
         apariencia.Esencia = designacion;
-        
         var palabra = new Palabra(
-            texto: texto, 
+            texto: textoPalabra, 
             efecto: designacion, 
-            apariencia: apariencia);
+            apariencia: apariencia)
+        {
+            Esencia = designacion,
+        };
         designacion.Causa = palabra;
         return palabra;
     }
@@ -112,9 +81,7 @@ public class Nombre
     {
         var muestras = 100;
         var periodoMuestreo = 0.01;
-        var paso = 0.01;
         var integral = Complex.Zero;
-        var derivada = Complex.Zero;
 
         for (var n = 0; n < muestras; n++)
         {
@@ -122,15 +89,27 @@ public class Nombre
             var muestra = Ventana(t);
             var factor = Complex.FromPolarCoordinates(1.0, -omega * t);
             integral += muestra * factor;
-
-            var valorPasoPositivo = Esencia.Funcion(t + paso);
-            var valorPasoNegativo = Esencia.Funcion(t - paso);            
-            derivada += (valorPasoPositivo - valorPasoNegativo) * factor / (2.0 * paso);
         }
-        VelocidadGrupo = derivada.Magnitude > 0 ? integral.Magnitude / derivada.Magnitude : 0.0;
 
         return integral;
-    }    
+    }
+
+    internal virtual Complex CalcularLaplace(Complex s)
+    {
+        var muestras = 100;
+        var periodoMuestreo = 0.01;
+        var integral = Complex.Zero;
+
+        for (var n = 0; n < muestras; n++)
+        {
+            var t = (n - muestras / 2) * periodoMuestreo;
+            var muestra = Ventana(t);
+            var factor = Complex.Exp(-s * t);
+            integral += muestra * factor;
+        }
+
+        return integral;
+    }
 
     /// <summary>
     /// Devuelve una representación textual simple del nombre.
