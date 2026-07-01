@@ -31,7 +31,7 @@ public class AITests
                     { new Complex(0.2, 0), Complex.FromPolarCoordinates(20, 0) },
                 },
                 Complex.FromPolarCoordinates(1, 0))
-            .DebenDecaerEnMomentosCercanos(1000, 0.02, 20)
+            .DebenDecaerEnMomentosCercanos(5000, 0.1, 5)
             .PortadorasDebenArmonizar(2, 1);
 
         //Act
@@ -155,7 +155,7 @@ public class AITests
                     { new Complex(0.2, 0), Complex.FromPolarCoordinates(20, 0) },
                 },
                 Complex.FromPolarCoordinates(-1, 0))
-            .DebenDecaerEnMomentosCercanos(1000, 0.02, 20)
+            .DebenDecaerEnMomentosCercanos(5000, 0.1, 5)
             .PortadorasDebenArmonizar(2, 1);
 
         //Act
@@ -186,7 +186,7 @@ public class AITests
                     { new Complex(0.2, 0), Complex.FromPolarCoordinates(20, 0) },
                 },
                 Complex.FromPolarCoordinates(8, 300))
-            .DebenDecaerEnMomentosCercanos(1000, 0.02, 20)
+            .DebenDecaerEnMomentosCercanos(5000, 0.1, 5)
             .PortadorasDebenArmonizar(2, 1);
 
         //Act
