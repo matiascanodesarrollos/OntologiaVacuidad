@@ -22,12 +22,6 @@ public class Apariencia
         Funcion = funcion;
     }
 
-    internal static Apariencia Vacuidad(double energia) => 
-        new Apariencia(funcion: t => Complex.Zero) 
-        {
-            Esencia = Designacion.Gozo(energia, nameof(Vacuidad))
-        };
-
     /// <summary>
     /// Sobreescribe GetHashCode para comparar apariencias por su Id.   
     /// </summary>

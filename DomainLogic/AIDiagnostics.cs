@@ -19,15 +19,22 @@ public class AIDiagnostics
         Directory.CreateDirectory(carpetaMagnitud);
         Directory.CreateDirectory(carpetaFase);
 
-        CrearGrafico(tau => evaluador.Resultado.PalabraRespuesta.Funcion(tau, 0), $"PalabraRespuesta", carpetaMagnitud, carpetaFase);
-        CrearGrafico(evaluador.Resultado.AparienciaRespuesta.Funcion, $"AparienciaRespuesta", carpetaMagnitud, carpetaFase);
-        CrearGrafico(evaluador.Resultado.AparienciaContextual.Funcion, $"AparienciaContextual", carpetaMagnitud, carpetaFase);
+        CrearGrafico(evaluador.Prompt.Apariencia.Funcion, $"Prompt_Apariencia", carpetaMagnitud, carpetaFase);
+        CrearGrafico(evaluador.Prompt.AparienciaDesignacion.Funcion, $"Prompt_Designacion", carpetaMagnitud, carpetaFase);
+        CrearGrafico(tau => evaluador.Prompt.Palabra.Funcion(tau, 0), $"Prompt_Palabra", carpetaMagnitud, carpetaFase);
+        CrearGrafico(evaluador.Prompt.Palabra.Efectos.First().Ventana, $"Prompt_Ventana", carpetaMagnitud, carpetaFase);
+        CrearGrafico(evaluador.Prompt.AparienciaContextual.Funcion, $"Prompt_Contexto", carpetaMagnitud, carpetaFase);
 
+        CrearGrafico(evaluador.Respuesta.Apariencia.Funcion, $"Respuesta_Apariencia", carpetaMagnitud, carpetaFase);
+        CrearGrafico(evaluador.Respuesta.AparienciaDesignacion.Funcion, $"Respuesta_Designacion", carpetaMagnitud, carpetaFase);
+        CrearGrafico(tau => evaluador.Respuesta.Palabra.Funcion(tau, 0), $"Respuesta_Palabra", carpetaMagnitud, carpetaFase);
+        CrearGrafico(evaluador.Respuesta.Palabra.Efectos.First().Ventana, $"Respuesta_Ventana", carpetaMagnitud, carpetaFase);
+        CrearGrafico(evaluador.Respuesta.AparienciaContextual.Funcion, $"Respuesta_Contexto", carpetaMagnitud, carpetaFase);
 
         var metadata = Path.Combine(salida, "metadata.txt");
         File.WriteAllText(
             metadata,
-            $"prompt={evaluador.Resultado.Texto}{Environment.NewLine}respuesta={evaluador.Resultado.PalabraRespuesta}{Environment.NewLine}");
+            $"prompt={evaluador.Prompt}{Environment.NewLine}respuesta={evaluador.Respuesta}{Environment.NewLine}");
 
         return salida;
     }

@@ -6,7 +6,7 @@ namespace Models.Tests;
 
 public class AITests
 {
-    private readonly DetectorAlucinacionIA _helper = new DetectorAlucinacionIA();
+    private readonly DetectorAlucinacionIA _helper = new DetectorAlucinacionIA("Francia:capital:París");
     private readonly AIDiagnostics _diagnostics = new AIDiagnostics();
     private readonly ITestOutputHelper _output;
 
@@ -23,14 +23,18 @@ public class AITests
         var respuesta = "París";
         var evaluador = _helper
             .ConLogger(_output)
-            .ConDatos(
+            .ConPrompt(
                 prompt, 
-                respuesta,
-                new Dictionary<Complex, Complex>
-                {
-                    { new Complex(0.2, 0), Complex.FromPolarCoordinates(20, 0) },
-                },
-                Complex.FromPolarCoordinates(1, 0))
+                t => 
+                    Complex.Exp(5 * t) * Complex.FromPolarCoordinates(20, 300 * t)
+                    + Complex.Exp(1 * t) * Complex.FromPolarCoordinates(1, 200 * t)
+                    + Complex.Exp(4 * t) * Complex.FromPolarCoordinates(3, 100 * t),
+                Complex.Zero)
+            .ConRespuesta(
+                respuesta, 
+                t => 
+                    Complex.Exp(0.1 * t) * Complex.FromPolarCoordinates(1, 100 * t),
+                Complex.Zero)
             .DebenDecaerEnMomentosCercanos(1000, 0.02, 20)
             .PortadorasDebenArmonizar(2, 1);
 
@@ -43,7 +47,7 @@ public class AITests
             var carpetaDiagnostico = _diagnostics.GenerarDiagnosticos(evaluador);
             _output.WriteLine($"Diagnostico={carpetaDiagnostico}");
         }
-        alucina.Should().BeTrue("la respuesta tiene mucho relleno y desviación de la pregunta original");
+        alucina.Should().BeTrue("la respuesta con mucho relleno y desviación de la pregunta original.");
     }
 
     [Fact]
@@ -54,14 +58,20 @@ public class AITests
         var respuesta = "Me alegro mucho, es una emoción común la que experimentas. Podes aprender sobre muchos temas con IA, aunque siempre es recomendable verificar datos sensibles. Con respecto a la capital de Francia, es París";
         var evaluador = _helper
             .ConLogger(_output)
-            .ConDatos(
+            .ConPrompt(
                 prompt, 
-                respuesta,
-                new Dictionary<Complex, Complex>
-                {
-                    { new Complex(0.2, 0), Complex.FromPolarCoordinates(20, 0) },
-                },
-                Complex.FromPolarCoordinates(13, 300))
+                t => 
+                    Complex.Exp(8 * t) * Complex.FromPolarCoordinates(20, 300 * t)
+                    + Complex.Exp(1 * t) * Complex.FromPolarCoordinates(1, 200 * t)
+                    + Complex.Exp(4 * t) * Complex.FromPolarCoordinates(3, 100 * t),
+                Complex.Zero)
+            .ConRespuesta(
+                respuesta, 
+                t => 
+                    Complex.Exp(8 * t) * Complex.FromPolarCoordinates(20, 300 * t)
+                    + Complex.Exp(1 * t) * Complex.FromPolarCoordinates(1, 200 * t)
+                    + Complex.Exp(3 * t) * Complex.FromPolarCoordinates(3, 100 * t),
+                Complex.Zero)
             .DebenDecaerEnMomentosCercanos(1000, 0.02, 20)
             .PortadorasDebenArmonizar(2, 1);
 
@@ -74,7 +84,7 @@ public class AITests
             var carpetaDiagnostico = _diagnostics.GenerarDiagnosticos(evaluador);
             _output.WriteLine($"Diagnostico={carpetaDiagnostico}");
         }
-        alucina.Should().BeFalse("la respuesta es acorde");
+        alucina.Should().BeFalse("la respuesta concisa y correcta.");
     }
 
     [Fact]
@@ -85,14 +95,16 @@ public class AITests
         var respuesta = "La capital de Francia es París.";
         var evaluador = _helper
             .ConLogger(_output)
-            .ConDatos(
+            .ConPrompt(
                 prompt, 
-                respuesta,
-                new Dictionary<Complex, Complex>
-                {
-                    { new Complex(0.2, 0), Complex.FromPolarCoordinates(20, 0) },
-                },
-                Complex.FromPolarCoordinates(1, 0))
+                t => 
+                    Complex.Exp(1 * t) * Complex.FromPolarCoordinates(3, 100 * t),
+                Complex.Zero)
+            .ConRespuesta(
+                respuesta, 
+                t => 
+                    Complex.Exp(1 * t) * Complex.FromPolarCoordinates(3, 100 * t),
+                Complex.Zero)
             .DebenDecaerEnMomentosCercanos(1000, 0.02, 20)
             .PortadorasDebenArmonizar(2, 1);
 
@@ -105,7 +117,7 @@ public class AITests
             var carpetaDiagnostico = _diagnostics.GenerarDiagnosticos(evaluador);
             _output.WriteLine($"Diagnostico={carpetaDiagnostico}");
         }
-        alucina.Should().BeFalse("la respuesta es concisa y correcta");
+        alucina.Should().BeFalse("la respuesta concisa y correcta.");
     }
 
     [Fact]
@@ -116,14 +128,16 @@ public class AITests
         var respuesta = "Hay muchas repuestas posibles correctas, algunos dicen que es Lyon pero la verdadera capital de Francia es París.";
         var evaluador = _helper
             .ConLogger(_output)
-            .ConDatos(
+            .ConPrompt(
                 prompt, 
-                respuesta,
-                new Dictionary<Complex, Complex>
-                {
-                    { new Complex(0.2, 0), Complex.FromPolarCoordinates(20, 0) },
-                },
-                Complex.FromPolarCoordinates(10, 100))
+                t => 
+                    Complex.Exp(2 * t) * Complex.FromPolarCoordinates(3, 100 * t),
+                Complex.Zero)
+            .ConRespuesta(
+                respuesta, 
+                t => 
+                    Complex.Exp(-2 * t) * Complex.FromPolarCoordinates(20, 100 * t),
+                Complex.Zero)
             .DebenDecaerEnMomentosCercanos(5000, 0.1, 5)
             .PortadorasDebenArmonizar(2, 1);
 
@@ -136,7 +150,7 @@ public class AITests
             var carpetaDiagnostico = _diagnostics.GenerarDiagnosticos(evaluador);
             _output.WriteLine($"Diagnostico={carpetaDiagnostico}");
         }
-        alucina.Should().BeTrue("la respuesta tiene mucho relleno y desviación de la pregunta original");
+        alucina.Should().BeTrue("la respuesta con mucho relleno y desviación de la pregunta original.");
     }
 
     [Fact]
@@ -147,14 +161,15 @@ public class AITests
         var respuesta = "Lyon.";
         var evaluador = _helper
             .ConLogger(_output)
-            .ConDatos(
+            .ConPrompt(
                 prompt, 
-                respuesta,
-                new Dictionary<Complex, Complex>
-                {
-                    { new Complex(0.2, 0), Complex.FromPolarCoordinates(20, 0) },
-                },
-                Complex.FromPolarCoordinates(-1, 0))
+                t => 
+                    Complex.Exp(3 * t) * Complex.FromPolarCoordinates(3, 100 * t),
+                Complex.Zero)
+            .ConRespuesta(
+                respuesta, 
+                t => 0,
+                Complex.Zero)
             .DebenDecaerEnMomentosCercanos(1000, 0.02, 20)
             .PortadorasDebenArmonizar(2, 1);
 
@@ -167,7 +182,7 @@ public class AITests
             var carpetaDiagnostico = _diagnostics.GenerarDiagnosticos(evaluador);
             _output.WriteLine($"Diagnostico={carpetaDiagnostico}");
         }
-        alucina.Should().BeTrue("la respuesta es concisa y falsa");
+        alucina.Should().BeTrue("la respuesta corta y falsa.");
     }
 
     [Fact]
@@ -178,14 +193,18 @@ public class AITests
         var respuesta = "Me alegro mucho, es una emoción común la que experimentas. Podes aprender sobre muchos temas con IA, aunque siempre es recomendable verificar datos sensibles. Con respecto a la capital de Francia, es Lyon.";
         var evaluador = _helper
             .ConLogger(_output)
-            .ConDatos(
+            .ConPrompt(
                 prompt, 
-                respuesta,
-                new Dictionary<Complex, Complex>
-                {
-                    { new Complex(0.2, 0), Complex.FromPolarCoordinates(20, 0) },
-                },
-                Complex.FromPolarCoordinates(8, 300))
+                t => 
+                    Complex.Exp(2 * t) * Complex.FromPolarCoordinates(3, 100 * t),
+                Complex.Zero)
+            .ConRespuesta(
+                respuesta, 
+                t => 
+                    Complex.Exp(-8 * t) * Complex.FromPolarCoordinates(20, 300 * t)
+                    + Complex.Exp(-1 * t) * Complex.FromPolarCoordinates(3, 200 * t)
+                    + Complex.Exp(2 * t) * Complex.FromPolarCoordinates(0, 200 * t),
+                Complex.Zero)
             .DebenDecaerEnMomentosCercanos(1000, 0.02, 20)
             .PortadorasDebenArmonizar(2, 1);
 
@@ -198,7 +217,7 @@ public class AITests
             var carpetaDiagnostico = _diagnostics.GenerarDiagnosticos(evaluador);
             _output.WriteLine($"Diagnostico={carpetaDiagnostico}");
         }
-        alucina.Should().BeTrue("la respuesta es larga y falsa");
+        alucina.Should().BeTrue("la respuesta larga y falsa.");
     }
     
 }

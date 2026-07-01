@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 
@@ -7,58 +6,35 @@ public class Designacion : Nombre
 {
     public new Guid Id { get; }
     public Palabra Causa { get; set; }
-    public new Palabra Esencia { get; set; }
-    private Func<Complex, Complex> TransformadaZ { get; }
-    public Func<double, double, Complex> STFT { get; }
+    public new Apariencia Esencia { get; set; }
+    internal Func<double, double, Complex> STFT { get; }
     internal double FrecuenciaAngular { get; private set; }
 
     /// <summary>
     /// Crea una designación dados su palabra y nombre. 
     /// Es análogo a crear una idea.
     /// </summary>
-    /// <param name="texto">Texto de la designación.</param>
-    /// <param name="contexto">Contexto de la designación.</param>
-    /// <param name="frecuenciaAngularRespiracion">Frecuencia angular de respiración durante la designación.</param>
-    /// <param name="transformadaZ">Transformada Z de la designación.</param>
-    public Designacion(string texto, 
-        string contexto,
-        double frecuenciaAngularRespiracion,
-        Dictionary<Complex, Complex> transformadaZ)
-        : base(
-            texto: texto, 
-            contexto: contexto, 
-            admitancia: t => transformadaZ.Aggregate(Complex.Zero, (acc, x) => 
-                acc + x.Value 
-                * Complex.Exp(x.Key.Magnitude * t)
-                * Complex.FromPolarCoordinates(1, x.Key.Phase * t)), 
-            esencia: new Apariencia(
-                t => transformadaZ[new Complex(1, frecuenciaAngularRespiracion)] 
-                    * Complex.FromPolarCoordinates(1, frecuenciaAngularRespiracion * t)
-                )
-        )
+    /// <param name="nombre">Nombre asociado a la designación.</param>
+    public Designacion(Nombre nombre)
+        : base(nombre)
     {
         Id = Guid.NewGuid();
-        TransformadaZ = z => transformadaZ.ContainsKey(z) ? transformadaZ[z] : Complex.Zero;
-        STFT = (omega, tau) =>
-        {
-            var z = Complex.Exp(new Complex(1, omega));
-            var H = TransformadaZ(z);
-            return H * Complex.FromPolarCoordinates(1, omega * tau);
-        };
-        FrecuenciaAngular = frecuenciaAngularRespiracion;
-        Esencia = new Palabra(
-            texto: Texto,
-            funcion: (tau, t) => 
-                Complex.FromPolarCoordinates(1.0, frecuenciaAngularRespiracion * tau)
-                * Ventana(t - tau),
-            funcionApariencia: t => 
-                Fourier(frecuenciaAngularRespiracion)
-                * Complex.FromPolarCoordinates(1.0, frecuenciaAngularRespiracion * t)
-            )
-        {
-            Esencia = this,
-            Efectos = { this },
-        };
+        STFT = (omega, tau) => 
+            nombre.Fourier(omega) 
+            * Complex.FromPolarCoordinates(1.0, omega * tau);
+        Esencia = nombre.Esencia;
+        FrecuenciaAngular = ObtenerFrecuencia();
+    }
+
+    internal Designacion(
+        Func<double, double, Complex> sTFT, 
+        Nombre nombre)
+        : base(nombre)
+    {
+        Id = Guid.NewGuid();
+        STFT = sTFT;
+        Esencia = nombre.Esencia;
+        FrecuenciaAngular = ObtenerFrecuencia();
     }
     
     internal Designacion(Apariencia apariencia, Nombre nombre)
@@ -66,43 +42,40 @@ public class Designacion : Nombre
     {
         Id = Guid.NewGuid();
         STFT = CalcularSTFT;
-        var deltaT = 0.01;
-        var muestraUno = apariencia.Funcion(0);
-        var muestraDos = apariencia.Funcion(deltaT);
-        var division = muestraDos / muestraUno;
-        FrecuenciaAngular = division.Phase / deltaT;
-        Esencia = new Palabra(
-            texto: nombre.Texto,
-            efecto: this,
-            apariencia: apariencia);        
+        Esencia = apariencia;
+        FrecuenciaAngular = ObtenerFrecuencia();
     }
 
-    internal static Designacion Gozo(double energia, string nombre) 
+    /// <summary>
+    /// Calcula la frecuencia angular de la designación a partir de su esencia, asumiendo que es una portadora pura.
+    /// Se puede sobreescribir para implementar diferentes formas de cálculo de la frecuencia.
+    /// </summary>
+    /// <returns>La frecuencia angular calculada.</returns>
+    protected virtual double ObtenerFrecuencia()
     {
-        var frecuenciaAngular = double.Epsilon;
-        var valor = new Complex(energia, 0.0);
-        var palabra = new Palabra(
-            texto: nombre,
-            funcion: (tau, t) => valor,
-            funcionApariencia: t => Complex.FromPolarCoordinates(energia, frecuenciaAngular * t)
-        );
-        var designacion = new Designacion(
-            texto: nombre,
-            contexto: nameof(Vacuidad),
-            frecuenciaAngularRespiracion: double.Epsilon,
-            transformadaZ: new Dictionary<Complex, Complex>()
-            {
-                { Complex.FromPolarCoordinates(1, frecuenciaAngular), Complex.Zero },
-                { Complex.FromPolarCoordinates(1, Math.PI / 4), valor },
-                { Complex.FromPolarCoordinates(1, 3 * Math.PI / 4), valor },
-                { Complex.FromPolarCoordinates(1, 5 * Math.PI / 4), valor },
-                { Complex.FromPolarCoordinates(1, 7 * Math.PI / 4), valor },
-            }
-        );
-        
-        palabra.Esencia = designacion;
-        palabra.Efectos.Add(designacion);
-        return designacion;
+        var deltaT = 0.01;
+        var muestraUno = Esencia.Funcion(0.0);
+        var muestraDos = Esencia.Funcion(deltaT);
+        var division = muestraDos / muestraUno;
+        return division.Phase / deltaT;
+    }
+
+    internal virtual Complex CalcularSTFT(double omega, double tau)
+    {
+        var muestras = 300;
+        var periodoMuestreo = 0.01;        
+        var X = Complex.Zero;
+
+        for (int n = 0; n < muestras; n++)
+        {
+            var t = (n - muestras / 2) * periodoMuestreo;
+            var valor = Esencia.Funcion(t);
+            var w = Ventana(t - tau);
+            var factor = Complex.FromPolarCoordinates(1.0, -omega * t);
+            X += valor * w * factor;            
+        }        
+
+        return X;
     }
 
     /// <summary>
@@ -119,54 +92,14 @@ public class Designacion : Nombre
             .Select(e => e.FrecuenciaAngular)
             .Distinct()
             .Sum();
-        var apariencia = new Apariencia(frecuencia)
+        var apariencia = new Apariencia(
+            funcion: tau => STFT(frecuencia, tau))
         {
             Esencia = this,
         };        
         return apariencia;
     }
-
-    /// <summary>
-    /// Calcula la STFT de la designación para una frecuencia angular y un tiempo de retardo dados.
-    /// </summary>
-    /// <param name="omega">Frecuencia angular de análisis.</param>
-    /// <param name="tau">Tiempo de retardo.</param>
-    /// <returns>El valor complejo de la STFT en el punto dado.</returns>
-    internal virtual Complex CalcularSTFT(double omega, double tau)
-    {
-        var muestras = 300;
-        var periodoMuestreo = 0.01;        
-        var X = Complex.Zero;
-        var apariencia = Esencia as Apariencia;
-
-        for (int n = 0; n < muestras; n++)
-        {
-            var t = (n - muestras / 2) * periodoMuestreo;
-            var valor = apariencia.Funcion(t);
-            var w = Ventana(t - tau);
-            var factor = Complex.FromPolarCoordinates(1.0, -omega * t);
-            X += valor * w * factor;            
-        }        
-
-        return X;
-    }
     
-    internal virtual Complex CalcularTransformadaZ(Complex z)
-    {        
-        var muestras = 300;
-        var X = Complex.Zero;
-        var periodoMuestreo = 0.01;
-
-        for (int n = 0; n < muestras; n++)
-        {
-            var t = (n - muestras / 2) * periodoMuestreo;
-            var valor = Ventana(t);
-            var factor = Complex.Pow(z, -n);
-            X += valor * factor;
-        }
-        
-        return X;
-    }        
 
     /// <summary>
     /// Sobreescribe Equals para comparar designaciones por su Id.
