@@ -10,8 +10,10 @@ public class Apariencia
     internal Apariencia(double frecuenciaAngular)
     {
         Id = Guid.NewGuid();
-        var amplitud = new Lazy<Complex>(() => Esencia.Fourier(frecuenciaAngular));
-        Funcion = t => amplitud.Value * Complex.FromPolarCoordinates(1, frecuenciaAngular * t);
+        var amplitud = new Lazy<Complex>(() => 
+            Esencia.Fourier(frecuenciaAngular));
+        Funcion = t => 
+            amplitud.Value * Complex.FromPolarCoordinates(1, frecuenciaAngular * t);
     }
 
     internal Apariencia(Func<double, Complex> funcion)

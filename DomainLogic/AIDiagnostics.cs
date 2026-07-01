@@ -1,3 +1,4 @@
+using System.Numerics;
 using ScottPlot;
 
 namespace DomainLogic;
@@ -11,18 +12,24 @@ public class AIDiagnostics
             carpetaProyectoTests,
             "TestResults",
             "diagnostics",
-            $"diag_{DateTime.UtcNow:yyyyMMdd_HHmmss_fff}_{Guid.NewGuid():N}");
+            DateTime.UtcNow.ToString("yyyyMMdd_HHmm"));
         Directory.CreateDirectory(salida);
         var carpetaMagnitud = Path.Combine(salida, "magnitud");
         var carpetaFase = Path.Combine(salida, "fase");
-        var carpetaHeatMap = Path.Combine(salida, "heatmap");
         Directory.CreateDirectory(carpetaMagnitud);
         Directory.CreateDirectory(carpetaFase);
-        Directory.CreateDirectory(carpetaHeatMap);
-        
-        var tMax = Math.Max(evaluador.Prompt.Length, evaluador.Respuesta.Length);
-        CrearGrafico(evaluador.NombrePromt.Esencia, "Prompt", carpetaMagnitud, carpetaFase, tMax);
-        CrearGrafico(evaluador.NombreRespuesta.Esencia, "Respuesta", carpetaMagnitud, carpetaFase, tMax);
+
+        CrearGrafico(evaluador.Prompt.Apariencia.Funcion, $"Prompt_Apariencia", carpetaMagnitud, carpetaFase);
+        CrearGrafico(evaluador.Prompt.AparienciaDesignacion.Funcion, $"Prompt_Designacion", carpetaMagnitud, carpetaFase);
+        CrearGrafico(tau => evaluador.Prompt.Palabra.Funcion(tau, 0), $"Prompt_Palabra", carpetaMagnitud, carpetaFase);
+        CrearGrafico(evaluador.Prompt.Palabra.Efectos.First().Ventana, $"Prompt_Ventana", carpetaMagnitud, carpetaFase);
+        CrearGrafico(evaluador.Prompt.AparienciaContextual.Funcion, $"Prompt_Contexto", carpetaMagnitud, carpetaFase);
+
+        CrearGrafico(evaluador.Respuesta.Apariencia.Funcion, $"Respuesta_Apariencia", carpetaMagnitud, carpetaFase);
+        CrearGrafico(evaluador.Respuesta.AparienciaDesignacion.Funcion, $"Respuesta_Designacion", carpetaMagnitud, carpetaFase);
+        CrearGrafico(tau => evaluador.Respuesta.Palabra.Funcion(tau, 0), $"Respuesta_Palabra", carpetaMagnitud, carpetaFase);
+        CrearGrafico(evaluador.Respuesta.Palabra.Efectos.First().Ventana, $"Respuesta_Ventana", carpetaMagnitud, carpetaFase);
+        CrearGrafico(evaluador.Respuesta.AparienciaContextual.Funcion, $"Respuesta_Contexto", carpetaMagnitud, carpetaFase);
 
         var metadata = Path.Combine(salida, "metadata.txt");
         File.WriteAllText(
@@ -32,19 +39,19 @@ public class AIDiagnostics
         return salida;
     }
 
-    private void CrearGrafico(Apariencia apariencia, string tipo, string carpetaMagnitud, string carpetaFase, int tMax)
+    private void CrearGrafico(Func<double, Complex> funcion, string tipo, string carpetaMagnitud, string carpetaFase)
     {
-        var muestrasPorUnidad = 10;
-        var muestras = tMax * muestrasPorUnidad; // 10 muestras por unidad de tiempo
+        var muestras = 100;
+        var periodoMuestreo = 0.01;
         var magnitud = new double[muestras];
         var fase = new double[muestras];
-        for (var t = 0.01; t <= tMax; t += 1.0 / muestrasPorUnidad)
+        for (var n = 0; n < muestras; n++)
         {
-            var valor = apariencia.Funcion(t);
+            var t = (n - muestras / 2) * periodoMuestreo;
+            var valor = funcion(t);
 
-            var indice = (int)((t - 1.0 / muestrasPorUnidad) * muestrasPorUnidad);
-            magnitud[indice] = valor.Magnitude;
-            fase[indice] = valor.Phase;
+            magnitud[n] = valor.Magnitude > 0 ? valor.Magnitude : 0.0;
+            fase[n] = valor.Phase > 0 ? valor.Phase : 0.0;
         }
         GuardarSerie(magnitud, $"{tipo} Magnitud", "t", "|A(t)|", Path.Combine(carpetaMagnitud, $"{tipo.ToLower()}_magnitud.png"));
         GuardarSerie(fase, $"{tipo} Fase", "t", "fase(rad)", Path.Combine(carpetaFase, $"{tipo.ToLower()}_fase.png"));
@@ -52,8 +59,9 @@ public class AIDiagnostics
 
     private void GuardarSerie(double[] serie, string titulo, string ejeX, string ejeY, string ruta)
     {
+        var centerIndex = serie.Length / 2;
         var xs = Enumerable
-            .Range(0, serie.Length)
+            .Range(-centerIndex, serie.Length)
             .Select(i => (double)i)
             .ToArray();
         var plot = new Plot();
