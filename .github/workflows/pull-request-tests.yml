@@ -28,4 +28,4 @@ jobs:
         run: dotnet build OntologiaVacuidad.sln --configuration Release --no-restore
 
       - name: Test
-        run: dotnet test OntologiaVacuidad.sln --configuration Release --no-build --verbosity normal
+        run: dotnet test Models.Tests/Models.Tests.csproj --configuration Release --no-restore --verbosity normal
