@@ -36,13 +36,18 @@ public class Nombre
         Esencia = esencia;
     }
 
+    /// <summary>
+    /// Obtiene la esencia del nombre, una apariencia que representa la idea del nombre.
+    /// </summary>
+    /// <returns>Una apariencia que representa la esencia del nombre.</returns>
     public Apariencia Aparecer()
     {
         return Esencia;
     }
 
     /// <summary>
-    /// Calcula la transformada de Fourier de la ventana.
+    /// Calcula la transformada de Fourier de la ventana (si la esencia es una palabra entonces su admitancia sino su función).
+    /// Se usa para obtener el fasor de la apariencia.
     /// Sobreescribir para definir otro criterio.
     /// </summary>
     /// <param name="omega">Frecuencia angular de análisis.</param>

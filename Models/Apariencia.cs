@@ -5,7 +5,7 @@ public class Apariencia
 {
     public Guid Id { get; }    
     public Func<double, Complex> Funcion { get; }
-    public Lazy<Complex> Amplitud { get; }
+    public Lazy<Complex> Fasor { get; }
     public double FrecuenciaAngular { get; }
     public Nombre Esencia { get; set; }
 
@@ -13,11 +13,11 @@ public class Apariencia
     {
         Id = Guid.NewGuid();
         FrecuenciaAngular = frecuenciaAngular;
-        Amplitud = new Lazy<Complex>(() => 
+        Fasor = new Lazy<Complex>(() => 
             Esencia.CalcularFourier(FrecuenciaAngular)
         );
         Funcion = t => 
-            Amplitud.Value * Complex.FromPolarCoordinates(1, FrecuenciaAngular * t);
+            Fasor.Value * Complex.FromPolarCoordinates(1, FrecuenciaAngular * t);
     }
 
     /// <summary>

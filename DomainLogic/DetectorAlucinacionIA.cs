@@ -36,7 +36,7 @@ public class DetectorAlucinacionIA
             naturaleza: nombreRespuesta,
             causa: palabra,
             sigma)
-            .Mostrarse(nombreRespuesta.Aparecer(), respuesta, prompt);
+            .Mostrarse(nombreRespuesta.Aparecer(), respuesta, prompt);        
     }
 
     public DetectorAlucinacionIA ConLogger(ITestOutputHelper output)
@@ -79,8 +79,8 @@ public class DetectorAlucinacionIA
         double tolerancia)
     {
         AgregarEvaluacion(() => {
-            var amplitudPromt = Prompt.Amplitud.Value.Magnitude;
-            var amplitudRespuesta = Respuesta.Amplitud.Value.Magnitude;
+            var amplitudPromt = Prompt.Fasor.Value.Magnitude;
+            var amplitudRespuesta = Respuesta.Fasor.Value.Magnitude;
             if (_output != null)
             {
                 _output.WriteLine($"AmplitudPrompt={amplitudPromt}, AmplitudRespuesta={amplitudRespuesta}.");

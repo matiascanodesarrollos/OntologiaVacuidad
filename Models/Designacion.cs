@@ -7,11 +7,10 @@ public class Designacion : Nombre
     public new Guid Id { get; }
     public Palabra Causa { get; set; }
     public Func<double, Complex> Ventana { get; }
-    public Func<Apariencia, double, double, Complex> STFT { get; }
 
     /// <summary>
-    /// Crea una designación dados su palabra y nombre. 
-    /// Es análogo a crear una idea.
+    /// Crea una designación dados su naturaleza, causa y un factor de atenuación exponencial.
+    /// Se genera una ventana multiplicando la atenuación exponencial por la suma de los fasores de la naturaleza.
     /// </summary>
     /// <param name="naturaleza">Nombre asociado a la designación.</param>
     /// <param name="causa">Palabra que causa la designacion</param>
@@ -20,12 +19,7 @@ public class Designacion : Nombre
         : base(naturaleza)
     {
         Id = Guid.NewGuid();
-        STFT = CalcularSTFT;
         Causa = causa;
-        var frecuenciaPortadora = naturaleza.Fourier.Keys.Sum();
-        var amplitudPortadora = naturaleza.Fourier.ContainsKey(frecuenciaPortadora) 
-                ? naturaleza.Fourier[frecuenciaPortadora] 
-                : Complex.Zero;
         Ventana = (t) => 
             Complex.Exp(-sigma * t)
             * naturaleza.Fourier.Aggregate(Complex.Zero, (aggr, f) => 
@@ -36,31 +30,7 @@ public class Designacion : Nombre
     }
 
     /// <summary>
-    /// Calcula STFT que 
-    /// </summary>
-    /// <param name="omega"></param>
-    /// <param name="tau"></param>
-    /// <returns></returns>
-    internal virtual Complex CalcularSTFT(Apariencia apariencia, double omega, double tau)
-    {
-        var muestras = 300;
-        var periodoMuestreo = 0.01;        
-        var X = Complex.Zero;
-
-        for (int n = 0; n < muestras; n++)
-        {
-            var t = (n - muestras / 2) * periodoMuestreo;
-            var valor = apariencia.Funcion(t);
-            var w = Ventana(t - tau);
-            var factor = Complex.FromPolarCoordinates(1.0, -omega * t);
-            X += valor * w * factor;            
-        }        
-
-        return X;
-    }
-
-    /// <summary>
-    /// Obtiene la esencia de la designación
+    /// Obtiene la esencia de la designación, una palabra modulada por la apariencia.
     /// </summary>
     /// <param name="apariencia">Apariencia sobre la que se proyecta.</param>
     /// <param name="texto">Palabra pronunciada en texto.</param>
@@ -78,8 +48,9 @@ public class Designacion : Nombre
             admitancia: Ventana,
             Fourier);
         esencia.Funcion = (tau, t) => 
-            apariencia.Funcion(t)
+            apariencia.Fasor.Value
             * esencia.Funcion(tau, t);
+        esencia.Efecto = this;
         return esencia;
     }
 
