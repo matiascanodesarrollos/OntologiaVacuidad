@@ -3,23 +3,21 @@ using System.Numerics;
 
 public class Apariencia
 {
-    public Guid Id { get; }
+    public Guid Id { get; }    
     public Func<double, Complex> Funcion { get; }
-    public Designacion Esencia { get; set; }
+    public Lazy<Complex> Amplitud { get; }
+    public double FrecuenciaAngular { get; }
+    public Nombre Esencia { get; set; }
 
     internal Apariencia(double frecuenciaAngular)
     {
         Id = Guid.NewGuid();
-        var amplitud = new Lazy<Complex>(() => 
-            Esencia.Fourier(frecuenciaAngular));
+        FrecuenciaAngular = frecuenciaAngular;
+        Amplitud = new Lazy<Complex>(() => 
+            Esencia.CalcularFourier(FrecuenciaAngular)
+        );
         Funcion = t => 
-            amplitud.Value * Complex.FromPolarCoordinates(1, frecuenciaAngular * t);
-    }
-
-    internal Apariencia(Func<double, Complex> funcion)
-    {
-        Id = Guid.NewGuid();
-        Funcion = funcion;
+            Amplitud.Value * Complex.FromPolarCoordinates(1, FrecuenciaAngular * t);
     }
 
     /// <summary>
