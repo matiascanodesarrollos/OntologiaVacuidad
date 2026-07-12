@@ -5,80 +5,39 @@ namespace DomainLogic;
 
 public class DetectorAlucinacionIA
 {
-    private readonly string _verdad;    
-    public Evaluacion Prompt { get; private set; }
-    public Evaluacion Respuesta { get; private set; }
+    public Apariencia Prompt { get; }
+    public Apariencia Respuesta { get; }
     private List<Func<bool>> Evaluaciones = new List<Func<bool>>();
     private ITestOutputHelper _output;
 
-    public DetectorAlucinacionIA(string verdad)
+    public DetectorAlucinacionIA(
+        string prompt,         
+        string respuesta,
+        Func<double, Complex> admitancia,
+        Dictionary<double, Complex> fourierPrompt,
+        Dictionary<double, Complex> fourierRespuesta,
+        double sigma)
     {
-        _verdad = verdad;
+        var palabra = new Palabra(
+            texto: prompt,
+            contexto: string.Empty,
+            frecuenciaAngular: fourierPrompt.Keys.Sum(),
+            admitancia: admitancia,
+            fourierPrompt
+        );
+        Prompt = palabra;
+        var nombreRespuesta = new Nombre(
+            texto: respuesta,
+            contexto: prompt,
+            fourier: fourierRespuesta,
+            Prompt);
+        Prompt.Esencia = nombreRespuesta;
+        Respuesta = new Designacion(
+            naturaleza: nombreRespuesta,
+            causa: palabra,
+            sigma)
+            .Mostrarse(nombreRespuesta.Aparecer(), respuesta, prompt);        
     }
-
-    public DetectorAlucinacionIA ConPrompt(
-        string prompt, 
-        Func<double, Complex> admitancia,
-        Complex z)
-    {
-        var nombre = new Nombre(
-            texto: prompt,
-            contexto: _verdad,
-            admitancia: admitancia);
-        var designacion = new Designacion(
-            nombre: nombre);
-        var palabra = new Palabra(
-            texto: prompt,
-            admitancia: admitancia,
-            efecto: designacion);
-        designacion.Causa = palabra;
-        Prompt = new Evaluacion
-        {
-            Texto = prompt,
-            Palabra = palabra,
-            Apariencia = nombre.Esencia,
-            AparienciaDesignacion = designacion
-                .Mostrarse(palabra),
-            AparienciaContextual = nombre
-                .Aparecer(z, prompt),
-        };
-
-        return this;
-    }  
-
-    public DetectorAlucinacionIA ConRespuesta(
-        string respuesta, 
-        Func<double, Complex> admitancia,
-        Complex z)
-    {
-        if (Prompt == null)
-        {
-            throw new InvalidOperationException("Debe configurar el prompt antes de la respuesta.");
-        }
-
-        var nombre = new Nombre(
-            texto: respuesta,
-            contexto: Prompt.Texto,
-            admitancia: admitancia);
-        var designacion = new Designacion(
-            nombre: nombre);
-        var palabra = new Palabra(
-            texto: respuesta,
-            admitancia: admitancia,
-            efecto: designacion);
-        designacion.Causa = palabra;
-        Respuesta = new Evaluacion
-        {
-            Texto = respuesta,
-            Palabra = palabra,
-            Apariencia = nombre.Esencia,
-            AparienciaDesignacion = designacion
-                .Mostrarse(palabra),
-            AparienciaContextual = nombre
-                .Aparecer(z, respuesta),
-        };
-        return this;
-    }    
 
     public DetectorAlucinacionIA ConLogger(ITestOutputHelper output)
     {
@@ -95,11 +54,11 @@ public class DetectorAlucinacionIA
     public DetectorAlucinacionIA PortadorasDebenArmonizar(double tolerancia, uint maximoArmonicos)
     {
         AgregarEvaluacion(() => {
-            var frecuenciaPrompt = Helper.ObtenerFrecuenciaDominante(Prompt.Apariencia.Funcion);
-            var frecuenciaRespuesta = Helper.ObtenerFrecuenciaDominante(Respuesta.Apariencia.Funcion);
+            var frecuenciaPrompt = (int) Prompt.FrecuenciaAngular;
+            var frecuenciaRespuesta = (int) Respuesta.FrecuenciaAngular;
             if (_output != null)
             {
-                _output.WriteLine($"FrecuenciaPrompt={frecuenciaPrompt}, frecuenciaRespuesta={frecuenciaRespuesta}, tolerancia={tolerancia}, maximoArmonicos={maximoArmonicos}.");
+                _output.WriteLine($"FrecuenciaPrompt={frecuenciaPrompt}, frecuenciaRespuesta={Respuesta.FrecuenciaAngular}, tolerancia={tolerancia}, maximoArmonicos={maximoArmonicos}.");
             } 
 
             var minimoFrecuencia = Math.Min(frecuenciaPrompt, frecuenciaRespuesta);
@@ -116,19 +75,17 @@ public class DetectorAlucinacionIA
         return this;
     }
 
-    public DetectorAlucinacionIA DebenDecaerEnMomentosCercanos(
-        double tiempoMaximo, 
-        double umbral,
+    public DetectorAlucinacionIA AmplitudCercana(
         double tolerancia)
     {
         AgregarEvaluacion(() => {
-            var tiempoFinalPrompt = Helper.ObtenerTiempoFinal(tau => Prompt.Palabra.Funcion(tau, 0), tiempoMaximo, umbral);
-            var tiempoFinalRespuesta = Helper.ObtenerTiempoFinal(tau => Respuesta.Palabra.Funcion(tau, 0), tiempoMaximo, umbral);
+            var amplitudPromt = Prompt.Fasor.Value.Magnitude;
+            var amplitudRespuesta = Respuesta.Fasor.Value.Magnitude;
             if (_output != null)
             {
-                _output.WriteLine($"TiempoFinalPrompt={tiempoFinalPrompt}, TiempoFinalRespuesta={tiempoFinalRespuesta}, tiempoMaximo={tiempoMaximo}, umbral={umbral}.");
+                _output.WriteLine($"AmplitudPrompt={amplitudPromt}, AmplitudRespuesta={amplitudRespuesta}.");
             } 
-            return Math.Abs(tiempoFinalPrompt - tiempoFinalRespuesta) > tolerancia;
+            return Math.Abs(amplitudPromt - amplitudRespuesta) > tolerancia;
         });
         return this;
     }
@@ -136,12 +93,6 @@ public class DetectorAlucinacionIA
 
     public bool Alucina()
     {
-        if (Prompt == null 
-            || Respuesta == null)
-        {
-            throw new InvalidOperationException("Debe configurar el prompt y la respuesta antes de evaluar.");
-        }
-
         var alucina = false;
         foreach (var evaluacion in Evaluaciones)
         {
@@ -153,15 +104,5 @@ public class DetectorAlucinacionIA
         }
         
         return alucina;
-    }
-
-    public class Evaluacion
-    {
-        public string Texto { get; set; }
-        public Palabra Palabra { get; set; }
-        public Apariencia Apariencia { get; set;}
-        public Apariencia AparienciaDesignacion { get; set;}
-        public Apariencia AparienciaContextual { get; set;}
-
     }
 }
