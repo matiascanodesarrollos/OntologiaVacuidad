@@ -20,13 +20,13 @@ public class Designacion : Nombre
     {
         Id = Guid.NewGuid();
         Causa = causa;
+        Causa.Efecto = this;
+        var omega = naturaleza.Fourier.Keys.Sum();
+        var fase = naturaleza.Fourier.Values.Sum(v => v.Phase);
+        var amplitud = naturaleza.Fourier.Values.Sum(v => v.Magnitude);
         Ventana = (t) => 
             Complex.Exp(-sigma * t)
-            * naturaleza.Fourier.Aggregate(Complex.Zero, (aggr, f) => 
-                aggr 
-                +   f.Value
-                    * Complex.FromPolarCoordinates(1, f.Key * t)
-            );
+            * Complex.FromPolarCoordinates(amplitud, omega * t + fase);
     }
 
     /// <summary>
@@ -46,11 +46,10 @@ public class Designacion : Nombre
             contexto: contexto,
             frecuenciaAngular: apariencia.FrecuenciaAngular,
             admitancia: Ventana,
-            Fourier);
-        esencia.Funcion = (tau, t) => 
-            apariencia.Fasor.Value
-            * esencia.Funcion(tau, t);
-        esencia.Efecto = this;
+            Fourier)
+        {
+            Efecto = this, //El efecto existe antes que la causa.
+        };
         return esencia;
     }
 

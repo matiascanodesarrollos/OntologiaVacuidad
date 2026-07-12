@@ -66,9 +66,9 @@ public class AITests
             prompt: prompt,
             respuesta: respuesta,
             admitancia: t => 
-                    Complex.Exp(5 * t) * Complex.FromPolarCoordinates(20, 300 * t)
-                    + Complex.Exp(1 * t) * Complex.FromPolarCoordinates(1, 200 * t)
-                    + Complex.Exp(4 * t) * Complex.FromPolarCoordinates(3, 100 * t),
+                    Complex.Exp(7 * t) * Complex.FromPolarCoordinates(20, 300 * t)
+                    + Complex.Exp(10 * t) * Complex.FromPolarCoordinates(1, 200 * t)
+                    + Complex.Exp(8 * t) * Complex.FromPolarCoordinates(3, 100 * t),
             fourierPrompt: new Dictionary<double, Complex>()
             {
                 { 100, new Complex(30, 10) },
@@ -77,9 +77,9 @@ public class AITests
             },
             fourierRespuesta: new Dictionary<double, Complex>()
             {
-                { 100, new Complex(30, 10) },
-                { 200, new Complex(20, 40) },
-                { 300, new Complex(2, 30) },
+                { 100, new Complex(1, 1) },
+                { 200, new Complex(1, 1) },
+                { 300, new Complex(1, 1) },
             },
             0
         );

@@ -17,7 +17,8 @@ public class Apariencia
             Esencia.CalcularFourier(FrecuenciaAngular)
         );
         Funcion = t => 
-            Fasor.Value * Complex.FromPolarCoordinates(1, FrecuenciaAngular * t);
+            Fasor.Value 
+            * Complex.FromPolarCoordinates(1, FrecuenciaAngular * t);
     }
 
     /// <summary>

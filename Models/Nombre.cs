@@ -46,7 +46,7 @@ public class Nombre
     }
 
     /// <summary>
-    /// Calcula la transformada de Fourier de la ventana (si la esencia es una palabra entonces su admitancia sino su función).
+    /// Calcula la transformada de Fourier de la admitancia de la palabra.
     /// Se usa para obtener el fasor de la apariencia.
     /// Sobreescribir para definir otro criterio.
     /// </summary>
@@ -58,14 +58,11 @@ public class Nombre
         var periodoMuestreo = 0.01;
         var integral = Complex.Zero;
         var palabra = Esencia as Palabra;
-        Func<double, Complex> ventana = t => 
-            palabra?.Admitancia(t) 
-            ?? Esencia.Funcion(t);
         
         for (var n = 0; n < muestras; n++)
         {
             var t = (n - muestras / 2) * periodoMuestreo;
-            var muestra = ventana(t);
+            var muestra = palabra.Admitancia(t);
             var factor = Complex.FromPolarCoordinates(1.0, -omega * t);
             integral += muestra * factor;
         }
