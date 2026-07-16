@@ -55,10 +55,10 @@ Para los tests de IA (archivo `Models.Tests/AITests.cs`):
 
 Cuando un caso falla en estos tests, el detalle incluye umbrales (magnitud/frecuencia) y una ruta de diagnostico para inspeccionar graficos y metadata del prompt/respuesta.
 
-Articulo base:
+## Articulo base:
 https://medium.com/@heroe.vajradharma/ontolog%C3%ADa-de-la-vacuidad-un-sistema-para-entender-la-realidad-como-modulaci%C3%B3n-am-fm-fsk-y-plasma-2c8b56f2d8ed
 
-Recontextualización Semántica:
+## Recontextualización Semántica:
 · Nombre: concepto o karma; funciona como un campo magnético. Su energía surge del recuerdo colectivo y de la búsqueda de su significado. Es la naturaleza de una designación y la esencia de una apariencia; es análogo al espacio. N(ω)=∫W(τ)e^(-jωτ)dτ. Aunque es una transformada de Fourier, aparece como una transformada de Laplace (que fuerza toda apariencia a converger): N(s)=∫W(τ)e^(-sτ)dτ.
 · Esencia: sujeto derivado de un conjunto de predicados, que se manifiesta como un objeto y su naturaleza. Si A es esencia de B, aparecen y desaparecen juntos.
 · Apariencia: palabra reflejada por un nombre; funciona como una onda portadora. Es la naturaleza de una palabra análoga a un camino. A(t)=∫P(τ,t)dτ=e^(jωt)∫W(u)e^(-jωu)du=A*e^(jωt).
