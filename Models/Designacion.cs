@@ -4,7 +4,6 @@ using System.Numerics;
 
 public class Designacion : Nombre
 {
-    public new Guid Id { get; }
     public Palabra Causa { get; set; }
     public Func<double, Complex> Ventana { get; }
 
@@ -18,7 +17,6 @@ public class Designacion : Nombre
     public Designacion(Nombre naturaleza, Palabra causa, double sigma)
         : base(naturaleza)
     {
-        Id = Guid.NewGuid();
         Causa = causa;
         Causa.Efecto = this;
         var omega = naturaleza.Fourier.Keys.Sum();
@@ -79,23 +77,4 @@ public class Designacion : Nombre
 
         return integral;
     }
-
-    /// <summary>
-    /// Sobreescribe Equals para comparar designaciones por su Id.
-    /// </summary>
-    /// <returns>True si las designaciones son iguales, false en caso contrario.</returns>
-    public override bool Equals(object obj)
-    {
-        if (obj is Designacion other)
-        {
-            return Id == other.Id;
-        }
-        return false;
-    }
-
-    /// <summary>
-    /// Sobreescribe GetHashCode para comparar designaciones por su Id.
-    /// </summary>
-    /// <returns>El hash code de la designación.</returns>
-    public override int GetHashCode() => Id.GetHashCode();
 }
