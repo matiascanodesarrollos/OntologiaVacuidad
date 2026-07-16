@@ -32,11 +32,14 @@ public class DetectorAlucinacionIA
             fourier: fourierRespuesta,
             Prompt);
         Prompt.Esencia = nombreRespuesta;
-        Respuesta = new Designacion(
+        var designacion = new Designacion(
             naturaleza: nombreRespuesta,
             causa: palabra,
-            sigma)
-            .Mostrarse(nombreRespuesta.Aparecer(), respuesta, prompt);        
+            sigma: sigma);        
+        Respuesta = designacion
+            .Mostrarse(nombreRespuesta.Esencia, respuesta, prompt);
+        palabra.Efecto = designacion;
+        palabra.Aparecer(0, 0, Prompt.FrecuenciaAngular, 0);
     }
 
     public DetectorAlucinacionIA ConLogger(ITestOutputHelper output)

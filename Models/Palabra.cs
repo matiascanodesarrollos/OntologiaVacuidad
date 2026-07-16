@@ -7,7 +7,7 @@ public class Palabra : Apariencia
     public string Texto { get; }
     public Func<double, Complex> Admitancia { get; }
     public new Func<double, double, Complex> Funcion { get; internal set; }
-    internal Designacion Efecto { get; set; }    
+    public Designacion Efecto { get; set; }
 
     /// <summary>
     /// Crea una palabra y su apariencia correspondiente.
@@ -36,5 +36,24 @@ public class Palabra : Apariencia
             fourier: fourier,
             esencia: this
         );
+    }
+    
+    /// <summary>
+    /// Multiplica la funcion de la palabra por la transformada de Fourier de corta duración de la designación.
+    /// </summary>
+    /// <param name="tauPalabra">Tiempo de la palabra.</param>
+    /// <param name="t">Tiempo de la apariencia.</param>
+    /// <param name="omega">Frecuencia angular de la designación.</param>
+    /// <param name="tauDesignacion">Tiempo de la designación.</param>
+    /// <returns>Un número complejo.</returns>
+    public Complex Aparecer(
+        double tauPalabra, 
+        double t, 
+        double omega, 
+        double tauDesignacion)
+    {
+        var apariencia = this as Apariencia;
+        return Funcion(tauPalabra, t) 
+            * Efecto.STFT(apariencia, omega, tauDesignacion);
     }
 }

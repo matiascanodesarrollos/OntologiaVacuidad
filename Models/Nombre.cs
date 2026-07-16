@@ -7,7 +7,7 @@ public class Nombre
     public Guid Id { get; }
     public string Texto { get; }
     public string Contexto { get; }
-    internal Apariencia Esencia { get; }
+    public Apariencia Esencia { get; }
     internal Dictionary<double, Complex> Fourier { get; }
 
     protected Nombre(Nombre otro)
@@ -34,16 +34,7 @@ public class Nombre
         Contexto = contexto;
         Fourier = fourier;
         Esencia = esencia;
-    }
-
-    /// <summary>
-    /// Obtiene la esencia del nombre, una apariencia que representa la idea del nombre.
-    /// </summary>
-    /// <returns>Una apariencia que representa la esencia del nombre.</returns>
-    public Apariencia Aparecer()
-    {
-        return Esencia;
-    }
+    }    
 
     /// <summary>
     /// Calcula la transformada de Fourier de la admitancia de la palabra.

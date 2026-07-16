@@ -54,6 +54,33 @@ public class Designacion : Nombre
     }
 
     /// <summary>
+    /// Calcula la transformada de Fourier de corta duracion proyectando la designacion sobre una apariencia.
+    /// Sobreescribir para definir otro criterio.
+    /// Se utiliza en el metodo Aparecer de la clase Palabra, donde se multiplica por su función.
+    /// </summary>
+    /// <param name="apariencia">La apariencia sobre la que se proyecta la designación.</param>
+    /// <param name="omega">Frecuencia angular de la transformada de Fourier.</param>
+    /// <param name="tau">Desplazamiento temporal de la ventana.</param>
+    /// <returns>La integral compleja.</returns>
+    internal virtual Complex STFT(Apariencia apariencia, double omega, double tau)
+    {
+        var muestras = 100;
+        var periodoMuestreo = 0.01;
+        var integral = Complex.Zero;
+        
+        for (var n = 0; n < muestras; n++)
+        {
+            var t = (n - muestras / 2) * periodoMuestreo;
+            var ventana = Ventana(t - tau);
+            var muestra = apariencia.Funcion(t);
+            var factor = Complex.FromPolarCoordinates(1.0, -omega * t);
+            integral += muestra * ventana * factor;
+        }
+
+        return integral;
+    }
+
+    /// <summary>
     /// Sobreescribe Equals para comparar designaciones por su Id.
     /// </summary>
     /// <returns>True si las designaciones son iguales, false en caso contrario.</returns>
