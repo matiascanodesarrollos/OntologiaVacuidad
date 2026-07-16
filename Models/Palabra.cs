@@ -43,18 +43,24 @@ public class Palabra : Apariencia
     /// </summary>
     /// <param name="tauPalabra">Tiempo de la palabra.</param>
     /// <param name="t">Tiempo de la apariencia.</param>
-    /// <param name="omega">Frecuencia angular de la designación.</param>
+    /// <param name="omegaDesignacion">Frecuencia angular de la designación.</param>
     /// <param name="tauDesignacion">Tiempo de la designación.</param>
     /// <returns>Un número complejo.</returns>
     public Complex Aparecer(
         double tauPalabra, 
         double t, 
-        double omega, 
+        double omegaDesignacion, 
         double tauDesignacion)
     {
-        var z1 = Funcion(tauPalabra, t);
-        var z2 = Efecto.STFT(this, omega, tauDesignacion);     
+        var z1 = Funcion(
+            tauPalabra, 
+            t);
+        var z2 = Efecto.STFT(
+            this, 
+            omegaDesignacion, 
+            tauDesignacion);     
 
+        //Reflexion de la palabra sobre la designación, calculando el coeficiente de reflexión.
         var a1 = z1.Magnitude;
         var a2 = z2.Magnitude;
         var numerador = a2 - a1;
