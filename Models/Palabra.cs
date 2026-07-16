@@ -52,8 +52,19 @@ public class Palabra : Apariencia
         double omega, 
         double tauDesignacion)
     {
-        var apariencia = this as Apariencia;
-        return Funcion(tauPalabra, t) 
-            * Efecto.STFT(apariencia, omega, tauDesignacion);
+        var z1 = Funcion(tauPalabra, t);
+        var z2 = Efecto.STFT(this, omega, tauDesignacion);     
+
+        var a1 = z1.Magnitude;
+        var a2 = z2.Magnitude;
+        var numerador = a2 - a1;
+        var denominador = a2 + a1;
+        if (denominador == 0)
+        {
+            return Complex.Zero;
+        }
+        var gamma = numerador / denominador;
+
+        return gamma * z1;
     }
 }
