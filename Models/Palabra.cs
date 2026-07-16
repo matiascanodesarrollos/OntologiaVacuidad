@@ -63,13 +63,7 @@ public class Palabra : Apariencia
         //Reflexion de la palabra sobre la designación, calculando el coeficiente de reflexión.
         var a1 = z1.Magnitude;
         var a2 = z2.Magnitude;
-        var numerador = a2 - a1;
-        var denominador = a2 + a1;
-        if (denominador == 0)
-        {
-            return Complex.Zero;
-        }
-        var gamma = numerador / denominador;
+        var gamma = (a2 - a1) / (a2 + a1);
 
         return gamma * z1;
     }
