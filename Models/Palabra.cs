@@ -39,7 +39,7 @@ public class Palabra : Apariencia
     }
     
     /// <summary>
-    /// Multiplica la funcion de la palabra por la transformada de Fourier de corta duración de la designación.
+    /// Calcula la onda o palabra reflejada por la designación dada la apariencia.
     /// </summary>
     /// <param name="tauPalabra">Tiempo de la palabra.</param>
     /// <param name="t">Tiempo de la apariencia.</param>
