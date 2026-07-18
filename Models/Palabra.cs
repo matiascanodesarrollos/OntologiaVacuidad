@@ -66,4 +66,33 @@ public class Palabra : Apariencia
         var ondaTransmitida = coeficienteDeTransmision * ondaIncidente;        
         return (ondaReflejada, ondaTransmitida);
     }
+
+    /// <summary>
+    /// Aproxima la imagen mental de la palabra, basada en la amplitud instantanea.
+    /// Sobre escribir para definir otro criterio.
+    /// </summary>
+    /// <param name="t">Tiempo de la apariencia.</param>
+    /// <param name="omegaDesignacion">Frecuencia angular de la designación.</param>
+    /// <param name="tauDesignacion">Tiempo de la designación.</param>
+    /// <returns>El valor de la onda.</returns>
+    public Complex Aparecer(
+        double t, 
+        double omegaDesignacion, 
+        double tauDesignacion)
+    {
+        var apariencia = this as Apariencia;
+        var ondaIncidente = apariencia.Funcion(t);
+        var ondaTransmitida = Efecto.STFT(
+            this, 
+            tauDesignacion,
+            omegaDesignacion);
+        
+        // Coeficiente de reflexión (aproximado).
+        var amplitudNumerador = ondaIncidente.Magnitude - ondaTransmitida.Magnitude;
+        var amplitudDenominador = ondaIncidente.Magnitude + ondaTransmitida.Magnitude;
+        var gamma = amplitudNumerador / amplitudDenominador;
+        
+        var ondaReflejada = gamma * ondaTransmitida;
+        return ondaReflejada + ondaIncidente;
+    }
 }
