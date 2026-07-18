@@ -6,6 +6,10 @@ namespace Models.Tests;
 
 public class AITests
 {
+    private const double ToleranciaAmplitud = 2;
+    private const double ToleranciaPortadoras = 2;
+    private const uint MaximoArmonicosPortadoras = 1;
+
     private readonly AIDiagnostics _diagnostics = new AIDiagnostics();
     private readonly ITestOutputHelper _output;
 
@@ -24,9 +28,9 @@ public class AITests
             prompt: prompt,
             respuesta: respuesta,
             admitancia: t => 
-                    Complex.Exp(5 * t) * Complex.FromPolarCoordinates(20, 300 * t)
-                    + Complex.Exp(1 * t) * Complex.FromPolarCoordinates(1, 200 * t)
-                    + Complex.Exp(4 * t) * Complex.FromPolarCoordinates(3, 100 * t),
+                    Complex.Exp(5 * t) * Complex.FromPolarCoordinates(40, 300 * t)
+                    + Complex.Exp(1 * t) * Complex.FromPolarCoordinates(2, 200 * t)
+                    + Complex.Exp(4 * t) * Complex.FromPolarCoordinates(6, 100 * t),
             fourierPrompt: new Dictionary<double, Complex>()
             {
                 { 100, new Complex(30, 10) },
@@ -41,8 +45,8 @@ public class AITests
         );
         var evaluador = _helper
             .ConLogger(_output)
-            .AmplitudCercana(20)
-            .PortadorasDebenArmonizar(2, 1);
+            .AmplitudCercana(ToleranciaAmplitud)
+            .PortadorasDebenArmonizar(ToleranciaPortadoras, MaximoArmonicosPortadoras);
 
         //Act
         var alucina = _helper.Alucina();
@@ -85,8 +89,8 @@ public class AITests
         );
         var evaluador = _helper
             .ConLogger(_output)
-            .AmplitudCercana(20)
-            .PortadorasDebenArmonizar(2, 1);
+            .AmplitudCercana(ToleranciaAmplitud)
+            .PortadorasDebenArmonizar(ToleranciaPortadoras, MaximoArmonicosPortadoras);
 
         //Act
         var alucina = _helper.Alucina();
@@ -123,8 +127,8 @@ public class AITests
         );
         var evaluador = _helper
             .ConLogger(_output)
-            .AmplitudCercana(20)
-            .PortadorasDebenArmonizar(2, 1);
+            .AmplitudCercana(ToleranciaAmplitud)
+            .PortadorasDebenArmonizar(ToleranciaPortadoras, MaximoArmonicosPortadoras);
 
         //Act
         var alucina = _helper.Alucina();
@@ -162,8 +166,8 @@ public class AITests
         );
         var evaluador = _helper
             .ConLogger(_output)
-            .AmplitudCercana(20)
-            .PortadorasDebenArmonizar(2, 1);
+            .AmplitudCercana(ToleranciaAmplitud)
+            .PortadorasDebenArmonizar(ToleranciaPortadoras, MaximoArmonicosPortadoras);
 
         //Act
         var alucina = _helper.Alucina();
@@ -199,8 +203,8 @@ public class AITests
         );
         var evaluador = _helper
             .ConLogger(_output)
-            .AmplitudCercana(20)
-            .PortadorasDebenArmonizar(2, 1);
+            .AmplitudCercana(ToleranciaAmplitud)
+            .PortadorasDebenArmonizar(ToleranciaPortadoras, MaximoArmonicosPortadoras);
 
         //Act
         var alucina = _helper.Alucina();
@@ -243,8 +247,8 @@ public class AITests
         );
         var evaluador = _helper
             .ConLogger(_output)
-            .AmplitudCercana(20)
-            .PortadorasDebenArmonizar(2, 1);
+            .AmplitudCercana(ToleranciaAmplitud)
+            .PortadorasDebenArmonizar(ToleranciaPortadoras, MaximoArmonicosPortadoras);
 
         //Act
         var alucina = _helper.Alucina();
