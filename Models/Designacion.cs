@@ -57,10 +57,10 @@ public class Designacion : Nombre
     /// Se utiliza en el metodo Aparecer de la clase Palabra, donde se multiplica por su función.
     /// </summary>
     /// <param name="apariencia">La apariencia sobre la que se proyecta la designación.</param>
-    /// <param name="omega">Frecuencia angular de la transformada de Fourier.</param>
     /// <param name="tau">Desplazamiento temporal de la ventana.</param>
+    /// <param name="omega">Frecuencia angular de la transformada de Fourier.</param>
     /// <returns>La integral compleja.</returns>
-    internal virtual Complex STFT(Apariencia apariencia, double omega, double tau)
+    internal virtual Complex STFT(Apariencia apariencia, double tau, double omega)
     {
         var muestras = 100;
         var periodoMuestreo = 0.01;

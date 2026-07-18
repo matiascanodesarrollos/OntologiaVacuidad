@@ -35,11 +35,13 @@ public class DetectorAlucinacionIA
         var designacion = new Designacion(
             naturaleza: nombreRespuesta,
             causa: palabra,
-            sigma: sigma);        
-        Respuesta = designacion
-            .Mostrarse(nombreRespuesta.Esencia, respuesta, prompt);
+            sigma: sigma);
+        var palabraRespuesta = designacion.Mostrarse(
+            apariencia: Prompt,
+            texto: respuesta,
+            contexto: prompt);
+        Respuesta = palabraRespuesta;
         palabra.Efecto = designacion;
-        palabra.Aparecer(0, 0, Prompt.FrecuenciaAngular, 0);
     }
 
     public DetectorAlucinacionIA ConLogger(ITestOutputHelper output)
