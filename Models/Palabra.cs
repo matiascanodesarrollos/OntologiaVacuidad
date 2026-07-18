@@ -63,8 +63,8 @@ public class Palabra : Apariencia
             omegaDesignacion);
         
         // Coeficiente de reflexión (aproximado).
-        var amplitudNumerador = ondaTransmitida.Magnitude - ondaIncidente.Magnitude;
-        var amplitudDenominador = ondaTransmitida.Magnitude + ondaIncidente.Magnitude;
+        var amplitudNumerador = ondaIncidente.Magnitude - ondaTransmitida.Magnitude;
+        var amplitudDenominador = ondaIncidente.Magnitude + ondaTransmitida.Magnitude;
         var gamma = amplitudNumerador / amplitudDenominador;
         
         var ondaReflejada = gamma * ondaTransmitida;
