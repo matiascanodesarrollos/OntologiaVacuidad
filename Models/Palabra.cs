@@ -39,35 +39,31 @@ public class Palabra : Apariencia
     }
     
     /// <summary>
-    /// Calcula la imagen mental de la palabra.
-    /// Se utiliza una aproximación de las impedancias basada en el módulo del valor temporal de las ondas (consideradas en el calculo de la STFT).
+    /// Calcula la onda reflejada y transmitida de la palabra.
     /// Sobre escribir para definir otro criterio.
     /// </summary>
     /// <param name="tauPalabra">Tiempo de la palabra.</param>
     /// <param name="t">Tiempo de la apariencia.</param>
-    /// <param name="omegaDesignacion">Frecuencia angular de la designación.</param>
-    /// <param name="tauDesignacion">Tiempo de la designación.</param>
     /// <returns>El valor de la onda.</returns>
-    public virtual Complex Aparecer(
+    public virtual (Complex ondaReflejada, Complex ondaTransmitida) Aparecer(
         double tauPalabra, 
-        double t, 
-        double omegaDesignacion, 
-        double tauDesignacion)
+        double t)
     {
-        var ondaTransmitida = Funcion(
-            tauPalabra, 
-            t);
-        var ondaIncidente = Efecto.STFT(
-            this, 
-            tauDesignacion,
-            omegaDesignacion);
+        var apariencia = this as Apariencia;
+        var ondaIncidente = apariencia.Funcion(t);
+        var Y1 = Admitancia(t - tauPalabra);
+        var Y2 = Efecto.CalcularFourier(FrecuenciaAngular);
+
+        var denominador = Y1 + Y2;
+        if (denominador.Magnitude < 1e-10)
+        {
+            return (Complex.Zero, ondaIncidente);
+        }
+        var coeficienteDeTransmision = 2 * Y1 / denominador;
+        var coeficienteReflexion = (Y1 - Y2) / denominador;
         
-        // Coeficiente de reflexión (aproximado).
-        var amplitudNumerador = ondaIncidente.Magnitude - ondaTransmitida.Magnitude;
-        var amplitudDenominador = ondaIncidente.Magnitude + ondaTransmitida.Magnitude;
-        var gamma = amplitudNumerador / amplitudDenominador;
-        
-        var ondaReflejada = gamma * ondaTransmitida;
-        return ondaReflejada + ondaIncidente;
+        var ondaReflejada = coeficienteReflexion * ondaIncidente;
+        var ondaTransmitida = coeficienteDeTransmision * ondaIncidente;        
+        return (ondaReflejada, ondaTransmitida);
     }
 }
