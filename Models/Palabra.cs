@@ -39,32 +39,38 @@ public class Palabra : Apariencia
     }
     
     /// <summary>
-    /// Calcula la onda o palabra reflejada por la designación dada la apariencia.
+    /// Calcula la imagen mental de la palabra.
+    /// Se utiliza una aproximación de las impedancias (consideradas en el calculo de la STFT).
+    /// Sobre escribir para definir otro criterio.
     /// </summary>
     /// <param name="tauPalabra">Tiempo de la palabra.</param>
     /// <param name="t">Tiempo de la apariencia.</param>
     /// <param name="omegaDesignacion">Frecuencia angular de la designación.</param>
     /// <param name="tauDesignacion">Tiempo de la designación.</param>
     /// <returns>Un número complejo.</returns>
-    public Complex Aparecer(
+    public virtual Complex Aparecer(
         double tauPalabra, 
         double t, 
         double omegaDesignacion, 
         double tauDesignacion)
     {
-        var z1 = Funcion(
+         var z1 = Funcion(
             tauPalabra, 
             t);
         var z2 = Efecto.STFT(
             this, 
-            omegaDesignacion, 
-            tauDesignacion);     
+            tauDesignacion,
+            omegaDesignacion);
+        
+        // Coeficiente de reflexión complejo.
+        var denominador = z2 + z1;
+        if (denominador.Magnitude < 1e-12)
+        {
+            return Complex.Zero;
+        }
 
-        //Reflexion de la palabra sobre la designación, calculando el coeficiente de reflexión.
-        var a1 = z1.Magnitude;
-        var a2 = z2.Magnitude;
-        var gamma = (a2 - a1) / (a2 + a1);
-
-        return gamma * z1;
+        var gamma = (z2 - z1) / denominador;
+        var ondaReflejada = gamma * z1;
+        return ondaReflejada + z2;
     }
 }
