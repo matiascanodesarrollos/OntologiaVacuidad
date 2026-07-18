@@ -40,7 +40,7 @@ public class Palabra : Apariencia
     
     /// <summary>
     /// Calcula la imagen mental de la palabra.
-    /// Se utiliza una aproximación de las impedancias basada en el valor temporal de las ondas (consideradas en el calculo de la STFT).
+    /// Se utiliza una aproximación de las impedancias basada en el módulo del valor temporal de las ondas (consideradas en el calculo de la STFT).
     /// Sobre escribir para definir otro criterio.
     /// </summary>
     /// <param name="tauPalabra">Tiempo de la palabra.</param>
@@ -62,13 +62,10 @@ public class Palabra : Apariencia
             tauDesignacion,
             omegaDesignacion);
         
-        // Coeficiente de reflexión complejo (aproximado).
-        var denominador = ondaIncidente + ondaTransmitida;
-        if (denominador.Magnitude < 1e-12)
-        {
-            return Complex.Zero;
-        }
-        var gamma = (ondaIncidente - ondaTransmitida) / denominador;
+        // Coeficiente de reflexión (aproximado).
+        var amplitudNumerador = ondaTransmitida.Magnitude - ondaIncidente.Magnitude;
+        var amplitudDenominador = ondaTransmitida.Magnitude + ondaIncidente.Magnitude;
+        var gamma = amplitudNumerador / amplitudDenominador;
         
         var ondaReflejada = gamma * ondaTransmitida;
         return ondaReflejada + ondaIncidente;
