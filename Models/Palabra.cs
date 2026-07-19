@@ -5,8 +5,7 @@ using System.Numerics;
 public class Palabra : Apariencia
 {
     public string Texto { get; }
-    public Func<double, Complex> Admitancia { get; }
-    public new Func<double, double, Complex> Funcion { get; internal set; }
+    public Func<double, Complex> Admitancia { get; } 
     public Designacion Efecto { get; set; }
 
     /// <summary>
@@ -15,6 +14,7 @@ public class Palabra : Apariencia
     /// Devuelve la presión en la parte real y el flujo de aire en la imaginaria.
     /// </summary>
     /// <param name="texto">Texto que se dijo.</param>
+    /// <param name="contexto">Contexto en el que se pronuncia la palabra.</param>
     /// <param name="frecuenciaAngular">Frecuencia angular respiratoria.</param>
     /// <param name="admitancia">Función de admitancia que modifica los componentes de la respiración.</param>
     public Palabra(
@@ -27,9 +27,6 @@ public class Palabra : Apariencia
     {
         Texto = texto;
         Admitancia = admitancia;
-        Funcion = (tau, t) => 
-            Complex.FromPolarCoordinates(1, frecuenciaAngular * tau)
-            * Admitancia(t - tau);
         Esencia = new Nombre(
             texto: texto,
             contexto: contexto,
@@ -37,62 +34,34 @@ public class Palabra : Apariencia
             esencia: this
         );
     }
-    
+
     /// <summary>
-    /// Calcula la onda reflejada y transmitida de la palabra.
+    /// Aproxima la onda reflejada y transmitida por la palabra, se hace una aproximación basada en 
+    /// la amplitud instantanea (asumiendo siempre el mismo ángulo de incidencia).
     /// Sobre escribir para definir otro criterio.
     /// </summary>
-    /// <param name="tauPalabra">Tiempo de la palabra.</param>
+    /// <param name="tau">Tiempo de la designación.</param>
     /// <param name="t">Tiempo de la apariencia.</param>
+    /// <param name="omega">Frecuencia angular de la designación.</param>
     /// <returns>El valor de la onda.</returns>
     public virtual (Complex ondaReflejada, Complex ondaTransmitida) Aparecer(
-        double tauPalabra, 
-        double t)
-    {
-        var apariencia = this as Apariencia;
-        var ondaIncidente = apariencia.Funcion(t);
-        var Y1 = Admitancia(t - tauPalabra);
-        var Y2 = Efecto.CalcularFourier(FrecuenciaAngular);
-
-        var denominador = Y1 + Y2;
-        if (denominador.Magnitude < 1e-10)
-        {
-            return (Complex.Zero, ondaIncidente);
-        }
-        var coeficienteDeTransmision = 2 * Y1 / denominador;
-        var coeficienteReflexion = (Y1 - Y2) / denominador;
-        
-        var ondaReflejada = coeficienteReflexion * ondaIncidente;
-        var ondaTransmitida = coeficienteDeTransmision * ondaIncidente;        
-        return (ondaReflejada, ondaTransmitida);
-    }
-
-    /// <summary>
-    /// Aproxima la imagen mental de la palabra, basada en la amplitud instantanea.
-    /// Sobre escribir para definir otro criterio.
-    /// </summary>
-    /// <param name="t">Tiempo de la apariencia.</param>
-    /// <param name="omegaDesignacion">Frecuencia angular de la designación.</param>
-    /// <param name="tauDesignacion">Tiempo de la designación.</param>
-    /// <returns>El valor de la onda.</returns>
-    public Complex Aparecer(
+        double tau,
         double t, 
-        double omegaDesignacion, 
-        double tauDesignacion)
+        double omega)
     {
-        var apariencia = this as Apariencia;
-        var ondaIncidente = apariencia.Funcion(t);
-        var ondaTransmitida = Efecto.STFT(
+        var ondaIncidente = Funcion(t);
+        var admitancia = Efecto.STFT(
             this, 
-            tauDesignacion,
-            omegaDesignacion);
+            tau,
+            omega);       
         
         // Coeficiente de reflexión (aproximado).
-        var amplitudNumerador = ondaIncidente.Magnitude - ondaTransmitida.Magnitude;
-        var amplitudDenominador = ondaIncidente.Magnitude + ondaTransmitida.Magnitude;
-        var gamma = amplitudNumerador / amplitudDenominador;
-        
-        var ondaReflejada = gamma * ondaTransmitida;
-        return ondaReflejada + ondaIncidente;
+        var numerador = ondaIncidente.Magnitude - admitancia.Magnitude;
+        var denominador = ondaIncidente.Magnitude + admitancia.Magnitude;
+        var gamma = numerador / denominador;
+
+        var ondaReflejada = gamma * ondaIncidente;
+        var ondaTransmitida = admitancia * ondaIncidente;
+        return (ondaReflejada, ondaTransmitida);
     }
 }

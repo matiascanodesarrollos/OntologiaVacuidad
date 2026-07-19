@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 
@@ -6,6 +7,17 @@ public class Designacion : Nombre
 {
     public Palabra Causa { get; set; }
     public Func<double, Complex> Ventana { get; }
+
+    internal Designacion(
+        Palabra causa, 
+        Func<double, Complex> ventana,
+        string contexto,
+        Dictionary<double, Complex> fourier)
+        : base(causa.Texto, contexto, fourier, causa)
+    {
+        Causa = causa;
+        Ventana = ventana;
+    }
 
     /// <summary>
     /// Crea una designación dados su naturaleza, causa y un factor de atenuación exponencial.
