@@ -36,8 +36,7 @@ public class Palabra : Apariencia
     }
 
     /// <summary>
-    /// Aproxima la onda reflejada y transmitida por la palabra, se hace una aproximación basada en 
-    /// la amplitud instantanea (asumiendo siempre el mismo ángulo de incidencia).
+    /// Calcula la onda reflejada y transmitida por la palabra.
     /// Sobre escribir para definir otro criterio.
     /// </summary>
     /// <param name="tau">Tiempo de la designación.</param>
@@ -50,16 +49,16 @@ public class Palabra : Apariencia
         double omega)
     {
         var ondaIncidente = Funcion(t);
-        var admitancia = Efecto.STFT(
+
+        var Y1 = Admitancia(t - tau);
+        var Y2 = Efecto.STFT(
             this, 
             tau,
-            omega);       
-        
-        // Coeficiente de reflexión (aproximado).
-        var numerador = admitancia.Magnitude - ondaIncidente.Magnitude;
-        var denominador = admitancia.Magnitude + ondaIncidente.Magnitude;
+            omega);        
+        var numerador = Y2 - Y1;
+        var denominador = Y2 + Y1;
         var gamma = numerador / denominador;
-
+        
         var ondaReflejada = gamma * ondaIncidente;
         var ondaTransmitida = ondaIncidente + ondaReflejada;
         return (ondaReflejada, ondaTransmitida);
