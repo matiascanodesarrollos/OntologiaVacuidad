@@ -57,6 +57,10 @@ public class Palabra : Apariencia
             omega);        
         var numerador = Y2 - Y1;
         var denominador = Y2 + Y1;
+        if (denominador == Complex.Zero)
+        {
+            return (ondaIncidente, Complex.Zero);
+        }
         var gamma = numerador / denominador;
         
         var ondaReflejada = gamma * ondaIncidente;
