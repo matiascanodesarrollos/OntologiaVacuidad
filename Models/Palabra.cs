@@ -16,7 +16,8 @@ public class Palabra : Apariencia
     /// <param name="texto">Texto que se dijo.</param>
     /// <param name="contexto">Contexto en el que se pronuncia la palabra.</param>
     /// <param name="frecuenciaAngular">Frecuencia angular respiratoria.</param>
-    /// <param name="admitancia">Función de admitancia que modifica los componentes de la respiración.</param>
+    /// <param name="admitancia">Función de admitancia para esa frecuencia.</param>
+    /// <param name="fourier">Mapa completo de admitancias por frecuencia.</param>
     public Palabra(
         string texto,
         string contexto,
