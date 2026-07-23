@@ -84,9 +84,10 @@ public class Designacion : Nombre
             var ventana = Ventana(t - tau);
             var muestra = apariencia.Funcion(t);
             var factor = Complex.FromPolarCoordinates(1.0, -omega * t);
-            integral += muestra * ventana * factor * periodoMuestreo;
+            integral += muestra * ventana * factor;
         }
 
+        integral *= periodoMuestreo;
         return integral;
     }
 }

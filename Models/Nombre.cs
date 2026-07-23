@@ -51,9 +51,10 @@ public class Nombre
             var t = (n - muestras / 2) * periodoMuestreo;
             var muestra = palabra.Admitancia(t);
             var factor = Complex.FromPolarCoordinates(1.0, -omega * t);
-            integral += muestra * factor * periodoMuestreo;
+            integral += muestra * factor;
         }
 
+        integral *= periodoMuestreo;
         return integral;
     }
 
