@@ -12,25 +12,25 @@ public class Apariencia : Palabra
 
     /// <summary>
     /// Crea una apariencia con texto, contexto, admitancia, frecuencia angular y transformada de Fourier.
-    /// <param name="texto">Texto de la apariencia.</param>
-    /// <param name="contexto">Contexto en el que se pronuncia la apariencia.</param>
-    /// <param name="admitancia">Función de admitancia para esa frecuencia.</param>
-    /// <param name="frecuenciaAngular">Frecuencia angular respiratoria.</param>
-    /// <param name="fourier">Transformada de Fourier de la apariencia.</param>
+    /// <param name="texto">Descripción de la apariencia.</param>
+    /// <param name="contexto">Descripción del contexto en el que ocurre la apariencia.</param>
+    /// <param name="admitancia">Función de admitancia para la frecuencia angular portadora.</param>
+    /// <param name="frecuenciaAngularPortadora">Frecuencia angular respiratoria portadora.</param>
+    /// <param name="frecuenciaAdmitancia">Diccionario de frecuencias y sus correspondientes admitancias como valores complejos.</param>
     /// </summary>
     public Apariencia(
         string texto, 
         string contexto,
         Func<double, Complex> admitancia,
-        double frecuenciaAngular,
-        Dictionary<double, Complex> fourier) 
+        double frecuenciaAngularPortadora,
+        Dictionary<double, Complex> frecuenciaAdmitancia) 
         : base(texto, admitancia)
     {
-        FrecuenciaAngular = frecuenciaAngular;
+        FrecuenciaAngular = frecuenciaAngularPortadora;
         Esencia = new Nombre(
             texto: texto,
             contexto: contexto,
-            fourier: fourier,
+            frecuenciaAdmitancia: frecuenciaAdmitancia,
             esencia: this
         );
         Fasor = Esencia.CalcularFourier(FrecuenciaAngular);

@@ -20,17 +20,17 @@ public class Nombre
     /// Crea un nuevo nombre con texto, contexto y su transformada de Fourier.
     /// </summary>
     /// <param name="texto">Texto del nombre.</param>
-    /// <param name="contexto">Contexto donde se evaluan apariciones del texto.</param>
-    /// <param name="fourier">Transformada de Fourier de la palabra.</param>
+    /// <param name="contexto">Contexto de la designación.</param>
+    /// <param name="frecuenciaAdmitancia">Diccionario de frecuencias y sus correspondientes admitancias como valores complejos.</param>
     /// <param name="esencia">Apariencia asociada al nombre.</param>
     public Nombre(string texto, 
         string contexto,
-        Dictionary<double, Complex> fourier,
+        Dictionary<double, Complex> frecuenciaAdmitancia,
         Apariencia esencia)
     {
         Texto = texto;
         Contexto = contexto;
-        Fourier = fourier;
+        Fourier = frecuenciaAdmitancia;
         Esencia = esencia;
     }    
 

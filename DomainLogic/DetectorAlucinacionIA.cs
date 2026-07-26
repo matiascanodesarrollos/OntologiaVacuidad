@@ -22,13 +22,13 @@ public class DetectorAlucinacionIA
             texto: prompt,
             contexto: string.Empty,
             admitancia: admitancia,
-            frecuenciaAngular: fourierPrompt.Keys.Sum(),
-            fourier: fourierPrompt
+            frecuenciaAngularPortadora: fourierPrompt.Keys.Sum(),
+            frecuenciaAdmitancia: fourierPrompt
         );
         var nombreRespuesta = new Nombre(
             texto: respuesta,
             contexto: prompt,
-            fourier: fourierRespuesta,
+            frecuenciaAdmitancia: fourierRespuesta,
             Prompt);
         Prompt.Esencia = nombreRespuesta;
         var designacion = new Designacion(

@@ -42,8 +42,8 @@ public class Designacion : Nombre
             texto: texto,
             contexto: contexto,
             admitancia: Ventana,
-            frecuenciaAngular: apariencia.FrecuenciaAngular,
-            fourier: Fourier)
+            frecuenciaAngularPortadora: apariencia.FrecuenciaAngular,
+            frecuenciaAdmitancia: Fourier)
         {
             Efecto = this, //El efecto existe antes que la causa.
         };
