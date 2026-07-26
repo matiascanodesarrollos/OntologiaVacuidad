@@ -35,10 +35,12 @@ public class DetectorAlucinacionIA
             naturaleza: nombreRespuesta,
             causa: Prompt,
             sigma: sigma);
+        Prompt.Efecto = designacion;
         var palabraRespuesta = designacion.Mostrarse(
-            apariencia: Prompt,
             texto: respuesta,
-            contexto: prompt);
+            contexto: prompt,
+            tau: 0,
+            omega: 0);
         Respuesta = palabraRespuesta;
         Respuesta.Efecto = designacion;
     }

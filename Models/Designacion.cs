@@ -29,20 +29,22 @@ public class Designacion : Nombre
     /// <summary>
     /// Obtiene la esencia de la designación, una palabra modulada por la apariencia.
     /// </summary>
-    /// <param name="apariencia">Apariencia sobre la que se proyecta.</param>
     /// <param name="texto">Palabra pronunciada en texto.</param>
     /// <param name="contexto">Contexto en el que se pronuncia.</param>
+    /// <param name="tau">Tiempo de la designación.</param>
+    /// <param name="omega">Frecuencia angular de la designación.</param>
     /// <returns>Una apariencia proyectada.</returns>
     public Apariencia Mostrarse(
-        Apariencia apariencia,
         string texto,
-        string contexto)
-    {        
+        string contexto,
+        double tau,
+        double omega)
+    {
         var esencia = new Apariencia(
             texto: texto,
             contexto: contexto,
-            admitancia: Ventana,
-            frecuenciaAngularPortadora: apariencia.FrecuenciaAngular,
+            admitancia: t => Causa.Aparecer(tau, t, omega).ondaTransmitida,
+            frecuenciaAngularPortadora: Causa.FrecuenciaAngular,
             frecuenciaAdmitancia: Fourier)
         {
             Efecto = this, //El efecto existe antes que la causa.

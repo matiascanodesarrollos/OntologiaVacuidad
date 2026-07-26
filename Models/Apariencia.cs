@@ -11,7 +11,9 @@ public class Apariencia : Palabra
     public Designacion Efecto { get; set; }
 
     /// <summary>
-    /// Crea una apariencia con texto, contexto, admitancia, frecuencia angular y transformada de Fourier.
+    /// Crea una apariencia con texto, contexto, admitancia, frecuencia angular y diccionario de admitancias.
+    /// La función de la apariencia modela la respiración:
+    /// Devuelve la presión en la parte real y el flujo de aire en la imaginaria.
     /// <param name="texto">Descripción de la apariencia.</param>
     /// <param name="contexto">Descripción del contexto en el que ocurre la apariencia.</param>
     /// <param name="admitancia">Función de admitancia para la frecuencia angular portadora.</param>
@@ -40,7 +42,7 @@ public class Apariencia : Palabra
     }
 
     /// <summary>
-    /// Calcula la onda reflejada y transmitida por la palabra.
+    /// Calcula la onda reflejada y transmitida por la apariencia.
     /// Sobre escribir para definir otro criterio.
     /// </summary>
     /// <param name="tau">Tiempo de la designación.</param>

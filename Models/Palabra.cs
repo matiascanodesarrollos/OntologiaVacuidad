@@ -7,9 +7,7 @@ public class Palabra
     public Func<double, Complex> Admitancia { get; } 
 
     /// <summary>
-    /// Crea una palabra y su apariencia correspondiente.
-    /// La función de la palabra modela la respiración:
-    /// Devuelve la presión en la parte real y el flujo de aire en la imaginaria.
+    /// Crea una palabra con texto y admitancia.   
     /// </summary>
     /// <param name="texto">Texto que se dijo.</param>
     /// <param name="admitancia">Función de admitancia para esa frecuencia.</param>

@@ -70,9 +70,9 @@ public class AITests
             prompt: prompt,
             respuesta: respuesta,
             admitancia: t => 
-                    Complex.Exp(7 * t) * Complex.FromPolarCoordinates(20, 300 * t)
-                    + Complex.Exp(10 * t) * Complex.FromPolarCoordinates(1, 200 * t)
-                    + Complex.Exp(8 * t) * Complex.FromPolarCoordinates(3, 100 * t),
+                    Complex.Exp(-2 * t) * Complex.FromPolarCoordinates(0.02, 300 * t)
+                    + Complex.Exp(-1 * t) * Complex.FromPolarCoordinates(0.01, 200 * t)
+                    + Complex.Exp(-2 * t) * Complex.FromPolarCoordinates(0.02, 100 * t),
             fourierPrompt: new Dictionary<double, Complex>()
             {
                 { 100, new Complex(30, 10) },
@@ -114,7 +114,7 @@ public class AITests
             prompt: prompt,
             respuesta: respuesta,
             admitancia: t => 
-                    + Complex.Exp(4 * t) * Complex.FromPolarCoordinates(3, 100 * t),
+                    Complex.Exp(-1 * t) * Complex.FromPolarCoordinates(0.03, 100 * t),
             fourierPrompt: new Dictionary<double, Complex>()
             {
                 { 100, new Complex(30, 10) },
@@ -228,9 +228,7 @@ public class AITests
             prompt: prompt,
             respuesta: respuesta,
             admitancia: t => 
-                    Complex.Exp(5 * t) * Complex.FromPolarCoordinates(20, 300 * t)
-                    + Complex.Exp(1 * t) * Complex.FromPolarCoordinates(1, 200 * t)
-                    + Complex.Exp(4 * t) * Complex.FromPolarCoordinates(3, 100 * t),
+                    Complex.FromPolarCoordinates(50, 600 * t),
             fourierPrompt: new Dictionary<double, Complex>()
             {
                 { 100, new Complex(30, 10) },
@@ -240,7 +238,7 @@ public class AITests
             fourierRespuesta: new Dictionary<double, Complex>()
             {
                 { 100, new Complex(0, 0) },
-                { 200, new Complex(20, 40) },
+                { 250, new Complex(20, 40) },
                 { 300, new Complex(2, 30) },
             },
             0
