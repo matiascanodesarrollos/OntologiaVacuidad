@@ -18,14 +18,13 @@ public class DetectorAlucinacionIA
         Dictionary<double, Complex> fourierRespuesta,
         double sigma)
     {
-        var palabra = new Palabra(
+        Prompt = new Apariencia(
             texto: prompt,
             contexto: string.Empty,
-            frecuenciaAngular: fourierPrompt.Keys.Sum(),
             admitancia: admitancia,
-            fourierPrompt
+            frecuenciaAngular: fourierPrompt.Keys.Sum(),
+            fourier: fourierPrompt
         );
-        Prompt = palabra;
         var nombreRespuesta = new Nombre(
             texto: respuesta,
             contexto: prompt,
@@ -34,14 +33,14 @@ public class DetectorAlucinacionIA
         Prompt.Esencia = nombreRespuesta;
         var designacion = new Designacion(
             naturaleza: nombreRespuesta,
-            causa: palabra,
+            causa: Prompt,
             sigma: sigma);
         var palabraRespuesta = designacion.Mostrarse(
             apariencia: Prompt,
             texto: respuesta,
             contexto: prompt);
         Respuesta = palabraRespuesta;
-        palabra.Efecto = designacion;
+        Respuesta.Efecto = designacion;
     }
 
     public DetectorAlucinacionIA ConLogger(ITestOutputHelper output)
@@ -84,8 +83,8 @@ public class DetectorAlucinacionIA
         double tolerancia)
     {
         AgregarEvaluacion(() => {
-            var amplitudPromt = Prompt.Fasor.Value.Magnitude;
-            var amplitudRespuesta = Respuesta.Fasor.Value.Magnitude;
+            var amplitudPromt = Prompt.Fasor.Magnitude;
+            var amplitudRespuesta = Respuesta.Fasor.Magnitude;
             if (_output != null)
             {
                 _output.WriteLine($"AmplitudPrompt={amplitudPromt}, AmplitudRespuesta={amplitudRespuesta}.");

@@ -1,12 +1,10 @@
 using System;
-using System.Collections.Generic;
 using System.Numerics;
 
-public class Palabra : Apariencia
+public class Palabra
 {
     public string Texto { get; }
     public Func<double, Complex> Admitancia { get; } 
-    public Designacion Efecto { get; set; }
 
     /// <summary>
     /// Crea una palabra y su apariencia correspondiente.
@@ -14,58 +12,12 @@ public class Palabra : Apariencia
     /// Devuelve la presión en la parte real y el flujo de aire en la imaginaria.
     /// </summary>
     /// <param name="texto">Texto que se dijo.</param>
-    /// <param name="contexto">Contexto en el que se pronuncia la palabra.</param>
-    /// <param name="frecuenciaAngular">Frecuencia angular respiratoria.</param>
     /// <param name="admitancia">Función de admitancia para esa frecuencia.</param>
-    /// <param name="fourier">Mapa completo de admitancias por frecuencia.</param>
-    public Palabra(
+    internal Palabra(
         string texto,
-        string contexto,
-        double frecuenciaAngular,
-        Func<double, Complex> admitancia,
-        Dictionary<double, Complex> fourier)
-        : base(frecuenciaAngular)
+        Func<double, Complex> admitancia)
     {
         Texto = texto;
         Admitancia = admitancia;
-        Esencia = new Nombre(
-            texto: texto,
-            contexto: contexto,
-            fourier: fourier,
-            esencia: this
-        );
-    }
-
-    /// <summary>
-    /// Calcula la onda reflejada y transmitida por la palabra.
-    /// Sobre escribir para definir otro criterio.
-    /// </summary>
-    /// <param name="tau">Tiempo de la designación.</param>
-    /// <param name="t">Tiempo de la apariencia.</param>
-    /// <param name="omega">Frecuencia angular de la designación.</param>
-    /// <returns>El valor de la onda.</returns>
-    public virtual (Complex ondaReflejada, Complex ondaTransmitida) Aparecer(
-        double tau,
-        double t, 
-        double omega)
-    {
-        var ondaIncidente = Funcion(t);
-
-        var Y1 = Admitancia(t - tau);
-        var Y2 = Efecto.STFT(
-            this, 
-            tau,
-            omega);        
-        var numerador = Y2 - Y1;
-        var denominador = Y2 + Y1;
-        if (denominador == Complex.Zero)
-        {
-            return (ondaIncidente, Complex.Zero);
-        }
-        var gamma = numerador / denominador;
-        
-        var ondaReflejada = gamma * ondaIncidente;
-        var ondaTransmitida = ondaIncidente + ondaReflejada;
-        return (ondaReflejada, ondaTransmitida);
     }
 }

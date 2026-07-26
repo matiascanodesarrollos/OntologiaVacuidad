@@ -21,6 +21,8 @@ public class Nombre
     /// </summary>
     /// <param name="texto">Texto del nombre.</param>
     /// <param name="contexto">Contexto donde se evaluan apariciones del texto.</param>
+    /// <param name="fourier">Transformada de Fourier de la palabra.</param>
+    /// <param name="esencia">Apariencia asociada al nombre.</param>
     public Nombre(string texto, 
         string contexto,
         Dictionary<double, Complex> fourier,

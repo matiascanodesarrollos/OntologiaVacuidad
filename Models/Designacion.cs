@@ -1,36 +1,23 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 
 public class Designacion : Nombre
 {
-    public Palabra Causa { get; set; }
+    public Apariencia Causa { get; set; }
     public Func<double, Complex> Ventana { get; }
-
-    internal Designacion(
-        Palabra causa, 
-        Func<double, Complex> ventana,
-        string contexto,
-        Dictionary<double, Complex> fourier)
-        : base(causa.Texto, contexto, fourier, causa)
-    {
-        Causa = causa;
-        Ventana = ventana;
-    }
 
     /// <summary>
     /// Crea una designación dados su naturaleza, causa y un factor de atenuación exponencial.
     /// Se genera una ventana multiplicando la atenuación exponencial por la suma de los fasores de la naturaleza.
     /// </summary>
     /// <param name="naturaleza">Nombre asociado a la designación.</param>
-    /// <param name="causa">Palabra que causa la designacion</param>
+    /// <param name="causa">Apariencia que causa la designacion</param>
     /// <param name="sigma">Factor de atenuación exponencial</param>
-    public Designacion(Nombre naturaleza, Palabra causa, double sigma)
+    public Designacion(Nombre naturaleza, Apariencia causa, double sigma)
         : base(naturaleza)
     {
         Causa = causa;
-        Causa.Efecto = this;
         var omega = naturaleza.Fourier.Keys.Sum();
         var fase = naturaleza.Fourier.Values.Sum(v => v.Phase);
         var amplitud = naturaleza.Fourier.Values.Sum(v => v.Magnitude);
@@ -45,18 +32,18 @@ public class Designacion : Nombre
     /// <param name="apariencia">Apariencia sobre la que se proyecta.</param>
     /// <param name="texto">Palabra pronunciada en texto.</param>
     /// <param name="contexto">Contexto en el que se pronuncia.</param>
-    /// <returns></returns>
-    public Palabra Mostrarse(
-        Apariencia apariencia, 
-        string texto, 
+    /// <returns>Una apariencia proyectada.</returns>
+    public Apariencia Mostrarse(
+        Apariencia apariencia,
+        string texto,
         string contexto)
     {        
-        var esencia = new Palabra(
+        var esencia = new Apariencia(
             texto: texto,
             contexto: contexto,
-            frecuenciaAngular: apariencia.FrecuenciaAngular,
             admitancia: Ventana,
-            Fourier)
+            frecuenciaAngular: apariencia.FrecuenciaAngular,
+            fourier: Fourier)
         {
             Efecto = this, //El efecto existe antes que la causa.
         };
