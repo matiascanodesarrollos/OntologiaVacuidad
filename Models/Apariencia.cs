@@ -49,7 +49,7 @@ public class Apariencia : Palabra
     /// <param name="t">Tiempo de la apariencia.</param>
     /// <param name="omega">Frecuencia angular de la designación.</param>
     /// <returns>El valor de la onda.</returns>
-    public virtual (Complex ondaReflejada, Complex ondaTransmitida) Aparecer(
+    internal virtual (Complex OndaReflejada, Complex OndaTransmitida) Aparecer(
         double tau,
         double t, 
         double omega)

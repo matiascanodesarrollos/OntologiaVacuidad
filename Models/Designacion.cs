@@ -43,7 +43,7 @@ public class Designacion : Nombre
         var esencia = new Apariencia(
             texto: texto,
             contexto: contexto,
-            admitancia: t => Causa.Aparecer(tau, t, omega).ondaTransmitida,
+            admitancia: t => Causa.Aparecer(tau, t, omega).OndaTransmitida,
             frecuenciaAngularPortadora: Causa.FrecuenciaAngular,
             frecuenciaAdmitancia: Fourier)
         {
