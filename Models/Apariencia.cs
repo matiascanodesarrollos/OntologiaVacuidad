@@ -8,7 +8,7 @@ public class Apariencia : Palabra
     public Complex Fasor { get; }
     public double FrecuenciaAngular { get; }
     public Nombre Esencia { get; set; }
-    public Designacion Efecto { get; set; }
+    public Designacion Causa { get; set; }
 
     /// <summary>
     /// Crea una apariencia con texto, contexto, admitancia, frecuencia angular y diccionario de admitancias.
@@ -49,7 +49,7 @@ public class Apariencia : Palabra
     /// <param name="t">Tiempo de la apariencia.</param>
     /// <param name="omega">Frecuencia angular de la designación.</param>
     /// <returns>El valor de la onda.</returns>
-    internal virtual (Complex OndaReflejada, Complex OndaTransmitida) Aparecer(
+    internal virtual (Complex OndaReflejada, Complex OndaTransmitida) Mostrarse(
         double tau,
         double t, 
         double omega)
@@ -57,7 +57,7 @@ public class Apariencia : Palabra
         var ondaIncidente = Funcion(t);
 
         var Y1 = Admitancia(t - tau);
-        var Y2 = Efecto.STFT(
+        var Y2 = Causa.STFT(
             this, 
             tau,
             omega);        

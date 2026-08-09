@@ -197,7 +197,7 @@ public class AITests
             },
             fourierRespuesta: new Dictionary<double, Complex>()
             {
-                { 100, new Complex(0, 0) },
+                { 100, new Complex(30, 10) },
             },
             0
         );

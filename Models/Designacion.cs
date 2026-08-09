@@ -4,20 +4,20 @@ using System.Numerics;
 
 public class Designacion : Nombre
 {
-    public Apariencia Causa { get; set; }
+    public Apariencia Efecto { get; set; }
     public Func<double, Complex> Ventana { get; }
 
     /// <summary>
-    /// Crea una designación dados su naturaleza, causa y un factor de atenuación exponencial.
+    /// Crea una designación dados su naturaleza, efecto y un factor de atenuación exponencial.
     /// Se genera una ventana multiplicando la atenuación exponencial por la suma de los fasores de la naturaleza.
     /// </summary>
     /// <param name="naturaleza">Nombre asociado a la designación.</param>
-    /// <param name="causa">Apariencia que causa la designacion</param>
+    /// <param name="efecto">Apariencia que resulta de la designacion</param>
     /// <param name="sigma">Factor de atenuación exponencial</param>
-    public Designacion(Nombre naturaleza, Apariencia causa, double sigma)
+    public Designacion(Nombre naturaleza, Apariencia efecto, double sigma)
         : base(naturaleza)
     {
-        Causa = causa;
+        Efecto = efecto;
         var omega = naturaleza.Fourier.Keys.Sum();
         var fase = naturaleza.Fourier.Values.Sum(v => v.Phase);
         var amplitud = naturaleza.Fourier.Values.Sum(v => v.Magnitude);
@@ -34,7 +34,7 @@ public class Designacion : Nombre
     /// <param name="tau">Tiempo de la designación.</param>
     /// <param name="omega">Frecuencia angular de la designación.</param>
     /// <returns>Una apariencia proyectada.</returns>
-    public Apariencia Mostrarse(
+    public Apariencia Aparecer(
         string texto,
         string contexto,
         double tau,
@@ -43,11 +43,11 @@ public class Designacion : Nombre
         var esencia = new Apariencia(
             texto: texto,
             contexto: contexto,
-            admitancia: t => Causa.Aparecer(tau, t, omega).OndaTransmitida,
-            frecuenciaAngularPortadora: Causa.FrecuenciaAngular,
+            admitancia: t => Efecto.Mostrarse(tau, t, omega).OndaTransmitida,
+            frecuenciaAngularPortadora: Efecto.FrecuenciaAngular,
             frecuenciaAdmitancia: Fourier)
         {
-            Efecto = this, //El efecto existe antes que la causa.
+            Causa = this,
         };
         return esencia;
     }
