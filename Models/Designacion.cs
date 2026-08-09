@@ -4,23 +4,20 @@ using System.Numerics;
 
 public class Designacion : Nombre
 {
-    public new Guid Id { get; }
-    public Palabra Causa { get; set; }
+    public Apariencia Efecto { get; set; }
     public Func<double, Complex> Ventana { get; }
 
     /// <summary>
-    /// Crea una designación dados su naturaleza, causa y un factor de atenuación exponencial.
+    /// Crea una designación dados su naturaleza, efecto y un factor de atenuación exponencial.
     /// Se genera una ventana multiplicando la atenuación exponencial por la suma de los fasores de la naturaleza.
     /// </summary>
     /// <param name="naturaleza">Nombre asociado a la designación.</param>
-    /// <param name="causa">Palabra que causa la designacion</param>
+    /// <param name="efecto">Apariencia que resulta de la designacion</param>
     /// <param name="sigma">Factor de atenuación exponencial</param>
-    public Designacion(Nombre naturaleza, Palabra causa, double sigma)
+    public Designacion(Nombre naturaleza, Apariencia efecto, double sigma)
         : base(naturaleza)
     {
-        Id = Guid.NewGuid();
-        Causa = causa;
-        Causa.Efecto = this;
+        Efecto = efecto;
         var omega = naturaleza.Fourier.Keys.Sum();
         var fase = naturaleza.Fourier.Values.Sum(v => v.Phase);
         var amplitud = naturaleza.Fourier.Values.Sum(v => v.Magnitude);
@@ -32,43 +29,54 @@ public class Designacion : Nombre
     /// <summary>
     /// Obtiene la esencia de la designación, una palabra modulada por la apariencia.
     /// </summary>
-    /// <param name="apariencia">Apariencia sobre la que se proyecta.</param>
     /// <param name="texto">Palabra pronunciada en texto.</param>
     /// <param name="contexto">Contexto en el que se pronuncia.</param>
-    /// <returns></returns>
-    public Palabra Mostrarse(
-        Apariencia apariencia, 
-        string texto, 
-        string contexto)
-    {        
-        var esencia = new Palabra(
+    /// <param name="tau">Tiempo de la designación.</param>
+    /// <param name="omega">Frecuencia angular de la designación.</param>
+    /// <returns>Una apariencia proyectada.</returns>
+    public Apariencia Aparecer(
+        string texto,
+        string contexto,
+        double tau,
+        double omega)
+    {
+        var esencia = new Apariencia(
             texto: texto,
             contexto: contexto,
-            frecuenciaAngular: apariencia.FrecuenciaAngular,
-            admitancia: Ventana,
-            Fourier)
+            admitancia: t => Efecto.Mostrarse(tau, t, omega).OndaTransmitida,
+            frecuenciaAngularPortadora: Efecto.FrecuenciaAngular,
+            frecuenciaAdmitancia: Fourier)
         {
-            Efecto = this, //El efecto existe antes que la causa.
+            Causa = this,
         };
         return esencia;
     }
 
     /// <summary>
-    /// Sobreescribe Equals para comparar designaciones por su Id.
+    /// Calcula la transformada de Fourier de corta duracion proyectando la designacion sobre una apariencia.
+    /// Sobreescribir para definir otro criterio.
+    /// Se utiliza en el metodo Aparecer de la clase Palabra, donde se multiplica por su función.
     /// </summary>
-    /// <returns>True si las designaciones son iguales, false en caso contrario.</returns>
-    public override bool Equals(object obj)
+    /// <param name="apariencia">La apariencia sobre la que se proyecta la designación.</param>
+    /// <param name="tau">Desplazamiento temporal de la ventana.</param>
+    /// <param name="omega">Frecuencia angular de la transformada de Fourier.</param>
+    /// <returns>La integral compleja.</returns>
+    internal virtual Complex STFT(Apariencia apariencia, double tau, double omega)
     {
-        if (obj is Designacion other)
+        var muestras = 100;
+        var periodoMuestreo = 0.01;
+        var integral = Complex.Zero;
+        
+        for (var n = 0; n < muestras; n++)
         {
-            return Id == other.Id;
+            var t = (n - muestras / 2) * periodoMuestreo;
+            var ventana = Ventana(t - tau);
+            var muestra = apariencia.Funcion(t);
+            var factor = Complex.FromPolarCoordinates(1.0, -omega * t);
+            integral += muestra * ventana * factor;
         }
-        return false;
-    }
 
-    /// <summary>
-    /// Sobreescribe GetHashCode para comparar designaciones por su Id.
-    /// </summary>
-    /// <returns>El hash code de la designación.</returns>
-    public override int GetHashCode() => Id.GetHashCode();
+        integral *= periodoMuestreo;
+        return integral;
+    }
 }

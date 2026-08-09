@@ -1,44 +1,77 @@
 using System;
+using System.Collections.Generic;
 using System.Numerics;
 
-public class Apariencia
-{
-    public Guid Id { get; }    
+public class Apariencia : Palabra
+{ 
     public Func<double, Complex> Funcion { get; }
-    public Lazy<Complex> Fasor { get; }
+    public Complex Fasor { get; }
     public double FrecuenciaAngular { get; }
     public Nombre Esencia { get; set; }
+    public Designacion Causa { get; set; }
 
-    internal Apariencia(double frecuenciaAngular)
+    /// <summary>
+    /// Crea una apariencia con texto, contexto, admitancia, frecuencia angular y diccionario de admitancias.
+    /// La función de la apariencia modela la respiración:
+    /// Devuelve la presión en la parte real y el flujo de aire en la imaginaria.
+    /// <param name="texto">Descripción de la apariencia.</param>
+    /// <param name="contexto">Descripción del contexto en el que ocurre la apariencia.</param>
+    /// <param name="admitancia">Función de admitancia para la frecuencia angular portadora.</param>
+    /// <param name="frecuenciaAngularPortadora">Frecuencia angular respiratoria portadora.</param>
+    /// <param name="frecuenciaAdmitancia">Diccionario de frecuencias y sus correspondientes admitancias como valores complejos.</param>
+    /// </summary>
+    public Apariencia(
+        string texto, 
+        string contexto,
+        Func<double, Complex> admitancia,
+        double frecuenciaAngularPortadora,
+        Dictionary<double, Complex> frecuenciaAdmitancia) 
+        : base(texto, admitancia)
     {
-        Id = Guid.NewGuid();
-        FrecuenciaAngular = frecuenciaAngular;
-        Fasor = new Lazy<Complex>(() => 
-            Esencia.CalcularFourier(FrecuenciaAngular)
+        FrecuenciaAngular = frecuenciaAngularPortadora;
+        Esencia = new Nombre(
+            texto: texto,
+            contexto: contexto,
+            frecuenciaAdmitancia: frecuenciaAdmitancia,
+            esencia: this
         );
+        Fasor = Esencia.CalcularFourier(FrecuenciaAngular);
         Funcion = t => 
-            Fasor.Value 
+            Fasor 
             * Complex.FromPolarCoordinates(1, FrecuenciaAngular * t);
     }
 
     /// <summary>
-    /// Sobreescribe GetHashCode para comparar apariencias por su Id.   
+    /// Calcula la onda reflejada y transmitida por la apariencia.
+    /// Sobre escribir para definir otro criterio.
     /// </summary>
-    /// <returns>El hash code de la apariencia.</returns>
-    public override int GetHashCode() => Id.GetHashCode();
-
-    /// <summary>
-    /// Sobreescribe Equals para comparar apariencias por su Id.
-    /// </summary>
-    /// <returns>True si las apariencias son iguales, false en caso contrario.</returns>
-    public override bool Equals(object obj)
+    /// <param name="tau">Tiempo de la designación.</param>
+    /// <param name="t">Tiempo de la apariencia.</param>
+    /// <param name="omega">Frecuencia angular de la designación.</param>
+    /// <returns>El valor de la onda.</returns>
+    internal virtual (Complex OndaReflejada, Complex OndaTransmitida) Mostrarse(
+        double tau,
+        double t, 
+        double omega)
     {
-        if (obj is Apariencia other)
-        {
-            return Id == other.Id;
-        }
-        return false;
-    }
+        var ondaIncidente = Funcion(t);
 
+        var Y1 = Admitancia(t - tau);
+        var Y2 = Causa.STFT(
+            this, 
+            tau,
+            omega);        
+        var numerador = Y2 - Y1;
+        var denominador = Y2 + Y1;
+        if (denominador == Complex.Zero)
+        {
+            return (ondaIncidente, Complex.Zero);
+        }
+        var gamma = numerador / denominador;
+        
+        var ondaReflejada = gamma * ondaIncidente;
+        var ondaTransmitida = ondaIncidente + ondaReflejada;
+        return (ondaReflejada, ondaTransmitida);
+    }
 }
 

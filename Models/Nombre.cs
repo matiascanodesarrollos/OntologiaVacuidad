@@ -1,18 +1,15 @@
-using System;
 using System.Collections.Generic;
 using System.Numerics;
 
 public class Nombre
 {
-    public Guid Id { get; }
     public string Texto { get; }
     public string Contexto { get; }
-    internal Apariencia Esencia { get; }
+    public Apariencia Esencia { get; }
     internal Dictionary<double, Complex> Fourier { get; }
 
     protected Nombre(Nombre otro)
     {
-        Id = otro.Id;
         Texto = otro.Texto;
         Contexto = otro.Contexto;        
         Esencia = otro.Esencia;
@@ -23,27 +20,19 @@ public class Nombre
     /// Crea un nuevo nombre con texto, contexto y su transformada de Fourier.
     /// </summary>
     /// <param name="texto">Texto del nombre.</param>
-    /// <param name="contexto">Contexto donde se evaluan apariciones del texto.</param>
+    /// <param name="contexto">Contexto de la designación.</param>
+    /// <param name="frecuenciaAdmitancia">Diccionario de frecuencias y sus correspondientes admitancias como valores complejos.</param>
+    /// <param name="esencia">Apariencia asociada al nombre.</param>
     public Nombre(string texto, 
         string contexto,
-        Dictionary<double, Complex> fourier,
+        Dictionary<double, Complex> frecuenciaAdmitancia,
         Apariencia esencia)
     {
-        Id = Guid.NewGuid();
         Texto = texto;
         Contexto = contexto;
-        Fourier = fourier;
+        Fourier = frecuenciaAdmitancia;
         Esencia = esencia;
-    }
-
-    /// <summary>
-    /// Obtiene la esencia del nombre, una apariencia que representa la idea del nombre.
-    /// </summary>
-    /// <returns>Una apariencia que representa la esencia del nombre.</returns>
-    public Apariencia Aparecer()
-    {
-        return Esencia;
-    }
+    }    
 
     /// <summary>
     /// Calcula la transformada de Fourier de la admitancia de la palabra.
@@ -67,31 +56,8 @@ public class Nombre
             integral += muestra * factor;
         }
 
+        integral *= periodoMuestreo;
         return integral;
-    } 
-
-    /// <summary>
-    /// Devuelve una representación textual simple del nombre.
-    /// </summary>
-    /// <returns>Una cadena con texto y velocidad de grupo.</returns>
-    public override string ToString() => $"{Texto}";
-
-    /// <summary>
-    /// Compara nombres por su Id.
-    /// </summary>
-    /// <returns>True si ambos nombres tienen el mismo Id, false en caso contrario.</returns>
-    public override bool Equals(object obj)
-    {
-        if (obj is Nombre other)
-        {
-            return Id == other.Id;
-        }
-        return false;
     }
 
-    /// <summary>
-    /// Genera el hash code a partir del Id.
-    /// </summary>
-    /// <returns>El hash code del Id del nombre.</returns>
-    public override int GetHashCode() => Id.GetHashCode();
 }
