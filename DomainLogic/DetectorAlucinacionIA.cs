@@ -7,41 +7,37 @@ public class DetectorAlucinacionIA
 {
     public Apariencia Prompt { get; }
     public Apariencia Respuesta { get; }
+    public Designacion Designacion { get; }
     private List<Func<bool>> Evaluaciones = new List<Func<bool>>();
     private ITestOutputHelper _output;
 
     public DetectorAlucinacionIA(
-        string prompt,         
+        string prompt,  
+        double frecuenciaRespiracionPrompt,       
         string respuesta,
+        double frecuenciaRespiracionRespuesta,
         Func<double, Complex> admitancia,
-        Dictionary<double, Complex> fourierPrompt,
-        Dictionary<double, Complex> fourierRespuesta,
-        double sigma)
+        Dictionary<KeyValuePair<Complex, double>, Complex> interpretacion,
+        Func<double, Complex> ventanaRespuesta)
     {
-        Prompt = new Apariencia(
+        var palabraPrompt = new Palabra(
             texto: prompt,
-            contexto: string.Empty,
-            admitancia: admitancia,
-            frecuenciaAngularPortadora: fourierPrompt.Keys.Sum(),
-            frecuenciaAdmitancia: fourierPrompt
+            frecuenciaAngular: frecuenciaRespiracionPrompt,
+            admitancia: admitancia
         );
-        var nombreRespuesta = new Nombre(
+        var nombre = new Nombre(
             texto: respuesta,
             contexto: prompt,
-            frecuenciaAdmitancia: fourierRespuesta,
-            Prompt);
-        Prompt.Esencia = nombreRespuesta;
-        var designacion = new Designacion(
-            naturaleza: nombreRespuesta,
-            efecto: Prompt,
-            sigma: sigma);
-        Prompt.Causa = designacion;
-        Respuesta = designacion.Aparecer(
-            texto: respuesta,
-            contexto: prompt,
-            tau: 0,
-            omega: 0
-        );
+            admitancia: interpretacion,
+            esencia: Prompt);
+        Designacion = new Designacion(
+            naturaleza: nombre,
+            esencia: Prompt,
+            ventana: ventanaRespuesta);
+
+        Prompt = new Apariencia(palabraPrompt, nombre);
+        var palabraRespuesta = Designacion.Aparecer(frecuenciaRespiracionRespuesta);
+        Respuesta = new Apariencia(palabraRespuesta, nombre);
     }
 
     public DetectorAlucinacionIA ConLogger(ITestOutputHelper output)
