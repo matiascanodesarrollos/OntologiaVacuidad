@@ -6,31 +6,29 @@ public class Nombre
     public string Texto { get; }
     public string Contexto { get; }
     public Apariencia Esencia { get; }
-    internal Dictionary<KeyValuePair<Complex, double>, Complex> MapaAdmitancias { get; }
+    internal Dictionary<KeyValuePair<Complex, double>, Complex> EsferaAdmitancias { get; }
 
     protected Nombre(Nombre otro)
     {
         Texto = otro.Texto;
         Contexto = otro.Contexto;        
         Esencia = otro.Esencia;
-        MapaAdmitancias = otro.MapaAdmitancias;
+        EsferaAdmitancias = otro.EsferaAdmitancias;
     }
 
     /// <summary>
     /// Crea un nuevo nombre con texto, contexto, mapa de admitancias (s,omega) y esencia.
     /// </summary>
     /// <param name="texto">Texto del nombre.</param>
-    /// <param name="contexto">Contexto de la designación.</param>
-    /// <param name="admitancia">Diccionario de frecuencias y sus correspondientes admitancias como valores complejos.</param>
+    /// <param name="esferaAdmitancia">Diccionario que representa una esfera de admitancias para cada s (Laplace) y omega.</param>
     /// <param name="esencia">Apariencia asociada al nombre.</param>
     public Nombre(string texto, 
-        string contexto,
-        Dictionary<KeyValuePair<Complex, double>, Complex> admitancia,
+        Dictionary<KeyValuePair<Complex, double>, Complex> esferaAdmitancia,
         Palabra esencia)
     {
         Texto = texto;
-        Contexto = contexto;
-        MapaAdmitancias = admitancia;
+        Contexto = esencia.Texto;
+        EsferaAdmitancias = esferaAdmitancia;
         Esencia = new Apariencia(esencia, this);
     }
 

@@ -9,6 +9,8 @@ public class AITests
     private const double ToleranciaAmplitud = 2;
     private const double ToleranciaPortadoras = 2;
     private const uint MaximoArmonicosPortadoras = 1;
+    private const double FrecuenciaPrompt = 100;
+    private const double FrecuenciaRespiracionRespuesta = 0;
 
     private readonly AIDiagnostics _diagnostics = new AIDiagnostics();
     private readonly ITestOutputHelper _output;
@@ -16,6 +18,19 @@ public class AITests
     public AITests(ITestOutputHelper output)
     {
         _output = output;
+    }
+
+    private static Dictionary<KeyValuePair<Complex, double>, Complex> CrearInterpretacion()
+    {
+        return new Dictionary<KeyValuePair<Complex, double>, Complex>
+        {
+            { new KeyValuePair<Complex, double>(Complex.Zero, FrecuenciaPrompt), Complex.One },
+        };
+    }
+
+    private static Func<double, Complex> VentanaEscalar(double escala)
+    {
+        return _ => new Complex(escala, 0);
     }
 
     [Fact]
@@ -26,22 +41,15 @@ public class AITests
         var respuesta = "París";
         var _helper = new DetectorAlucinacionIA(
             prompt: prompt,
+            frecuenciaRespiracionPrompt: FrecuenciaPrompt,
             respuesta: respuesta,
+            frecuenciaRespiracionRespuesta: FrecuenciaRespiracionRespuesta,
             admitancia: t => 
                     Complex.Exp(5 * t) * Complex.FromPolarCoordinates(40, 300 * t)
                     + Complex.Exp(1 * t) * Complex.FromPolarCoordinates(2, 200 * t)
                     + Complex.Exp(4 * t) * Complex.FromPolarCoordinates(6, 100 * t),
-            fourierPrompt: new Dictionary<double, Complex>()
-            {
-                { 100, new Complex(30, 10) },
-                { 200, new Complex(20, 40) },
-                { 300, new Complex(2, 30) },
-            },
-            fourierRespuesta: new Dictionary<double, Complex>()
-            {
-                { 100, new Complex(2, 2) },
-            },
-            0
+            interpretacion: CrearInterpretacion(),
+            ventanaRespuesta: VentanaEscalar(0)
         );
         var evaluador = _helper
             .ConLogger(_output)
@@ -68,24 +76,15 @@ public class AITests
         var respuesta = "Me alegro mucho, es una emoción común la que experimentas. Podes aprender sobre muchos temas con IA, aunque siempre es recomendable verificar datos sensibles. Con respecto a la capital de Francia, es París";
         var _helper = new DetectorAlucinacionIA(
             prompt: prompt,
+            frecuenciaRespiracionPrompt: FrecuenciaPrompt,
             respuesta: respuesta,
+            frecuenciaRespiracionRespuesta: FrecuenciaRespiracionRespuesta,
             admitancia: t => 
                     Complex.Exp(-2 * t) * Complex.FromPolarCoordinates(0.02, 300 * t)
                     + Complex.Exp(-1 * t) * Complex.FromPolarCoordinates(0.01, 200 * t)
                     + Complex.Exp(-2 * t) * Complex.FromPolarCoordinates(0.02, 100 * t),
-            fourierPrompt: new Dictionary<double, Complex>()
-            {
-                { 100, new Complex(30, 10) },
-                { 200, new Complex(20, 40) },
-                { 300, new Complex(2, 30) },
-            },
-            fourierRespuesta: new Dictionary<double, Complex>()
-            {
-                { 100, new Complex(1, 1) },
-                { 200, new Complex(1, 1) },
-                { 300, new Complex(1, 1) },
-            },
-            0
+            interpretacion: CrearInterpretacion(),
+            ventanaRespuesta: VentanaEscalar(1)
         );
         var evaluador = _helper
             .ConLogger(_output)
@@ -112,18 +111,13 @@ public class AITests
         var respuesta = "La capital de Francia es París.";
         var _helper = new DetectorAlucinacionIA(
             prompt: prompt,
+            frecuenciaRespiracionPrompt: FrecuenciaPrompt,
             respuesta: respuesta,
+            frecuenciaRespiracionRespuesta: FrecuenciaRespiracionRespuesta,
             admitancia: t => 
                     Complex.Exp(-1 * t) * Complex.FromPolarCoordinates(0.03, 100 * t),
-            fourierPrompt: new Dictionary<double, Complex>()
-            {
-                { 100, new Complex(30, 10) },
-            },
-            fourierRespuesta: new Dictionary<double, Complex>()
-            {
-                { 100, new Complex(2, 5) },
-            },
-            0
+            interpretacion: CrearInterpretacion(),
+            ventanaRespuesta: VentanaEscalar(1)
         );
         var evaluador = _helper
             .ConLogger(_output)
@@ -150,19 +144,12 @@ public class AITests
         var respuesta = "Hay muchas repuestas posibles correctas, algunos dicen que es Lyon pero la verdadera capital de Francia es París.";
         var _helper = new DetectorAlucinacionIA(
             prompt: prompt,
+            frecuenciaRespiracionPrompt: FrecuenciaPrompt,
             respuesta: respuesta,
+            frecuenciaRespiracionRespuesta: FrecuenciaRespiracionRespuesta,
             admitancia: t => Complex.Exp(4 * t) * Complex.FromPolarCoordinates(3, 100 * t),
-            fourierPrompt: new Dictionary<double, Complex>()
-            {
-                { 100, new Complex(10, 10) },
-            },
-            fourierRespuesta: new Dictionary<double, Complex>()
-            {
-                { 100, new Complex(30, 10) },
-                { 200, new Complex(20, 40) },
-                { 300, new Complex(2, 30) },
-            },
-            0
+            interpretacion: CrearInterpretacion(),
+            ventanaRespuesta: VentanaEscalar(0)
         );
         var evaluador = _helper
             .ConLogger(_output)
@@ -189,17 +176,12 @@ public class AITests
         var respuesta = "Lyon.";
         var _helper = new DetectorAlucinacionIA(
             prompt: prompt,
+            frecuenciaRespiracionPrompt: FrecuenciaPrompt,
             respuesta: respuesta,
+            frecuenciaRespiracionRespuesta: FrecuenciaRespiracionRespuesta,
             admitancia: t => Complex.Exp(4 * t) * Complex.FromPolarCoordinates(3, 100 * t),
-            fourierPrompt: new Dictionary<double, Complex>()
-            {
-                { 100, new Complex(10, 10) },
-            },
-            fourierRespuesta: new Dictionary<double, Complex>()
-            {
-                { 100, new Complex(30, 10) },
-            },
-            0
+            interpretacion: CrearInterpretacion(),
+            ventanaRespuesta: VentanaEscalar(0)
         );
         var evaluador = _helper
             .ConLogger(_output)
@@ -226,22 +208,13 @@ public class AITests
         var respuesta = "Me alegro mucho, es una emoción común la que experimentas. Podes aprender sobre muchos temas con IA, aunque siempre es recomendable verificar datos sensibles. Con respecto a la capital de Francia, es Lyon.";
         var _helper = new DetectorAlucinacionIA(
             prompt: prompt,
+            frecuenciaRespiracionPrompt: FrecuenciaPrompt,
             respuesta: respuesta,
+            frecuenciaRespiracionRespuesta: 30,
             admitancia: t => 
                     Complex.FromPolarCoordinates(50, 600 * t),
-            fourierPrompt: new Dictionary<double, Complex>()
-            {
-                { 100, new Complex(30, 10) },
-                { 200, new Complex(20, 40) },
-                { 300, new Complex(2, 30) },
-            },
-            fourierRespuesta: new Dictionary<double, Complex>()
-            {
-                { 100, new Complex(0, 0) },
-                { 250, new Complex(20, 40) },
-                { 300, new Complex(2, 30) },
-            },
-            0
+            interpretacion: CrearInterpretacion(),
+            ventanaRespuesta: VentanaEscalar(0)
         );
         var evaluador = _helper
             .ConLogger(_output)

@@ -9,7 +9,7 @@ public class DetectorAlucinacionIA
     public Apariencia Respuesta { get; }
     public Designacion Designacion { get; }
     private List<Func<bool>> Evaluaciones = new List<Func<bool>>();
-    private ITestOutputHelper _output;
+    private ITestOutputHelper? _output;
 
     public DetectorAlucinacionIA(
         string prompt,  
@@ -27,16 +27,16 @@ public class DetectorAlucinacionIA
         );
         var nombre = new Nombre(
             texto: respuesta,
-            contexto: prompt,
-            admitancia: interpretacion,
-            esencia: Prompt);
+            esferaAdmitancia: interpretacion,
+            esencia: palabraPrompt);
         Designacion = new Designacion(
             naturaleza: nombre,
-            esencia: Prompt,
+            esencia: palabraPrompt,
             ventana: ventanaRespuesta);
 
-        Prompt = new Apariencia(palabraPrompt, nombre);
-        var palabraRespuesta = Designacion.Aparecer(frecuenciaRespiracionRespuesta);
+        Prompt = nombre.Esencia;
+        var palabraRespuesta = Designacion
+            .Aparecer(frecuenciaRespiracionRespuesta);
         Respuesta = new Apariencia(palabraRespuesta, nombre);
     }
 
