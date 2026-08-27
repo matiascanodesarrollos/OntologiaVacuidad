@@ -6,7 +6,6 @@ public class Designacion : Nombre
     public Apariencia Efecto { get; set; }
     public new Palabra Esencia { get; set; }
     public Func<double, Complex> Ventana { get; }
-    public Func<double, Complex> Karma { get; }
 
     /// <summary>
     /// Crea una designación dados su naturaleza, efecto y un factor de atenuación exponencial.
@@ -24,7 +23,6 @@ public class Designacion : Nombre
     {        
         Efecto = new Apariencia(esencia, naturaleza);
         Esencia = esencia;
-        Karma = esencia.Admitancia;
         Ventana = ventana;
     }
     
@@ -37,7 +35,7 @@ public class Designacion : Nombre
         var palabra = new Palabra(
             Texto,
             Esencia.FrecuenciaAngular + frecuenciaRespiracion,
-            t => Ventana(t) * Karma(t)
+            t => Ventana(t) * Esencia.Admitancia(t)
         );
         return palabra;
     }
@@ -60,7 +58,7 @@ public class Designacion : Nombre
         for (var n = 0; n < muestras; n++)
         {
             var t = (n - muestras / 2) * periodoMuestreo;
-            var muestra = Efecto.Funcion(t) * Ventana(t - tau) * Karma(t - tau);
+            var muestra = Efecto.Funcion(t) * Ventana(t - tau) * Esencia.Admitancia(t - tau);
             var frecuencia = Complex.FromPolarCoordinates(1.0, -omega * t);
             var effectoDoppler = Complex.FromPolarCoordinates(1.0, omegaPrima * t);
             integral += muestra * frecuencia * effectoDoppler;
