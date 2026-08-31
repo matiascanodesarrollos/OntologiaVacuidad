@@ -1,77 +1,54 @@
 using System;
-using System.Collections.Generic;
 using System.Numerics;
 
-public class Apariencia : Palabra
-{ 
+public class Apariencia
+{     
+    public double FrecuenciaAngular { get; }
     public Func<double, Complex> Funcion { get; }
     public Complex Fasor { get; }
-    public double FrecuenciaAngular { get; }
     public Nombre Esencia { get; set; }
-    public Designacion Causa { get; set; }
 
     /// <summary>
-    /// Crea una apariencia con texto, contexto, admitancia, frecuencia angular y diccionario de admitancias.
-    /// La función de la apariencia modela la respiración:
-    /// Devuelve la presión en la parte real y el flujo de aire en la imaginaria.
-    /// <param name="texto">Descripción de la apariencia.</param>
-    /// <param name="contexto">Descripción del contexto en el que ocurre la apariencia.</param>
-    /// <param name="admitancia">Función de admitancia para la frecuencia angular portadora.</param>
-    /// <param name="frecuenciaAngularPortadora">Frecuencia angular respiratoria portadora.</param>
-    /// <param name="frecuenciaAdmitancia">Diccionario de frecuencias y sus correspondientes admitancias como valores complejos.</param>
+    /// Crea a partir de una palabra y el nombre de su esencia.
+    /// El fasor se calcula como la transformada de Fourier de la admitancia de la palabra.
+    /// La función de la apariencia es el fasor multiplicado por la exponencial compleja.
+    /// <param name="palabra">Palabra de la que se deriva la apariencia.</param>
+    /// <param name="esencia">Nombre de la esencia de la apariencia.</param>
     /// </summary>
-    public Apariencia(
-        string texto, 
-        string contexto,
-        Func<double, Complex> admitancia,
-        double frecuenciaAngularPortadora,
-        Dictionary<double, Complex> frecuenciaAdmitancia) 
-        : base(texto, admitancia)
+    public Apariencia(Palabra palabra, Nombre esencia) 
     {
-        FrecuenciaAngular = frecuenciaAngularPortadora;
-        Esencia = new Nombre(
-            texto: texto,
-            contexto: contexto,
-            frecuenciaAdmitancia: frecuenciaAdmitancia,
-            esencia: this
-        );
-        Fasor = Esencia.CalcularFourier(FrecuenciaAngular);
+        FrecuenciaAngular = palabra.FrecuenciaAngular;
+        Esencia = esencia;
+        Fasor = CalcularFourier(palabra);
         Funcion = t => 
             Fasor 
             * Complex.FromPolarCoordinates(1, FrecuenciaAngular * t);
     }
 
     /// <summary>
-    /// Calcula la onda reflejada y transmitida por la apariencia.
-    /// Sobre escribir para definir otro criterio.
+    /// Calcula la transformada de Fourier de la admitancia de la palabra.
+    /// Se usa para obtener el fasor de la apariencia.
+    /// Sobreescribir para definir otro criterio.
     /// </summary>
-    /// <param name="tau">Tiempo de la designación.</param>
-    /// <param name="t">Tiempo de la apariencia.</param>
-    /// <param name="omega">Frecuencia angular de la designación.</param>
-    /// <returns>El valor de la onda.</returns>
-    internal virtual (Complex OndaReflejada, Complex OndaTransmitida) Mostrarse(
-        double tau,
-        double t, 
-        double omega)
+    /// <param name="omega">Frecuencia angular de análisis.</param>
+    /// <returns>El integral complejo de la ventana.</returns>
+    public virtual Complex CalcularFourier(Palabra naturaleza)
     {
-        var ondaIncidente = Funcion(t);
-
-        var Y1 = Admitancia(t - tau);
-        var Y2 = Causa.STFT(
-            this, 
-            tau,
-            omega);        
-        var numerador = Y2 - Y1;
-        var denominador = Y2 + Y1;
-        if (denominador == Complex.Zero)
-        {
-            return (ondaIncidente, Complex.Zero);
-        }
-        var gamma = numerador / denominador;
+        var muestras = 100;
+        var periodoMuestreo = 0.01;
+        var integral = Complex.Zero;
+        var palabra = naturaleza;
         
-        var ondaReflejada = gamma * ondaIncidente;
-        var ondaTransmitida = ondaIncidente + ondaReflejada;
-        return (ondaReflejada, ondaTransmitida);
+        for (var n = 0; n < muestras; n++)
+        {
+            var t = (n - muestras / 2) * periodoMuestreo;
+            var muestra = palabra.Admitancia(t);
+            var factor = Complex.FromPolarCoordinates(1.0, -FrecuenciaAngular * t);
+            integral += muestra * factor;
+        }
+
+        integral *= periodoMuestreo;
+        return integral;
     }
 }
 
