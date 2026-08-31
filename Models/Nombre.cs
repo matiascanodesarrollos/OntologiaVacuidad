@@ -1,17 +1,19 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Numerics;
 
-public class Nombre
+public class Nombre : Palabra
 {
-    public string Texto { get; }
+    public new string Texto { get; }
     public string Contexto { get; }
     public Apariencia Esencia { get; }
     internal Dictionary<KeyValuePair<Complex, double>, Complex> EsferaAdmitancias { get; }
 
     protected Nombre(Nombre otro)
+        : base(otro)
     {
         Texto = otro.Texto;
-        Contexto = otro.Contexto;        
+        Contexto = otro.Contexto;
         Esencia = otro.Esencia;
         EsferaAdmitancias = otro.EsferaAdmitancias;
     }
@@ -21,15 +23,17 @@ public class Nombre
     /// </summary>
     /// <param name="texto">Texto del nombre.</param>
     /// <param name="esferaAdmitancia">Diccionario que representa una esfera de admitancias para cada s (Laplace) y omega.</param>
-    /// <param name="esencia">Apariencia asociada al nombre.</param>
+    /// <param name="naturaleza">La palabra asociada al nombre.</param>
     public Nombre(string texto, 
         Dictionary<KeyValuePair<Complex, double>, Complex> esferaAdmitancia,
-        Palabra esencia)
+        Palabra naturaleza)
+        : base(naturaleza)
     {
         Texto = texto;
-        Contexto = esencia.Texto;
+        Contexto = naturaleza.Texto;
         EsferaAdmitancias = esferaAdmitancia;
-        Esencia = new Apariencia(esencia, this);
+        var frecuenciaAngular = esferaAdmitancia.Sum(kv => kv.Key.Key.Real + kv.Key.Value);
+        Esencia = new Apariencia(naturaleza, this);
     }
 
 }

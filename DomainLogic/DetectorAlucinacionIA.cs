@@ -15,7 +15,6 @@ public class DetectorAlucinacionIA
         string prompt,  
         double frecuenciaRespiracionPrompt,       
         string respuesta,
-        double frecuenciaRespiracionRespuesta,
         Func<double, Complex> admitancia,
         Dictionary<KeyValuePair<Complex, double>, Complex> interpretacion,
         Func<double, Complex> ventanaRespuesta)
@@ -28,15 +27,14 @@ public class DetectorAlucinacionIA
         var nombre = new Nombre(
             texto: respuesta,
             esferaAdmitancia: interpretacion,
-            esencia: palabraPrompt);
+            naturaleza: palabraPrompt);
         Designacion = new Designacion(
             naturaleza: nombre,
-            esencia: palabraPrompt,
             ventana: ventanaRespuesta);
 
         Prompt = nombre.Esencia;
         var palabraRespuesta = Designacion
-            .Aparecer(frecuenciaRespiracionRespuesta);
+            .Esencia;
         Respuesta = new Apariencia(palabraRespuesta, nombre);
     }
 
