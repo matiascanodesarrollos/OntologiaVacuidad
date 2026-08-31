@@ -7,7 +7,6 @@ public class Apariencia
     public Func<double, Complex> Funcion { get; }
     public Complex Fasor { get; }
     public Nombre Esencia { get; set; }
-    public Designacion Causa { get; set; }
 
     /// <summary>
     /// Crea a partir de una palabra y el nombre de su esencia.
