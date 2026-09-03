@@ -1,38 +1,37 @@
 using System.Collections.Generic;
-using System.Linq;
 using System.Numerics;
 
 public class Nombre : Palabra
 {
-    public new string Texto { get; }
+    public string Sustantivo { get; }
     public string Contexto { get; }
     public Apariencia Esencia { get; }
-    internal Dictionary<KeyValuePair<Complex, double>, Complex> EsferaAdmitancias { get; }
+    internal Dictionary<KeyValuePair<Complex, double>, Complex> Significado { get; }
 
     protected Nombre(Nombre otro)
         : base(otro)
     {
-        Texto = otro.Texto;
+        Sustantivo = otro.Sustantivo;
         Contexto = otro.Contexto;
         Esencia = otro.Esencia;
-        EsferaAdmitancias = otro.EsferaAdmitancias;
+        Significado = otro.Significado;
     }
 
     /// <summary>
-    /// Crea un nuevo nombre con texto, contexto, mapa de admitancias (s,omega) y esencia.
+    /// Crea un nuevo nombre con sustantivo, contexto e imagen mental o significado.
     /// </summary>
-    /// <param name="texto">Texto del nombre.</param>
-    /// <param name="esferaAdmitancia">Diccionario que representa una esfera de admitancias para cada s (Laplace) y omega.</param>
-    /// <param name="palabra">La palabra asociada al nombre.</param>
-    public Nombre(string texto, 
-        Dictionary<KeyValuePair<Complex, double>, Complex> esferaAdmitancia,
-        Palabra palabra)
-        : base(palabra)
+    /// <param name="sustantivo">Sustantivo para el nombre.</param>
+    /// <param name="imagenMental">Diccionario que representa una esfera de admitancias para cada s (Laplace) y omega.</param>
+    /// <param name="contexto">La palabra asociada al nombre.</param>
+    public Nombre(string sustantivo, 
+        Dictionary<KeyValuePair<Complex, double>, Complex> imagenMental,
+        Palabra contexto)
+        : base(contexto)
     {
-        Texto = texto;
-        Contexto = palabra.Texto;
-        EsferaAdmitancias = esferaAdmitancia;
-        Esencia = new Apariencia(palabra, this);
+        Sustantivo = sustantivo;
+        Contexto = contexto.Texto;
+        Significado = imagenMental;
+        Esencia = new Apariencia(contexto, this);
     }
 
 }

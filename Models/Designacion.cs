@@ -21,12 +21,11 @@ public class Designacion : Nombre
     {
         Ventana = ventana;
         var palabra = new Palabra(
-            Texto,
+            Sustantivo,
             0.0,
             t => (Ventana(t + double.Epsilon) - Ventana(t)) / double.Epsilon //W'(t)
         );
         Efecto = new Apariencia(palabra, naturaleza);
         Esencia = palabra;
-        Ventana = ventana;
     }
 }
