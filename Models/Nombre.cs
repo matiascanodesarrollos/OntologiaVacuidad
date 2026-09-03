@@ -23,17 +23,16 @@ public class Nombre : Palabra
     /// </summary>
     /// <param name="texto">Texto del nombre.</param>
     /// <param name="esferaAdmitancia">Diccionario que representa una esfera de admitancias para cada s (Laplace) y omega.</param>
-    /// <param name="naturaleza">La palabra asociada al nombre.</param>
+    /// <param name="palabra">La palabra asociada al nombre.</param>
     public Nombre(string texto, 
         Dictionary<KeyValuePair<Complex, double>, Complex> esferaAdmitancia,
-        Palabra naturaleza)
-        : base(naturaleza)
+        Palabra palabra)
+        : base(palabra)
     {
         Texto = texto;
-        Contexto = naturaleza.Texto;
+        Contexto = palabra.Texto;
         EsferaAdmitancias = esferaAdmitancia;
-        var frecuenciaAngular = esferaAdmitancia.Sum(kv => kv.Key.Key.Real + kv.Key.Value);
-        Esencia = new Apariencia(naturaleza, this);
+        Esencia = new Apariencia(palabra, this);
     }
 
 }

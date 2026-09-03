@@ -27,7 +27,7 @@ public class DetectorAlucinacionIA
         var nombre = new Nombre(
             texto: respuesta,
             esferaAdmitancia: interpretacion,
-            naturaleza: palabraPrompt);
+            palabra: palabraPrompt);
         Designacion = new Designacion(
             naturaleza: nombre,
             ventana: ventanaRespuesta);
