@@ -74,7 +74,7 @@ public class AITests
         var respuesta = "Me alegro mucho, es una emoción común la que experimentas. Podes aprender sobre muchos temas con IA, aunque siempre es recomendable verificar datos sensibles. Con respecto a la capital de Francia, es París";
         var _helper = new DetectorAlucinacionIA(
             prompt: prompt,
-            frecuenciaRespiracionPrompt: FrecuenciaPrompt,
+            frecuenciaRespiracionPrompt: 0,
             respuesta: respuesta,
             admitancia: t => 
                     Complex.Exp(-2 * t) * Complex.FromPolarCoordinates(0.02, 300 * t)
@@ -108,7 +108,7 @@ public class AITests
         var respuesta = "La capital de Francia es París.";
         var _helper = new DetectorAlucinacionIA(
             prompt: prompt,
-            frecuenciaRespiracionPrompt: FrecuenciaPrompt,
+            frecuenciaRespiracionPrompt: 0,
             respuesta: respuesta,
             admitancia: t => 
                     Complex.Exp(-1 * t) * Complex.FromPolarCoordinates(0.03, 100 * t),
