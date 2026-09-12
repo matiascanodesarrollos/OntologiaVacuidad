@@ -12,14 +12,16 @@ public class Apariencia
     /// Crea a partir de una palabra y el nombre de su esencia.
     /// El fasor se calcula como la transformada de Fourier de la admitancia de la palabra.
     /// La función de la apariencia es el fasor multiplicado por la exponencial compleja.
+    /// </summary>
     /// <param name="palabra">Palabra de la que se deriva la apariencia.</param>
     /// <param name="esencia">Nombre de la esencia de la apariencia.</param>
-    /// </summary>
-    public Apariencia(Palabra palabra, Nombre esencia) 
+    /// <param name="frecuenciaAngular">Frecuencia angular de la apariencia.</param>
+    public Apariencia(Palabra palabra, Nombre esencia, double frecuenciaAngular) 
     {
-        FrecuenciaAngular = palabra.FrecuenciaAngular;
+        FrecuenciaAngular = frecuenciaAngular;
         Esencia = esencia;
-        Fasor = CalcularFourier(palabra);
+        var s = new Complex(0, FrecuenciaAngular);
+        Fasor = esencia.Significado[s] * CalcularFourier(palabra);
         Funcion = t => 
             Fasor 
             * Complex.FromPolarCoordinates(1, FrecuenciaAngular * t);
@@ -31,7 +33,7 @@ public class Apariencia
     /// Sobreescribir para definir otro criterio.
     /// </summary>
     /// <param name="omega">Frecuencia angular de análisis.</param>
-    /// <returns>El integral complejo de la ventana.</returns>
+    /// <returns>El integral complejo de la admitancia de la palabra.</returns>
     public virtual Complex CalcularFourier(Palabra naturaleza)
     {
         var muestras = 100;

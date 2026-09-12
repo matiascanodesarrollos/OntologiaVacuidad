@@ -16,7 +16,7 @@ public class DetectorAlucinacionIA
         double frecuenciaRespiracionPrompt,       
         string respuesta,
         Func<double, Complex> admitancia,
-        Dictionary<KeyValuePair<Complex, double>, Complex> interpretacion,
+        Dictionary<Complex, Complex> interpretacion,
         Func<double, Complex> ventanaRespuesta)
     {
         var palabraPrompt = new Palabra(
@@ -25,17 +25,19 @@ public class DetectorAlucinacionIA
             admitancia: admitancia
         );
         var nombre = new Nombre(
-            texto: respuesta,
-            esferaAdmitancia: interpretacion,
-            naturaleza: palabraPrompt);
+            sustantivo: respuesta,
+            imagenMental: interpretacion,
+            contexto: palabraPrompt,
+            frecuenciaAngular: frecuenciaRespiracionPrompt);
         Designacion = new Designacion(
             naturaleza: nombre,
-            ventana: ventanaRespuesta);
+            ventana: ventanaRespuesta,
+            frecuenciaAngular: frecuenciaRespiracionPrompt);
 
         Prompt = nombre.Esencia;
         var palabraRespuesta = Designacion
             .Esencia;
-        Respuesta = new Apariencia(palabraRespuesta, nombre);
+        Respuesta = new Apariencia(palabraRespuesta, nombre, frecuenciaRespiracionPrompt);
     }
 
     public DetectorAlucinacionIA ConLogger(ITestOutputHelper output)
