@@ -25,13 +25,14 @@ public class Nombre : Palabra
     /// <param name="contexto">La palabra asociada al nombre.</param>
     public Nombre(string sustantivo, 
         Dictionary<Complex, Complex> imagenMental,
-        Palabra contexto)
+        Palabra contexto,
+        double frecuenciaAngular)
         : base(contexto)
     {
         Sustantivo = sustantivo;
         Contexto = contexto.Texto;
         Significado = imagenMental;
-        Esencia = new Apariencia(contexto, this);
+        Esencia = new Apariencia(contexto, this, frecuenciaAngular);
     }
 
 }

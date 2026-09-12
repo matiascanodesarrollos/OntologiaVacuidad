@@ -13,10 +13,12 @@ public class Designacion : Nombre
     /// </summary>
     /// <param name="naturaleza">Nombre asociado a la designación.</param>
     /// <param name="ventana">Función de ventana para la designación.</param>
+    /// <param name="frecuenciaAngular">Frecuencia angular de la apariencia asociada a la designación.</param>
     /// <returns>Una nueva instancia de Designacion.</returns>
     public Designacion(
         Nombre naturaleza, 
-        Func<double, Complex> ventana)
+        Func<double, Complex> ventana,
+        double frecuenciaAngular)
         : base(naturaleza)
     {
         Ventana = ventana;
@@ -25,7 +27,7 @@ public class Designacion : Nombre
             0.0,
             t => (Ventana(t + double.Epsilon) - Ventana(t)) / double.Epsilon //W'(t)
         );
-        Efecto = new Apariencia(palabra, naturaleza);
+        Efecto = new Apariencia(palabra, naturaleza, frecuenciaAngular);
         Esencia = palabra;
     }
 }

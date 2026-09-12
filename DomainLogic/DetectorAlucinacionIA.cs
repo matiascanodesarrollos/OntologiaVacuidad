@@ -27,15 +27,17 @@ public class DetectorAlucinacionIA
         var nombre = new Nombre(
             sustantivo: respuesta,
             imagenMental: interpretacion,
-            contexto: palabraPrompt);
+            contexto: palabraPrompt,
+            frecuenciaAngular: frecuenciaRespiracionPrompt);
         Designacion = new Designacion(
             naturaleza: nombre,
-            ventana: ventanaRespuesta);
+            ventana: ventanaRespuesta,
+            frecuenciaAngular: frecuenciaRespiracionPrompt);
 
         Prompt = nombre.Esencia;
         var palabraRespuesta = Designacion
             .Esencia;
-        Respuesta = new Apariencia(palabraRespuesta, nombre);
+        Respuesta = new Apariencia(palabraRespuesta, nombre, frecuenciaRespiracionPrompt);
     }
 
     public DetectorAlucinacionIA ConLogger(ITestOutputHelper output)

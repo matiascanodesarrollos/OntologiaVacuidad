@@ -15,12 +15,13 @@ public class Apariencia
     /// </summary>
     /// <param name="palabra">Palabra de la que se deriva la apariencia.</param>
     /// <param name="esencia">Nombre de la esencia de la apariencia.</param>
-    public Apariencia(Palabra palabra, Nombre esencia) 
+    /// <param name="frecuenciaAngular">Frecuencia angular de la apariencia.</param>
+    public Apariencia(Palabra palabra, Nombre esencia, double frecuenciaAngular) 
     {
-        FrecuenciaAngular = palabra.FrecuenciaAngular;
+        FrecuenciaAngular = frecuenciaAngular;
         Esencia = esencia;
         var s = new Complex(0, FrecuenciaAngular);
-        Fasor = CalcularFourier(palabra) * esencia.Significado[s];
+        Fasor = esencia.Significado[s] * CalcularFourier(palabra);
         Funcion = t => 
             Fasor 
             * Complex.FromPolarCoordinates(1, FrecuenciaAngular * t);
