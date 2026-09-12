@@ -19,7 +19,8 @@ public class Apariencia
     {
         FrecuenciaAngular = palabra.FrecuenciaAngular;
         Esencia = esencia;
-        Fasor = CalcularFourier(palabra);
+        var s = new Complex(0, FrecuenciaAngular);
+        Fasor = CalcularFourier(palabra) * esencia.Significado[s];
         Funcion = t => 
             Fasor 
             * Complex.FromPolarCoordinates(1, FrecuenciaAngular * t);

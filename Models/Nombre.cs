@@ -6,7 +6,7 @@ public class Nombre : Palabra
     public string Sustantivo { get; }
     public string Contexto { get; }
     public Apariencia Esencia { get; }
-    internal Dictionary<KeyValuePair<Complex, double>, Complex> Significado { get; }
+    internal Dictionary<Complex, Complex> Significado { get; }
 
     protected Nombre(Nombre otro)
         : base(otro)
@@ -21,10 +21,10 @@ public class Nombre : Palabra
     /// Crea un nuevo nombre con sustantivo, contexto e imagen mental o significado.
     /// </summary>
     /// <param name="sustantivo">Sustantivo para el nombre.</param>
-    /// <param name="imagenMental">Diccionario que representa una esfera de admitancias para cada s (Laplace) y omega.</param>
+    /// <param name="imagenMental">Diccionario que representa una esfera de admitancias para cada s (Laplace).</param>
     /// <param name="contexto">La palabra asociada al nombre.</param>
     public Nombre(string sustantivo, 
-        Dictionary<KeyValuePair<Complex, double>, Complex> imagenMental,
+        Dictionary<Complex, Complex> imagenMental,
         Palabra contexto)
         : base(contexto)
     {

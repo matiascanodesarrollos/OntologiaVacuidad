@@ -19,11 +19,12 @@ public class AITests
         _output = output;
     }
 
-    private static Dictionary<KeyValuePair<Complex, double>, Complex> CrearInterpretacion()
+    private static Dictionary<Complex, Complex> CrearInterpretacion()
     {
-        return new Dictionary<KeyValuePair<Complex, double>, Complex>
+        return new Dictionary<Complex, Complex>
         {
-            { new KeyValuePair<Complex, double>(Complex.Zero, FrecuenciaPrompt), Complex.One },
+            { Complex.Zero, Complex.One },
+            { new Complex(0, FrecuenciaPrompt), Complex.One },
         };
     }
 

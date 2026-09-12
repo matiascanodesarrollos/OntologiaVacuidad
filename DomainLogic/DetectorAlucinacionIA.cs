@@ -16,7 +16,7 @@ public class DetectorAlucinacionIA
         double frecuenciaRespiracionPrompt,       
         string respuesta,
         Func<double, Complex> admitancia,
-        Dictionary<KeyValuePair<Complex, double>, Complex> interpretacion,
+        Dictionary<Complex, Complex> interpretacion,
         Func<double, Complex> ventanaRespuesta)
     {
         var palabraPrompt = new Palabra(
