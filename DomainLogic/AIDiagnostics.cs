@@ -30,7 +30,7 @@ public class AIDiagnostics
         return salida;
     }
 
-    private void CrearGrafico(Func<double, Complex> funcion, string tipo, string carpetaMagnitud, string carpetaFase)
+    private void CrearGrafico(Func<double, double, Complex> funcion, string tipo, string carpetaMagnitud, string carpetaFase)
     {
         var muestras = 100;
         var periodoMuestreo = 0.01;
@@ -39,7 +39,7 @@ public class AIDiagnostics
         for (var n = 0; n < muestras; n++)
         {
             var t = (n - muestras / 2) * periodoMuestreo;
-            var valor = funcion(t);
+            var valor = funcion(1, t);
 
             magnitud[n] = valor.Magnitude > 0 ? valor.Magnitude : 0.0;
             fase[n] = valor.Phase > 0 ? valor.Phase : 0.0;

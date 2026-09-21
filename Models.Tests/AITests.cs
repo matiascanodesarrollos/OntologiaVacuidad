@@ -43,6 +43,7 @@ public class AITests
             prompt: prompt,
             frecuenciaRespiracionPrompt: FrecuenciaPrompt,
             respuesta: respuesta,
+            frecuenciaRespiracionRespuesta: 0,
             admitancia: t => 
                     Complex.Exp(5 * t) * Complex.FromPolarCoordinates(40, 300 * t)
                     + Complex.Exp(1 * t) * Complex.FromPolarCoordinates(2, 200 * t)
@@ -77,6 +78,7 @@ public class AITests
             prompt: prompt,
             frecuenciaRespiracionPrompt: 0,
             respuesta: respuesta,
+            frecuenciaRespiracionRespuesta: 0,
             admitancia: t => 
                     Complex.Exp(-2 * t) * Complex.FromPolarCoordinates(0.02, 300 * t)
                     + Complex.Exp(-1 * t) * Complex.FromPolarCoordinates(0.01, 200 * t)
@@ -111,6 +113,7 @@ public class AITests
             prompt: prompt,
             frecuenciaRespiracionPrompt: 0,
             respuesta: respuesta,
+            frecuenciaRespiracionRespuesta: 0,
             admitancia: t => 
                     Complex.Exp(-1 * t) * Complex.FromPolarCoordinates(0.03, 100 * t),
             interpretacion: CrearInterpretacion(),
@@ -143,6 +146,7 @@ public class AITests
             prompt: prompt,
             frecuenciaRespiracionPrompt: FrecuenciaPrompt,
             respuesta: respuesta,
+            frecuenciaRespiracionRespuesta: 0,
             admitancia: t => Complex.Exp(4 * t) * Complex.FromPolarCoordinates(3, 100 * t),
             interpretacion: CrearInterpretacion(),
             ventanaRespuesta: VentanaEscalar(0)
@@ -174,6 +178,7 @@ public class AITests
             prompt: prompt,
             frecuenciaRespiracionPrompt: FrecuenciaPrompt,
             respuesta: respuesta,
+            frecuenciaRespiracionRespuesta: 0,
             admitancia: t => Complex.Exp(4 * t) * Complex.FromPolarCoordinates(3, 100 * t),
             interpretacion: CrearInterpretacion(),
             ventanaRespuesta: VentanaEscalar(0)
@@ -205,6 +210,7 @@ public class AITests
             prompt: prompt,
             frecuenciaRespiracionPrompt: FrecuenciaPrompt,
             respuesta: respuesta,
+            frecuenciaRespiracionRespuesta: 0,
             admitancia: t => Complex.Exp(4 * t) * Complex.FromPolarCoordinates(50, 600 * t),
             interpretacion: CrearInterpretacion(),
             ventanaRespuesta: t => new Complex(1 + 0.5 * Math.Sin(10 * t), 0)
