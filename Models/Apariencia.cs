@@ -9,20 +9,19 @@ public class Apariencia
 
     /// <summary>
     /// Crea una apariencia a partir de el nombre.
-    /// La velocidad de propagación se utiliza para calcular la función de la apariencia.
+    /// La frecuencia temporal que se utiliza para calcular la función de la apariencia.
     /// </summary>
     /// <param name="esencia">Nombre de la apariencia.</param>
-    /// <param name="velocidad">Velocidad de propagación.</param>
-    public Apariencia(Nombre esencia, double velocidad) 
+    /// <param name="omega">Frecuencia temporal.</param>
+    public Apariencia(Nombre esencia, double omega) 
     {
         Esencia = esencia;
         Funcion = (k, t) =>
         {
-            var omega = k * velocidad;
-            var frecuenciaIdea = new KeyValuePair<double, double>(0, omega);
-            var coordenadaEsferica = new KeyValuePair<KeyValuePair<double, double>, double>(frecuenciaIdea, omega);
-            return Esencia.Objeto[coordenadaEsferica]
-            * Complex.FromPolarCoordinates(1, omega * t);
+            var s = new KeyValuePair<double, double>(0, omega/ k);
+            return Complex.FromPolarCoordinates(1, omega * t)
+                * Esencia.Funcion(omega, s)
+                / Math.Abs(k);
         };
     }
 }

@@ -30,12 +30,13 @@ public class DetectorAlucinacionIA
             admitancia: admitancia
         );
         var objeto = interpretacion.ToDictionary(
-            entrada => new KeyValuePair<KeyValuePair<double, double>, double>(
+            entrada => new KeyValuePair<double, KeyValuePair<double, double>>(
+                entrada.Key.Imaginary,
                 new KeyValuePair<double, double>(
                     entrada.Key.Real,
-                    entrada.Key.Imaginary),
-                entrada.Key.Imaginary),
-            entrada => entrada.Value.Real);
+                    entrada.Key.Imaginary)
+            ),
+            entrada => entrada.Value);
         var nombre = new Nombre(
             sustantivo: respuesta,
             objeto: objeto,
@@ -43,7 +44,7 @@ public class DetectorAlucinacionIA
         Designacion = new Designacion(
             naturaleza: nombre,
             ventana: ventanaRespuesta,
-            radio: frecuenciaRespiracionRespuesta);
+            k: frecuenciaRespiracionRespuesta);
 
         Prompt = nombre.Esencia;
         Respuesta = Designacion.Efecto;

@@ -13,21 +13,21 @@ public class Designacion : Nombre
     /// </summary>
     /// <param name="naturaleza">Nombre asociado a la designación.</param>
     /// <param name="ventana">Función de ventana espacial.</param>
-    /// <param name="radio">Radio del punto en la esfera del nombre, es igual la velocidad de la apariencia asociada.</param>
+    /// <param name="k">Frecuencia espacial del borde.</param>
     /// <returns>Una nueva instancia de Designacion.</returns>
     public Designacion(
         Nombre naturaleza, 
         Func<double, Complex> ventana,
-        double radio)
+        double k)
         : base(naturaleza)
     {
         Ventana = ventana;
         var palabra = new Palabra(
             Sustantivo,
             0.0,
-            x => (Ventana(x + radio) - Ventana(x)) / radio //W'(x)
+            x => (Ventana(x + k) - Ventana(x)) / k //W'(x)
         );
-        Efecto = new Apariencia(naturaleza, radio);
+        Efecto = new Apariencia(naturaleza, k);
         Esencia = palabra;
     }
 }
