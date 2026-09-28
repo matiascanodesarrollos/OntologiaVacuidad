@@ -12,22 +12,22 @@ public class Designacion : Nombre
     /// Se genera una ventana multiplicando la atenuación exponencial por la suma de los fasores de la naturaleza.
     /// </summary>
     /// <param name="naturaleza">Nombre asociado a la designación.</param>
-    /// <param name="ventana">Función de ventana para la designación.</param>
-    /// <param name="frecuenciaAngular">Frecuencia angular de la apariencia asociada a la designación.</param>
+    /// <param name="ventana">Función de ventana espacial.</param>
+    /// <param name="k">Frecuencia espacial del borde.</param>
     /// <returns>Una nueva instancia de Designacion.</returns>
     public Designacion(
         Nombre naturaleza, 
         Func<double, Complex> ventana,
-        double frecuenciaAngular)
+        double k)
         : base(naturaleza)
     {
         Ventana = ventana;
         var palabra = new Palabra(
             Sustantivo,
             0.0,
-            t => (Ventana(t + double.Epsilon) - Ventana(t)) / double.Epsilon //W'(t)
+            x => (Ventana(x + k) - Ventana(x)) / k //W'(x)
         );
-        Efecto = new Apariencia(palabra, naturaleza, frecuenciaAngular);
+        Efecto = new Apariencia(naturaleza, k);
         Esencia = palabra;
     }
 }
