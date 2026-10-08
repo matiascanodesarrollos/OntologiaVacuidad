@@ -24,9 +24,11 @@ public class Nombre : Palabra
     /// <param name="sustantivo">Sustantivo para el nombre.</param>
     /// <param name="objeto">Diccionario que representa la convolucion entre la idea expresada en s (Laplace) y su qualia expresada en Fourier.</param>
     /// <param name="contexto">La palabra asociada al nombre.</param>
+    /// <param name="funcionTransferencia">Función que representa la transferencia entre el espacio de frecuencias y el espacio-tiempo.</param>
     public Nombre(string sustantivo, 
         Dictionary<KeyValuePair<double, KeyValuePair<double, double>>, Complex> objeto,
-        Palabra contexto)
+        Palabra contexto,        
+        Func<double, double, Complex> funcionTransferencia)
         : base(contexto)
     {
         Sustantivo = sustantivo;
@@ -35,7 +37,11 @@ public class Nombre : Palabra
             var coordenadaEsferica = new KeyValuePair<double, KeyValuePair<double, double>>(omega, s);
             return objeto[coordenadaEsferica];
         };
-        Esencia = new Apariencia(this, 0.0);
+        Esencia = new Apariencia(
+            this, 
+            (k, t) => 
+                Complex.Exp(Complex.ImaginaryOne * contexto.FrecuenciaAngular * k) 
+                * funcionTransferencia(k, t));
     }
 
 }

@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Numerics;
 
 public class Apariencia
@@ -8,21 +7,15 @@ public class Apariencia
     public Nombre Esencia { get; set; }
 
     /// <summary>
-    /// Crea una apariencia a partir de el nombre.
-    /// La frecuencia temporal que se utiliza para calcular la función de la apariencia.
+    /// Crea una apariencia a partir del nombre y una función que describe su comportamiento.
+    /// La función toma como parámetros la frecuencia espacial y la frecuencia temporal.
     /// </summary>
     /// <param name="esencia">Nombre de la apariencia.</param>
-    /// <param name="omega">Frecuencia temporal.</param>
-    public Apariencia(Nombre esencia, double omega) 
+    /// <param name="funcion">Función que describe el comportamiento de la apariencia en función de la frecuencia espacial y temporal.</param>
+    public Apariencia(Nombre esencia, Func<double, double, Complex> funcion) 
     {
         Esencia = esencia;
-        Funcion = (k, t) =>
-        {
-            var s = new KeyValuePair<double, double>(0, omega/ k);
-            return Complex.FromPolarCoordinates(1, omega * t)
-                * Esencia.Funcion(omega, s)
-                / Math.Abs(k);
-        };
+        Funcion = funcion;
     }
 }
 

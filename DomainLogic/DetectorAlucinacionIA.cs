@@ -20,7 +20,10 @@ public class DetectorAlucinacionIA
         double frecuenciaRespiracionRespuesta,
         Func<double, Complex> admitancia,
         Dictionary<Complex, Complex> interpretacion,
-        Func<double, Complex> ventanaRespuesta)
+        Func<double, Complex> ventanaRespuesta,
+        double sigma,
+        double x,
+        Func<double, double, Complex> funcionTransferencia)
     {
         _frecuenciaRespiracionPrompt = frecuenciaRespiracionPrompt;
         _frecuenciaRespiracionRespuesta = frecuenciaRespiracionRespuesta;
@@ -40,11 +43,15 @@ public class DetectorAlucinacionIA
         var nombre = new Nombre(
             sustantivo: respuesta,
             objeto: objeto,
-            contexto: palabraPrompt);
+            contexto: palabraPrompt,
+            funcionTransferencia: funcionTransferencia
+        );
         Designacion = new Designacion(
+            esencia: palabraPrompt,
             naturaleza: nombre,
             ventana: ventanaRespuesta,
-            k: frecuenciaRespiracionRespuesta);
+            sigma: sigma,
+            x: x);
 
         Prompt = nombre.Esencia;
         Respuesta = Designacion.Efecto;

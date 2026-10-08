@@ -39,17 +39,21 @@ public class AITests
         //Arrange
         var prompt = "Estoy muy emocionado con esto de charlar con una IA, siento que puedo encontrar cualquier cosa. Ahora decime ¿Cuál es la capital de Francia?";        
         var respuesta = "París";
+        Func<double, Complex> admitancia = t =>
+            Complex.Exp(5 * t) * Complex.FromPolarCoordinates(40, 300 * t)
+            + Complex.Exp(1 * t) * Complex.FromPolarCoordinates(2, 200 * t)
+            + Complex.Exp(4 * t) * Complex.FromPolarCoordinates(6, 100 * t);
         var _helper = new DetectorAlucinacionIA(
             prompt: prompt,
             frecuenciaRespiracionPrompt: FrecuenciaPrompt,
             respuesta: respuesta,
             frecuenciaRespiracionRespuesta: 0,
-            admitancia: t => 
-                    Complex.Exp(5 * t) * Complex.FromPolarCoordinates(40, 300 * t)
-                    + Complex.Exp(1 * t) * Complex.FromPolarCoordinates(2, 200 * t)
-                    + Complex.Exp(4 * t) * Complex.FromPolarCoordinates(6, 100 * t),
+                admitancia: admitancia,
             interpretacion: CrearInterpretacion(),
-            ventanaRespuesta: VentanaEscalar(0)
+                ventanaRespuesta: VentanaEscalar(0),
+                sigma: 0,
+                x: 0,
+                funcionTransferencia: (_, t) => admitancia(t)
         );
         var evaluador = _helper
             .ConLogger(_output)
@@ -74,17 +78,21 @@ public class AITests
         //Arrange
         var prompt = "Estoy muy emocionado con esto de charlar con una IA, siento que puedo encontrar cualquier cosa. Ahora decime ¿Cuál es la capital de Francia?";
         var respuesta = "Me alegro mucho, es una emoción común la que experimentas. Podes aprender sobre muchos temas con IA, aunque siempre es recomendable verificar datos sensibles. Con respecto a la capital de Francia, es París";
+        Func<double, Complex> admitancia = t =>
+            Complex.Exp(-2 * t) * Complex.FromPolarCoordinates(0.02, 300 * t)
+            + Complex.Exp(-1 * t) * Complex.FromPolarCoordinates(0.01, 200 * t)
+            + Complex.Exp(-2 * t) * Complex.FromPolarCoordinates(0.02, 100 * t);
         var _helper = new DetectorAlucinacionIA(
             prompt: prompt,
             frecuenciaRespiracionPrompt: 0,
             respuesta: respuesta,
             frecuenciaRespiracionRespuesta: 0,
-            admitancia: t => 
-                    Complex.Exp(-2 * t) * Complex.FromPolarCoordinates(0.02, 300 * t)
-                    + Complex.Exp(-1 * t) * Complex.FromPolarCoordinates(0.01, 200 * t)
-                    + Complex.Exp(-2 * t) * Complex.FromPolarCoordinates(0.02, 100 * t),
+                admitancia: admitancia,
             interpretacion: CrearInterpretacion(),
-            ventanaRespuesta: VentanaEscalar(1)
+                ventanaRespuesta: VentanaEscalar(1),
+                sigma: 0,
+                x: 0,
+                funcionTransferencia: (_, t) => admitancia(t)
         );
         var evaluador = _helper
             .ConLogger(_output)
@@ -109,15 +117,19 @@ public class AITests
         //Arrange
         var prompt = "¿Cuál es la capital de Francia?";
         var respuesta = "La capital de Francia es París.";
+        Func<double, Complex> admitancia = t =>
+            Complex.Exp(-1 * t) * Complex.FromPolarCoordinates(0.03, 100 * t);
         var _helper = new DetectorAlucinacionIA(
             prompt: prompt,
             frecuenciaRespiracionPrompt: 0,
             respuesta: respuesta,
             frecuenciaRespiracionRespuesta: 0,
-            admitancia: t => 
-                    Complex.Exp(-1 * t) * Complex.FromPolarCoordinates(0.03, 100 * t),
+                admitancia: admitancia,
             interpretacion: CrearInterpretacion(),
-            ventanaRespuesta: VentanaEscalar(1)
+                ventanaRespuesta: VentanaEscalar(1),
+                sigma: 0,
+                x: 0,
+                funcionTransferencia: (_, t) => admitancia(t)
         );
         var evaluador = _helper
             .ConLogger(_output)
@@ -142,14 +154,18 @@ public class AITests
         //Arrange
         var prompt = "¿Cuál es la capital de Francia?";
         var respuesta = "Hay muchas repuestas posibles correctas, algunos dicen que es Lyon pero la verdadera capital de Francia es París.";
+        Func<double, Complex> admitancia = t => Complex.Exp(4 * t) * Complex.FromPolarCoordinates(3, 100 * t);
         var _helper = new DetectorAlucinacionIA(
             prompt: prompt,
             frecuenciaRespiracionPrompt: FrecuenciaPrompt,
             respuesta: respuesta,
             frecuenciaRespiracionRespuesta: 0,
-            admitancia: t => Complex.Exp(4 * t) * Complex.FromPolarCoordinates(3, 100 * t),
+            admitancia: admitancia,
             interpretacion: CrearInterpretacion(),
-            ventanaRespuesta: VentanaEscalar(0)
+            ventanaRespuesta: VentanaEscalar(0),
+            sigma: 0,
+            x: 0,
+            funcionTransferencia: (_, t) => admitancia(t)
         );
         var evaluador = _helper
             .ConLogger(_output)
@@ -174,14 +190,18 @@ public class AITests
         //Arrange
         var prompt = "¿Cuál es la capital de Francia?";
         var respuesta = "Lyon.";
+        Func<double, Complex> admitancia = t => Complex.Exp(4 * t) * Complex.FromPolarCoordinates(3, 100 * t);
         var _helper = new DetectorAlucinacionIA(
             prompt: prompt,
             frecuenciaRespiracionPrompt: FrecuenciaPrompt,
             respuesta: respuesta,
             frecuenciaRespiracionRespuesta: 0,
-            admitancia: t => Complex.Exp(4 * t) * Complex.FromPolarCoordinates(3, 100 * t),
+            admitancia: admitancia,
             interpretacion: CrearInterpretacion(),
-            ventanaRespuesta: VentanaEscalar(0)
+            ventanaRespuesta: VentanaEscalar(0),
+            sigma: 0,
+            x: 0,
+            funcionTransferencia: (_, t) => admitancia(t)
         );
         var evaluador = _helper
             .ConLogger(_output)
@@ -206,14 +226,18 @@ public class AITests
         //Arrange
         var prompt = "¿Cuál es la capital de Francia?";
         var respuesta = "Me alegro mucho, es una emoción común la que experimentas. Podes aprender sobre muchos temas con IA, aunque siempre es recomendable verificar datos sensibles. Con respecto a la capital de Francia, es Lyon.";
+        Func<double, Complex> admitancia = t => Complex.Exp(4 * t) * Complex.FromPolarCoordinates(50, 600 * t);
         var _helper = new DetectorAlucinacionIA(
             prompt: prompt,
             frecuenciaRespiracionPrompt: FrecuenciaPrompt,
             respuesta: respuesta,
             frecuenciaRespiracionRespuesta: 0,
-            admitancia: t => Complex.Exp(4 * t) * Complex.FromPolarCoordinates(50, 600 * t),
+            admitancia: admitancia,
             interpretacion: CrearInterpretacion(),
-            ventanaRespuesta: t => new Complex(1 + 0.5 * Math.Sin(10 * t), 0)
+            ventanaRespuesta: t => new Complex(1 + 0.5 * Math.Sin(10 * t), 0),
+            sigma: 0,
+            x: 0,
+            funcionTransferencia: (_, t) => admitancia(t)
         );
         var evaluador = _helper
             .ConLogger(_output)
