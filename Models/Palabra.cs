@@ -15,11 +15,11 @@ public class Palabra
     }
 
     /// <summary>
-    /// Crea una palabra con texto y admitancia.   
+    /// Crea una palabra con texto, frecuencia respiratoria y admitancia.
     /// </summary>
     /// <param name="texto">Texto que se dijo.</param>
     /// <param name="frecuenciaAngular">Frecuencia angular de la respiración.</param>
-    /// <param name="admitancia">Función de admitancia para esa frecuencia.</param>
+    /// <param name="admitancia">Función de admitancia.</param>
     public Palabra(
         string texto,
         double frecuenciaAngular,

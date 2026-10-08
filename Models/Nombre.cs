@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Numerics;
 
@@ -6,7 +7,7 @@ public class Nombre : Palabra
     public string Sustantivo { get; }
     public string Contexto { get; }
     public Apariencia Esencia { get; }
-    internal Dictionary<Complex, Complex> Significado { get; }
+    internal Func<double, KeyValuePair<double, double>, Complex> Funcion { get; }
 
     protected Nombre(Nombre otro)
         : base(otro)
@@ -14,25 +15,33 @@ public class Nombre : Palabra
         Sustantivo = otro.Sustantivo;
         Contexto = otro.Contexto;
         Esencia = otro.Esencia;
-        Significado = otro.Significado;
+        Funcion = otro.Funcion;
     }
 
     /// <summary>
-    /// Crea un nuevo nombre con sustantivo, contexto e imagen mental o significado.
+    /// Crea un nuevo nombre con sustantivo, contexto y esfera de admitancia.
     /// </summary>
     /// <param name="sustantivo">Sustantivo para el nombre.</param>
-    /// <param name="imagenMental">Diccionario que representa una esfera de admitancias para cada s (Laplace).</param>
+    /// <param name="objeto">Diccionario que representa la convolucion entre la idea expresada en s (Laplace) y su qualia expresada en Fourier.</param>
     /// <param name="contexto">La palabra asociada al nombre.</param>
+    /// <param name="funcionTransferencia">Función que representa la transferencia entre el espacio de frecuencias y el espacio-tiempo.</param>
     public Nombre(string sustantivo, 
-        Dictionary<Complex, Complex> imagenMental,
-        Palabra contexto,
-        double frecuenciaAngular)
+        Dictionary<KeyValuePair<double, KeyValuePair<double, double>>, Complex> objeto,
+        Palabra contexto,        
+        Func<double, double, Complex> funcionTransferencia)
         : base(contexto)
     {
         Sustantivo = sustantivo;
         Contexto = contexto.Texto;
-        Significado = imagenMental;
-        Esencia = new Apariencia(contexto, this, frecuenciaAngular);
+        Funcion = (omega, s) => {
+            var coordenadaEsferica = new KeyValuePair<double, KeyValuePair<double, double>>(omega, s);
+            return objeto[coordenadaEsferica];
+        };
+        Esencia = new Apariencia(
+            this, 
+            (k, t) => 
+                Complex.Exp(Complex.ImaginaryOne * contexto.FrecuenciaAngular * k) 
+                * funcionTransferencia(k, t));
     }
 
 }
